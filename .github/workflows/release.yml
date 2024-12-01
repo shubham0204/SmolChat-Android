@@ -33,10 +33,11 @@ jobs:
         uses: actions/create-release@v1
         id: create_release
         with:
-          draft: false
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: true
           prerelease: false
-          release_name: ${{ steps.tag_version.outputs.new_tag }}
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+
           body_path: CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ github.token }}
