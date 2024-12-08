@@ -25,6 +25,9 @@ class LLMInference {
     int prev_len = 0;
     bool store_chats;
 
+    int64_t response_generation_time = 0;
+    long response_num_tokens = 0;
+
     bool is_valid_utf8(const char* response);
 
     public:
@@ -32,6 +35,8 @@ class LLMInference {
     void load_model(const char* model_path, float min_p, float temperature, bool store_chats);
 
     void add_chat_message(const char* message, const char* role);
+
+    float get_response_generation_time();
 
     void start_completion(const char* query);
 

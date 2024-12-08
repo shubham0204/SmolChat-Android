@@ -54,6 +54,11 @@ class SmolLM {
         addChatMessage(nativePtr, message, "assistant")
     }
 
+    fun getResponseGenerationSpeed(): Float {
+        assert(nativePtr != 0L) { "Model is not loaded. Use SmolLM.create to load the model" }
+        return getResponseGenerationSpeed(nativePtr)
+    }
+
     fun getResponse(query: String): Flow<String> =
         flow {
             assert(nativePtr != 0L) { "Model is not loaded. Use SmolLM.create to load the model" }
@@ -82,6 +87,8 @@ class SmolLM {
         message: String,
         role: String,
     )
+
+    private external fun getResponseGenerationSpeed(modelPtr: Long): Float
 
     private external fun close(modelPtr: Long)
 

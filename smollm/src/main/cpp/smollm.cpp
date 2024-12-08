@@ -42,6 +42,13 @@ Java_io_shubham0204_smollm_SmolLM_addChatMessage(JNIEnv *env, jobject thiz, jlon
 }
 
 extern "C"
+JNIEXPORT jfloat JNICALL
+Java_io_shubham0204_smollm_SmolLM_getResponseGenerationSpeed(JNIEnv *env, jobject thiz, jlong model_ptr) {
+    LLMInference* llmInference = reinterpret_cast<LLMInference*>(model_ptr);
+    return llmInference->get_response_generation_time();
+}
+
+extern "C"
 JNIEXPORT void JNICALL
 Java_io_shubham0204_smollm_SmolLM_close(
     JNIEnv *env,

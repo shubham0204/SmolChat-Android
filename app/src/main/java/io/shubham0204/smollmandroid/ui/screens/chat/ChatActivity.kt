@@ -43,7 +43,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -275,9 +275,10 @@ private fun ColumnScope.MessagesList(viewModel: ChatScreenViewModel) {
             }
         }
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize().weight(1f)) {
-            items(messages) { chatMessage ->
+            itemsIndexed(messages) { i, chatMessage ->
                 MessageListItem(
                     viewModel.markwon.render(viewModel.markwon.parse(chatMessage.message)),
+                    responseGenerationSpeed = if (i == messages.size - 1) viewModel.responseGenerationsSpeed else null,
                     chatMessage.isUserMessage,
                     onCopyClicked = {
                         val clipboard =
@@ -301,6 +302,7 @@ private fun ColumnScope.MessagesList(viewModel: ChatScreenViewModel) {
                     if (partialResponse.isNotEmpty()) {
                         MessageListItem(
                             viewModel.markwon.render(viewModel.markwon.parse(partialResponse)),
+                            responseGenerationSpeed = null,
                             false,
                             {},
                             {},
@@ -337,6 +339,7 @@ private fun ColumnScope.MessagesList(viewModel: ChatScreenViewModel) {
 @Composable
 private fun LazyItemScope.MessageListItem(
     messageStr: Spanned,
+    responseGenerationSpeed: Float?,
     isUserMessage: Boolean,
     onCopyClicked: () -> Unit,
     onShareClicked: () -> Unit,
@@ -382,6 +385,14 @@ private fun LazyItemScope.MessageListItem(
                         fontSize = 8.sp,
                         fontFamily = AppFontFamily,
                     )
+                    responseGenerationSpeed?.let {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "%.2f tokens/s".format(it),
+                            fontSize = 8.sp,
+                            fontFamily = AppFontFamily,
+                        )
+                    }
                 }
             }
         }

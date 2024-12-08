@@ -47,11 +47,17 @@ void LLMInference::add_chat_message(const char *message, const char *role) {
     messages.push_back({strdup(role), strdup(message)});
 }
 
+float LLMInference::get_response_generation_time() {
+    return (float)response_num_tokens / (response_generation_time / 1e6);
+}
+
 void LLMInference::start_completion(const char *query) {
     if (!store_chats) {
         prev_len = 0;
         formatted.clear();
     }
+    response_generation_time = 0;
+    response_num_tokens = 0;
     add_chat_message(query, "user");
     int new_len = llama_chat_apply_template(
             model,
@@ -124,6 +130,7 @@ std::string LLMInference::completion_loop() {
         exit(0);
     }
 
+    auto start = ggml_time_us();
     // run the model
     if (llama_decode(ctx, batch) < 0) {
         throw std::runtime_error("llama_decode() failed");
@@ -136,6 +143,9 @@ std::string LLMInference::completion_loop() {
         return "[EOG]";
     }
     std::string piece = common_token_to_piece(ctx, curr_token, true);
+    auto end = ggml_time_us();
+    response_generation_time += (end - start);
+    response_num_tokens += 1;
     cache_response_tokens += piece;
 
     // re-init the batch with the newly predicted token

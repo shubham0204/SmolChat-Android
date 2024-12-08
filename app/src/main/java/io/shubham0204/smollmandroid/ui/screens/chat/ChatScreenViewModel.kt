@@ -65,6 +65,7 @@ class ChatScreenViewModel(
 
     val isGeneratingResponse = mutableStateOf(false)
     val partialResponse = mutableStateOf("")
+    var responseGenerationsSpeed: Float? = null
 
     val showSelectModelListDialogState = mutableStateOf(false)
     val showMoreOptionsPopupState = mutableStateOf(false)
@@ -141,7 +142,10 @@ class ChatScreenViewModel(
                     partialResponse.value = ""
                     smolLM.getResponse(query).collect { partialResponse.value += it }
                     messagesDB.addAssistantMessage(chat.id, partialResponse.value)
-                    withContext(Dispatchers.Main) { isGeneratingResponse.value = false }
+                    withContext(Dispatchers.Main) {
+                        isGeneratingResponse.value = false
+                        responseGenerationsSpeed = smolLM.getResponseGenerationSpeed()
+                    }
                 }
         }
     }
