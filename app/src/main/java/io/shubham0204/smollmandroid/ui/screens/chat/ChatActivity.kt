@@ -39,6 +39,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -79,6 +80,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -279,6 +281,7 @@ private fun ColumnScope.MessagesList(viewModel: ChatScreenViewModel) {
                 MessageListItem(
                     viewModel.markwon.render(viewModel.markwon.parse(chatMessage.message)),
                     responseGenerationSpeed = if (i == messages.size - 1) viewModel.responseGenerationsSpeed else null,
+                    responseGenerationTimeSecs = if (i == messages.size - 1) viewModel.responseGenerationTimeSecs else null,
                     chatMessage.isUserMessage,
                     onCopyClicked = {
                         val clipboard =
@@ -303,6 +306,7 @@ private fun ColumnScope.MessagesList(viewModel: ChatScreenViewModel) {
                         MessageListItem(
                             viewModel.markwon.render(viewModel.markwon.parse(partialResponse)),
                             responseGenerationSpeed = null,
+                            responseGenerationTimeSecs = null,
                             false,
                             {},
                             {},
@@ -340,6 +344,7 @@ private fun ColumnScope.MessagesList(viewModel: ChatScreenViewModel) {
 private fun LazyItemScope.MessageListItem(
     messageStr: Spanned,
     responseGenerationSpeed: Float?,
+    responseGenerationTimeSecs: Int?,
     isUserMessage: Boolean,
     onCopyClicked: () -> Unit,
     onShareClicked: () -> Unit,
@@ -370,7 +375,7 @@ private fun LazyItemScope.MessageListItem(
                     textSize = 16f,
                     message = messageStr,
                 )
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
                         text = "Copy",
@@ -386,9 +391,31 @@ private fun LazyItemScope.MessageListItem(
                         fontFamily = AppFontFamily,
                     )
                     responseGenerationSpeed?.let {
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size(2.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.DarkGray),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "%.2f tokens/s".format(it),
+                            fontSize = 8.sp,
+                            fontFamily = AppFontFamily,
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size(2.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.DarkGray),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "$responseGenerationTimeSecs s",
                             fontSize = 8.sp,
                             fontFamily = AppFontFamily,
                         )

@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.annotation.KoinViewModel
 import java.util.Date
+import kotlin.time.measureTime
 
 const val LOGTAG = "[SmolLMAndroid]"
 val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
@@ -66,6 +67,7 @@ class ChatScreenViewModel(
     val isGeneratingResponse = mutableStateOf(false)
     val partialResponse = mutableStateOf("")
     var responseGenerationsSpeed: Float? = null
+    var responseGenerationTimeSecs: Int? = null
 
     val showSelectModelListDialogState = mutableStateOf(false)
     val showMoreOptionsPopupState = mutableStateOf(false)
@@ -140,11 +142,15 @@ class ChatScreenViewModel(
             responseGenerationJob =
                 CoroutineScope(Dispatchers.Default).launch {
                     partialResponse.value = ""
-                    smolLM.getResponse(query).collect { partialResponse.value += it }
+                    val responseDuration =
+                        measureTime {
+                            smolLM.getResponse(query).collect { partialResponse.value += it }
+                        }
                     messagesDB.addAssistantMessage(chat.id, partialResponse.value)
                     withContext(Dispatchers.Main) {
                         isGeneratingResponse.value = false
                         responseGenerationsSpeed = smolLM.getResponseGenerationSpeed()
+                        responseGenerationTimeSecs = responseDuration.inWholeSeconds.toInt()
                     }
                 }
         }
