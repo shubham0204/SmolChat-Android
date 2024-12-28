@@ -30,12 +30,7 @@ android {
         consumerProguardFiles("consumer-rules.pro")
         externalNativeBuild {
             cmake {
-                // CMake build-time arguments for llama.cpp in Android
-                // See https://github.com/ggerganov/llama.cpp/blob/master/docs/android.md
-                arguments += "-DLLAMA_BUILD_COMMON=ON"
                 arguments += "-DCMAKE_BUILD_TYPE=Release"
-                arguments += "-DGGML_OPENMP=OFF"
-                arguments += "-DGGML_LLAMAFILE=OFF"
                 cppFlags += listOf()
             }
         }
