@@ -5,21 +5,19 @@ set(LLAMA_DIR "../../../../llama.cpp")
 set(GGML_DIR ${LLAMA_DIR}/ggml)
 set(COMMON_DIR ${LLAMA_DIR}/common)
 set(SOURCES
-        ${GGML_DIR}/include/ggml.h
-        ${GGML_DIR}/include/ggml-cpu.h
-        ${GGML_DIR}/include/ggml-alloc.h
-        ${GGML_DIR}/include/ggml-backend.h
-        ${GGML_DIR}/include/ggml-cpp.h
         ${GGML_DIR}/src/ggml.c
-        ${GGML_DIR}/src/ggml-cpu.c
         ${GGML_DIR}/src/ggml-alloc.c
         ${GGML_DIR}/src/ggml-backend.cpp
+        ${GGML_DIR}/src/ggml-threading.cpp
         ${GGML_DIR}/src/ggml-quants.c
-        ${GGML_DIR}/src/ggml-quants.h
-        ${GGML_DIR}/src/ggml-aarch64.c
-        ${GGML_DIR}/src/ggml-aarch64.h
+        ${GGML_DIR}/src/ggml-backend-reg.cpp
+        ${GGML_DIR}/src/ggml-opt.cpp
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu.c
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu.cpp
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu-aarch64.cpp
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu-quants.c
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu-traits.cpp
 
-        ${LLAMA_DIR}/include/llama.h
         ${LLAMA_DIR}/src/llama.cpp
         ${LLAMA_DIR}/src/llama-vocab.cpp
         ${LLAMA_DIR}/src/llama-grammar.cpp
@@ -29,20 +27,14 @@ set(SOURCES
         ${LLAMA_DIR}/src/unicode-data.cpp
 
         ${COMMON_DIR}/arg.cpp
-        ${COMMON_DIR}/arg.h
         ${COMMON_DIR}/base64.hpp
         ${COMMON_DIR}/common.cpp
-        ${COMMON_DIR}/common.h
         ${COMMON_DIR}/console.cpp
-        ${COMMON_DIR}/console.h
         ${COMMON_DIR}/json-schema-to-grammar.cpp
         ${COMMON_DIR}/json.hpp
         ${COMMON_DIR}/log.cpp
-        ${COMMON_DIR}/log.h
         ${COMMON_DIR}/ngram-cache.cpp
-        ${COMMON_DIR}/ngram-cache.h
         ${COMMON_DIR}/sampling.cpp
-        ${COMMON_DIR}/sampling.h
 
         llm_inference.cpp
         smollm.cpp
@@ -61,6 +53,8 @@ function(build_library target_name cpu_flags)
             ${target_name}
             PUBLIC
             ${GGML_DIR}/include
+            ${GGML_DIR}/src
+            ${GGML_DIR}/src/ggml-cpu
             ${LLAMA_DIR}/include
             ${COMMON_DIR}
     )
@@ -69,11 +63,10 @@ function(build_library target_name cpu_flags)
     # targets `llama` and `common` are linked to `ggml`,
     # thus inheriting the same compile options
 
-    # LLAMA_CPU_FLAGS is passed from smollm/build.gradle.kts
     target_compile_options(
             ${target_name}
             PUBLIC
-            ${cpu_flags} -O3
+            -DGGML_USE_CPU -DGGML_USE_CPU_AARCH64 ${cpu_flags} -O3
     )
     # -fvisibility=hidden: hide all symbols by default
     # -fvisibility-inlines-hidden: hide all inline symbols by default

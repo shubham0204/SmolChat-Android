@@ -21,7 +21,7 @@ plugins {
 
 android {
     namespace = "io.shubham0204.smollm"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 26
