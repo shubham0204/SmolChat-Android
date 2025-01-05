@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileNotFoundException
 
 class SmolLM {
     companion object {
@@ -76,7 +77,12 @@ class SmolLM {
         }
 
         private fun getCPUFeatures(): String {
-            val cpuInfo = File("/proc/cpuinfo").readText()
+            val cpuInfo =
+                try {
+                    File("/proc/cpuinfo").readText()
+                } catch (e: FileNotFoundException) {
+                    ""
+                }
             val cpuFeatures =
                 cpuInfo
                     .substringAfter("Features")
@@ -96,9 +102,11 @@ class SmolLM {
         minP: Float,
         temperature: Float,
         storeChats: Boolean,
-    ) = withContext(Dispatchers.IO) {
-        nativePtr = loadModel(modelPath, minP, temperature, storeChats)
-    }
+    ): Boolean =
+        withContext(Dispatchers.IO) {
+            nativePtr = loadModel(modelPath, minP, temperature, storeChats)
+            return@withContext nativePtr != 0L
+        }
 
     fun addUserMessage(message: String) {
         assert(nativePtr != 0L) { "Model is not loaded. Use SmolLM.create to load the model" }
