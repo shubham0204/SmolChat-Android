@@ -24,6 +24,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -61,21 +63,52 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import io.shubham0204.smollmandroid.llm.exampleModelsList
 import io.shubham0204.smollmandroid.ui.components.AppProgressDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatActivity
 import io.shubham0204.smollmandroid.ui.theme.AppAccentColor
 import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
-import org.koin.androidx.compose.koinViewModel
+import org.koin.android.ext.android.inject
 
 class DownloadModelActivity : ComponentActivity() {
     private var openChatScreen: Boolean = true
+    private val viewModel: DownloadModelsViewModel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { DownloadModelScreen() }
-
+        setContent {
+            val navController = rememberNavController()
+            NavHost(
+                navController = navController,
+                startDestination = "download-model",
+                enterTransition = { fadeIn() },
+                exitTransition = { fadeOut() },
+            ) {
+                composable("view-model") {
+                    ViewHFModelScreen(viewModel)
+                }
+                composable("hf-model-select") {
+                    HFModelDownloadScreen(
+                        viewModel,
+                        onBackClicked = { navController.navigateUp() },
+                        onModelClick = { modelId ->
+                            viewModel.viewModelId = modelId
+                            navController.navigate("view-model")
+                        },
+                    )
+                }
+                composable("download-model") {
+                    DownloadModelScreen(
+                        viewModel,
+                        onHFModelSelectClick = { navController.navigate("hf-model-select") },
+                    )
+                }
+            }
+        }
         openChatScreen = intent.extras?.getBoolean("openChatScreen") ?: true
     }
 
@@ -91,9 +124,10 @@ class DownloadModelActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun DownloadModelScreen() {
-        val viewModel: DownloadModelsViewModel = koinViewModel()
-
+    private fun DownloadModelScreen(
+        viewModel: DownloadModelsViewModel,
+        onHFModelSelectClick: () -> Unit,
+    ) {
         val launcher =
             rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
                 activityResult.data?.let {
@@ -134,6 +168,9 @@ class DownloadModelActivity : ComponentActivity() {
                 ModelsList(viewModel)
                 Spacer(modifier = Modifier.height(4.dp))
                 ModelURLInput(viewModel)
+                OutlinedButton(onClick = onHFModelSelectClick) {
+                    Text("Browse from HuggingFace")
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedButton(
                     enabled =
