@@ -1,5 +1,8 @@
 import java.net.URI
 
+include(":hf-model-hub-api")
+
+
 pluginManagement {
     repositories {
         google {
