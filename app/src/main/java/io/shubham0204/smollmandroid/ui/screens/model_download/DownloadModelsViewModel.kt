@@ -25,6 +25,11 @@ import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
+import androidx.paging.PagingData
+import io.shubham0204.hf_model_hub_api.HFModelInfo
+import io.shubham0204.hf_model_hub_api.HFModelSearch
+import io.shubham0204.hf_model_hub_api.HFModelTree
+import io.shubham0204.smollmandroid.data.HFModelsAPI
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.data.ModelsDB
 import io.shubham0204.smollmandroid.ui.components.hideProgressDialog
@@ -33,6 +38,9 @@ import io.shubham0204.smollmandroid.ui.components.setProgressDialogTitle
 import io.shubham0204.smollmandroid.ui.components.showProgressDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
@@ -44,9 +52,15 @@ import java.nio.file.Paths
 class DownloadModelsViewModel(
     val context: Context,
     val modelsDB: ModelsDB,
+    val hfModelsAPI: HFModelsAPI,
 ) : ViewModel() {
+    private val _modelInfoAndTree = MutableStateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?>(null)
+    val modelInfoAndTree: StateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?> = _modelInfoAndTree
+
     val selectedModelState = mutableStateOf<LLMModel?>(null)
     val modelUrlState = mutableStateOf("")
+
+    var viewModelId: String? = null
 
     private val downloadManager =
         context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -70,6 +84,8 @@ class DownloadModelsViewModel(
                 ).setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
         downloadManager.enqueue(request)
     }
+
+    fun getModels(query: String): Flow<PagingData<HFModelSearch.ModelSearchResult>> = hfModelsAPI.getModelsList(query)
 
     /**
      * Given the model file URI, copy the model file to the app's internal directory. Once copied,
@@ -110,6 +126,19 @@ class DownloadModelsViewModel(
             }
         } else {
             Toast.makeText(context, "Invalid file", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun fetchModelInfoAndTree(modelId: String) {
+        _modelInfoAndTree.value = null
+        CoroutineScope(Dispatchers.IO).launch {
+            val modelInfo = hfModelsAPI.getModelInfo(modelId)
+            var modelTree = hfModelsAPI.getModelTree(modelId)
+            modelTree =
+                modelTree.filter { modelFile ->
+                    modelFile.path.endsWith("gguf")
+                }
+            _modelInfoAndTree.value = Pair(modelInfo, modelTree)
         }
     }
 }

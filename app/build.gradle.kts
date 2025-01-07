@@ -14,7 +14,7 @@ android {
     defaultConfig {
         applicationId = "io.shubham0204.smollmandroid"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.androidx.compose.navigation)
 
     implementation(project(":smollm"))
+    implementation(project(":hf-model-hub-api"))
 
     // Koin: dependency injection
     implementation(libs.koin.android)
@@ -106,6 +107,11 @@ dependencies {
     implementation("io.noties.markwon:syntax-highlight:4.6.2")
     implementation("io.noties:prism4j:2.0.0")
     annotationProcessor("io.noties:prism4j-bundler:2.0.0")
+
+    // Jetpack Paging3: loading paged data for Compose
+    val pagingVersion = "3.3.5"
+    implementation("androidx.paging:paging-runtime:$pagingVersion")
+    implementation("androidx.paging:paging-compose:$pagingVersion")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
