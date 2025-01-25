@@ -43,7 +43,9 @@ import io.shubham0204.smollmandroid.data.MessagesDB
 import io.shubham0204.smollmandroid.data.TasksDB
 import io.shubham0204.smollmandroid.llm.ModelsRepository
 import io.shubham0204.smollmandroid.prism4j.PrismGrammarLocator
+import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.theme.AppAccentColor
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -67,6 +69,12 @@ class ChatScreenViewModel(
     val modelsRepository: ModelsRepository,
     val tasksDB: TasksDB,
 ) : ViewModel() {
+    enum class ModelLoadingState {
+        NOT_LOADED, // model loading not started
+        IN_PROGRESS, // model loading in-progress
+        SUCCESS, // model loading finished successfully
+        FAILURE, // model loading failed
+    }
 
     // UI state variables
     private val _currChatState = MutableStateFlow<Chat?>(null)
@@ -75,8 +83,8 @@ class ChatScreenViewModel(
     private val _isGeneratingResponse = MutableStateFlow(false)
     val isGeneratingResponse: StateFlow<Boolean> = _isGeneratingResponse
 
-    private val _isInitializingModel = MutableStateFlow(false)
-    val isInitializingModel: StateFlow<Boolean> = _isInitializingModel
+    private val _modelLoadState = MutableStateFlow(ModelLoadingState.NOT_LOADED)
+    val modelLoadState: StateFlow<ModelLoadingState> = _modelLoadState
 
     private val _partialResponse = MutableStateFlow("")
     val partialResponse: StateFlow<String> = _partialResponse
@@ -90,13 +98,11 @@ class ChatScreenViewModel(
     private val _showTaskListBottomListState = MutableStateFlow(false)
     val showTaskListBottomListState: StateFlow<Boolean> = _showTaskListBottomListState
 
-
     private var responseGenerationJob: Job? = null
     private val smolLM = SmolLM()
     var responseGenerationsSpeed: Float? = null
     var responseGenerationTimeSecs: Int? = null
     val markwon: Markwon
-
 
     init {
         _currChatState.value = chatsDB.loadDefaultChat()
@@ -107,11 +113,15 @@ class ChatScreenViewModel(
                 .usePlugin(CorePlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, Prism4jThemeDarkula.create()))
                 .usePlugin(MarkwonInlineParserPlugin.create())
-                .usePlugin(JLatexMathPlugin.create(12f, JLatexMathPlugin.BuilderConfigure {
-                    it.inlinesEnabled(true)
-                    it.blocksEnabled(true)
-                }))
-                .usePlugin(LinkifyPlugin.create(Linkify.WEB_URLS))
+                .usePlugin(
+                    JLatexMathPlugin.create(
+                        12f,
+                        JLatexMathPlugin.BuilderConfigure {
+                            it.inlinesEnabled(true)
+                            it.blocksEnabled(true)
+                        },
+                    ),
+                ).usePlugin(LinkifyPlugin.create(Linkify.WEB_URLS))
                 .usePlugin(
                     object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
@@ -141,11 +151,7 @@ class ChatScreenViewModel(
 
     fun getChats(): Flow<List<Chat>> = chatsDB.getChats()
 
-    fun getChatMessages(): Flow<List<ChatMessage>>? {
-        return _currChatState.value?.let { chat ->
-            return messagesDB.getMessages(chat.id)
-        }
-    }
+    fun getChatMessages(chatId: Long): Flow<List<ChatMessage>> = messagesDB.getMessages(chatId)
 
     fun updateChatLLM(modelId: Long) {
         _currChatState.value = _currChatState.value?.copy(llmModelId = modelId)
@@ -170,15 +176,33 @@ class ChatScreenViewModel(
             responseGenerationJob =
                 CoroutineScope(Dispatchers.Default).launch {
                     _partialResponse.value = ""
-                    val responseDuration =
-                        measureTime {
-                            smolLM.getResponse(query).collect { _partialResponse.value += it }
+                    try {
+                        val responseDuration =
+                            measureTime {
+                                smolLM.getResponse(query).collect {
+                                    _partialResponse.value += it
+                                }
+                            }
+                        messagesDB.addAssistantMessage(chat.id, _partialResponse.value)
+                        withContext(Dispatchers.Main) {
+                            _isGeneratingResponse.value = false
+                            responseGenerationsSpeed = smolLM.getResponseGenerationSpeed()
+                            responseGenerationTimeSecs = responseDuration.inWholeSeconds.toInt()
                         }
-                    messagesDB.addAssistantMessage(chat.id, _partialResponse.value)
-                    withContext(Dispatchers.Main) {
+                    } catch (e: CancellationException) {
+                        // ignore CancellationException, as it was called because
+                        // `responseGenerationJob` was cancelled in the `stopGeneration` method
+                    } catch (e: Exception) {
+                        _partialResponse.value = ""
                         _isGeneratingResponse.value = false
-                        responseGenerationsSpeed = smolLM.getResponseGenerationSpeed()
-                        responseGenerationTimeSecs = responseDuration.inWholeSeconds.toInt()
+                        createAlertDialog(
+                            dialogTitle = "An error occurred",
+                            dialogText = "The app is unable to process the query. The error message is: ${e.message}",
+                            dialogPositiveButtonText = "Change model",
+                            onPositiveButtonClick = {},
+                            dialogNegativeButtonText = "",
+                            onNegativeButtonClick = {},
+                        )
                     }
                 }
         }
@@ -186,6 +210,7 @@ class ChatScreenViewModel(
 
     fun stopGeneration() {
         _isGeneratingResponse.value = false
+        _partialResponse.value = ""
         responseGenerationJob?.let { job ->
             if (job.isActive) {
                 job.cancel()
@@ -225,26 +250,39 @@ class ChatScreenViewModel(
             } else {
                 val model = modelsRepository.getModelFromId(chat.llmModelId)
                 if (model != null) {
-                    _isInitializingModel.value = true
+                    _modelLoadState.value = ModelLoadingState.IN_PROGRESS
                     CoroutineScope(Dispatchers.Default).launch {
-                        smolLM.create(model.path, chat.minP, chat.temperature, !chat.isTask)
-                        LOGD("Model loaded")
-                        if (chat.systemPrompt.isNotEmpty()) {
-                            smolLM.addSystemPrompt(chat.systemPrompt)
-                            LOGD("System prompt added")
-                        }
-                        if (!chat.isTask) {
-                            messagesDB.getMessagesForModel(chat.id).forEach { message ->
-                                if (message.isUserMessage) {
-                                    smolLM.addUserMessage(message.message)
-                                    LOGD("User message added: ${message.message}")
-                                } else {
-                                    smolLM.addAssistantMessage(message.message)
-                                    LOGD("Assistant message added: ${message.message}")
+                        try {
+                            smolLM.close()
+                            smolLM.create(model.path, chat.minP, chat.temperature, !chat.isTask)
+                            LOGD("Model loaded")
+                            if (chat.systemPrompt.isNotEmpty()) {
+                                smolLM.addSystemPrompt(chat.systemPrompt)
+                                LOGD("System prompt added")
+                            }
+                            if (!chat.isTask) {
+                                messagesDB.getMessagesForModel(chat.id).forEach { message ->
+                                    if (message.isUserMessage) {
+                                        smolLM.addUserMessage(message.message)
+                                        LOGD("User message added: ${message.message}")
+                                    } else {
+                                        smolLM.addAssistantMessage(message.message)
+                                        LOGD("Assistant message added: ${message.message}")
+                                    }
                                 }
                             }
+                            withContext(Dispatchers.Main) { _modelLoadState.value = ModelLoadingState.SUCCESS }
+                        } catch (e: Exception) {
+                            _modelLoadState.value = ModelLoadingState.FAILURE
+                            createAlertDialog(
+                                dialogTitle = "An error occurred",
+                                dialogText = "The app is unable to load the model. The error message is: ${e.message}",
+                                dialogPositiveButtonText = "Change model",
+                                onPositiveButtonClick = { showSelectModelListDialog() },
+                                dialogNegativeButtonText = "Close",
+                                onNegativeButtonClick = {},
+                            )
                         }
-                        withContext(Dispatchers.Main) { _isInitializingModel.value = false }
                     }
                 } else {
                     _showSelectModelListDialogState.value = true

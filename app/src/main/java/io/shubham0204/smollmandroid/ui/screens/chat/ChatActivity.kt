@@ -220,12 +220,12 @@ fun ChatActivityScreenUI(
             ) { innerPadding ->
                 Column(
                     modifier =
-                    Modifier
-                        .padding(innerPadding)
-                        .background(MaterialTheme.colorScheme.background),
+                        Modifier
+                            .padding(innerPadding)
+                            .background(MaterialTheme.colorScheme.background),
                 ) {
                     if (currChat != null) {
-                        ScreenUI(viewModel)
+                        ScreenUI(viewModel, currChat!!)
                     }
                 }
             }
@@ -236,15 +236,19 @@ fun ChatActivityScreenUI(
 }
 
 @Composable
-private fun ColumnScope.ScreenUI(viewModel: ChatScreenViewModel) {
+private fun ColumnScope.ScreenUI(
+    viewModel: ChatScreenViewModel,
+    currChat: Chat,
+) {
     val isGeneratingResponse by viewModel.isGeneratingResponse.collectAsStateWithLifecycle()
     MessagesList(
         viewModel,
         isGeneratingResponse,
+        currChat.id,
     )
     MessageInput(
         viewModel,
-        isGeneratingResponse
+        isGeneratingResponse,
     )
 }
 
@@ -252,78 +256,82 @@ private fun ColumnScope.ScreenUI(viewModel: ChatScreenViewModel) {
 private fun ColumnScope.MessagesList(
     viewModel: ChatScreenViewModel,
     isGeneratingResponse: Boolean,
+    chatId: Long,
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
-    viewModel.getChatMessages()?.let { chatMessagesFlow ->
-        val messages by chatMessagesFlow.collectAsState(emptyList())
-        val partialResponse by viewModel.partialResponse.collectAsStateWithLifecycle()
-        LaunchedEffect(messages.size) {
-            if (messages.isNotEmpty()) {
-                listState.animateScrollToItem(messages.size)
-            }
+    val messages by viewModel.getChatMessages(chatId).collectAsState(emptyList())
+    val partialResponse by viewModel.partialResponse.collectAsStateWithLifecycle()
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size)
         }
-        LazyColumn(state = listState, modifier = Modifier
+    }
+    LazyColumn(
+        state = listState,
+        modifier =
+        Modifier
             .fillMaxSize()
-            .weight(1f)) {
-            itemsIndexed(messages) { i, chatMessage ->
-                MessageListItem(
-                    viewModel.markwon.render(viewModel.markwon.parse(chatMessage.message)),
-                    responseGenerationSpeed = if (i == messages.size - 1) viewModel.responseGenerationsSpeed else null,
-                    responseGenerationTimeSecs = if (i == messages.size - 1) viewModel.responseGenerationTimeSecs else null,
-                    chatMessage.isUserMessage,
-                    onCopyClicked = {
-                        val clipboard =
-                            context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Copied message", chatMessage.message)
-                        clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, "Message copied", Toast.LENGTH_SHORT).show()
-                    },
-                    onShareClicked = {
-                        context.startActivity(
-                            Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, chatMessage.message)
-                            },
-                        )
-                    },
-                )
-            }
-            if (isGeneratingResponse) {
-                item {
-                    if (partialResponse.isNotEmpty()) {
-                        MessageListItem(
-                            viewModel.markwon.render(viewModel.markwon.parse(partialResponse)),
-                            responseGenerationSpeed = null,
-                            responseGenerationTimeSecs = null,
-                            false,
-                            {},
-                            {},
-                        )
-                    } else {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier =
+            .weight(1f),
+    ) {
+        itemsIndexed(messages) { i, chatMessage ->
+            MessageListItem(
+                viewModel.markwon.render(viewModel.markwon.parse(chatMessage.message)),
+                responseGenerationSpeed = if (i == messages.size - 1) viewModel.responseGenerationsSpeed else null,
+                responseGenerationTimeSecs = if (i == messages.size - 1) viewModel.responseGenerationTimeSecs else null,
+                chatMessage.isUserMessage,
+                onCopyClicked = {
+                    val clipboard =
+                        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("Copied message", chatMessage.message)
+                    clipboard.setPrimaryClip(clip)
+                    Toast.makeText(context, "Message copied", Toast.LENGTH_SHORT).show()
+                },
+                onShareClicked = {
+                    context.startActivity(
+                        Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, chatMessage.message)
+                        },
+                    )
+                },
+            )
+        }
+        if (isGeneratingResponse) {
+            item {
+                if (partialResponse.isNotEmpty()) {
+                    MessageListItem(
+                        viewModel.markwon.render(viewModel.markwon.parse(partialResponse)),
+                        responseGenerationSpeed = null,
+                        responseGenerationTimeSecs = null,
+                        false,
+                        {},
+                        {},
+                    )
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier =
                             Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .animateItem(),
-                        ) {
-                            Icon(
-                                modifier = Modifier.padding(8.dp),
-                                imageVector = Icons.Default.Android,
-                                contentDescription = null,
-                                tint = AppAccentColor,
-                            )
-                            Text(
-                                text = "Thinking ...",
-                                modifier = Modifier
+                    ) {
+                        Icon(
+                            modifier = Modifier.padding(8.dp),
+                            imageVector = Icons.Default.Android,
+                            contentDescription = null,
+                            tint = AppAccentColor,
+                        )
+                        Text(
+                            text = "Thinking ...",
+                            modifier =
+                            Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp),
-                                fontFamily = AppFontFamily,
-                                fontSize = 12.sp,
-                            )
-                        }
+                            fontFamily = AppFontFamily,
+                            fontSize = 12.sp,
+                        )
                     }
                 }
             }
@@ -342,9 +350,12 @@ private fun LazyItemScope.MessageListItem(
     modifier: Modifier = Modifier,
 ) {
     if (!isUserMessage) {
-        Row(modifier = modifier
-            .fillMaxWidth()
-            .animateItem()) {
+        Row(
+            modifier =
+            modifier
+                .fillMaxWidth()
+                .animateItem(),
+        ) {
             Column {
                 Spacer(modifier = Modifier.height(8.dp))
                 Icon(
@@ -418,7 +429,8 @@ private fun LazyItemScope.MessageListItem(
         }
     } else {
         Row(
-            modifier = Modifier
+            modifier =
+            Modifier
                 .fillMaxWidth()
                 .animateItem(),
             horizontalArrangement = Arrangement.End,
@@ -444,7 +456,7 @@ private fun MessageInput(
     isGeneratingResponse: Boolean,
 ) {
     val currChat by viewModel.currChatState.collectAsStateWithLifecycle()
-    val isInitializingModel by viewModel.isInitializingModel.collectAsStateWithLifecycle()
+    val modelLoadingState by viewModel.modelLoadState.collectAsStateWithLifecycle()
     if ((currChat?.llmModelId ?: -1L) == -1L) {
         Text(
             modifier = Modifier.padding(8.dp),
@@ -453,63 +465,78 @@ private fun MessageInput(
         )
     } else {
         var questionText by remember { mutableStateOf("") }
-        val context = LocalContext.current
         val keyboardController = LocalSoftwareKeyboardController.current
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
-            TextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                value = questionText,
-                onValueChange = { questionText = it },
-                shape = RoundedCornerShape(16.dp),
-                colors =
-                TextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    disabledTextColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                ),
-                placeholder = {
+            when (modelLoadingState) {
+                ChatScreenViewModel.ModelLoadingState.IN_PROGRESS -> {
                     Text(
-                        text =
-                        if (isGeneratingResponse || isInitializingModel) {
-                            "Loading model ..."
-                        } else {
-                            "Ask a question"
-                        },
+                        modifier = Modifier.padding(8.dp),
+                        text = "Loading model...",
+                        fontFamily = AppFontFamily,
                     )
-                },
-                keyboardOptions =
-                KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            if (isGeneratingResponse || isInitializingModel) {
-                Box(contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = AppAccentColor)
+                }
+
+                ChatScreenViewModel.ModelLoadingState.FAILURE -> {
+                    Text(
+                        modifier = Modifier.padding(8.dp),
+                        text = "The model selected for the chat cannot be loaded",
+                        fontFamily = AppFontFamily,
+                    )
+                }
+
+                ChatScreenViewModel.ModelLoadingState.SUCCESS -> {
+                    TextField(
+                        modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        value = questionText,
+                        onValueChange = { questionText = it },
+                        shape = RoundedCornerShape(16.dp),
+                        colors =
+                        TextFieldDefaults.colors(
+                            focusedTextColor = Color.Black,
+                            disabledTextColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                        ),
+                        placeholder = {
+                            Text(
+                                text = "Ask a question",
+                            )
+                        },
+                        keyboardOptions =
+                        KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     if (isGeneratingResponse) {
-                        IconButton(onClick = { viewModel.stopGeneration() }) {
-                            Icon(Icons.Default.Stop, contentDescription = "Stop", tint = Color.DarkGray)
+                        Box(contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = AppAccentColor)
+                            IconButton(onClick = { viewModel.stopGeneration() }) {
+                                Icon(Icons.Default.Stop, contentDescription = "Stop", tint = Color.DarkGray)
+                            }
+                        }
+                    } else {
+                        IconButton(
+                            enabled = questionText.isNotEmpty(),
+                            modifier = Modifier.background(AppAccentColor, CircleShape),
+                            onClick = {
+                                keyboardController?.hide()
+                                viewModel.sendUserQuery(questionText)
+                                questionText = ""
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Send text",
+                                tint = Color.White,
+                            )
                         }
                     }
                 }
-            } else {
-                IconButton(
-                    enabled = questionText.isNotEmpty(),
-                    modifier = Modifier.background(AppAccentColor, CircleShape),
-                    onClick = {
-                        keyboardController?.hide()
-                        viewModel.sendUserQuery(questionText)
-                        questionText = ""
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "Send text",
-                        tint = Color.White,
-                    )
-                }
+
+                else -> {}
             }
         }
     }
