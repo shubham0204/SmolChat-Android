@@ -4,7 +4,7 @@ project("smollm")
 set(LLAMA_DIR "../../../../llama.cpp")
 set(GGML_DIR ${LLAMA_DIR}/ggml)
 set(COMMON_DIR ${LLAMA_DIR}/common)
-set(SOURCES
+set(SMOLLM_SOURCES
         ${GGML_DIR}/src/ggml.c
         ${GGML_DIR}/src/ggml-alloc.c
         ${GGML_DIR}/src/ggml-backend.cpp
@@ -51,6 +51,22 @@ set(SOURCES
         LLMInference.cpp
         smollm.cpp
 )
+set(GGUF_READER_SOURCES
+        ${GGML_DIR}/src/ggml.c
+        ${GGML_DIR}/src/ggml-alloc.c
+        ${GGML_DIR}/src/ggml-backend.cpp
+        ${GGML_DIR}/src/ggml-threading.cpp
+        ${GGML_DIR}/src/ggml-quants.c
+        ${GGML_DIR}/src/ggml-backend-reg.cpp
+        ${GGML_DIR}/src/ggml-opt.cpp
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu.c
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu.cpp
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu-aarch64.cpp
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu-quants.c
+        ${GGML_DIR}/src/ggml-cpu/ggml-cpu-traits.cpp
+        ${GGML_DIR}/src/gguf.cpp
+        GGUFReader.cpp
+)
 
 # compiling for different CPU extensions for Arm64 (aarch64)
 # See docs/build_arm_flags.md for more details
@@ -59,7 +75,7 @@ function(build_library target_name cpu_flags)
     add_library(
             ${target_name}
             SHARED
-            ${SOURCES}
+            ${SMOLLM_SOURCES}
     )
     target_include_directories(
             ${target_name}
@@ -121,3 +137,14 @@ if (${ANDROID_ABI} STREQUAL "arm64-v8a")
     build_library("smollm_v8_4_fp16_dotprod_i8mm" "-march=armv8.4-a+fp16+dotprod+i8mm")
     build_library("smollm_v8_4_fp16_dotprod_i8mm_sve" "-march=armv8.4-a+fp16+dotprod+i8mm+sve")
 endif()
+
+# library target for GGUFReader
+set(TARGET_NAME_GGUF_READER ggufreader)
+add_library(${TARGET_NAME_GGUF_READER} SHARED ${GGUF_READER_SOURCES})
+target_include_directories(
+        ${TARGET_NAME_GGUF_READER}
+        PUBLIC
+        ${GGML_DIR}/include
+        ${GGML_DIR}/src
+        ${GGML_DIR}/src/ggml-cpu
+)

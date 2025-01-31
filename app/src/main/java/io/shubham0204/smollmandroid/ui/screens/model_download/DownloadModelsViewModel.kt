@@ -29,6 +29,7 @@ import androidx.paging.PagingData
 import io.shubham0204.hf_model_hub_api.HFModelInfo
 import io.shubham0204.hf_model_hub_api.HFModelSearch
 import io.shubham0204.hf_model_hub_api.HFModelTree
+import io.shubham0204.smollm.GGUFReader
 import io.shubham0204.smollmandroid.data.HFModelsAPI
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.data.ModelsDB
@@ -54,6 +55,9 @@ class DownloadModelsViewModel(
     val modelsDB: ModelsDB,
     val hfModelsAPI: HFModelsAPI,
 ) : ViewModel() {
+    // default context size for the LLM
+    private val defaultContextSize = 2048
+
     private val _modelInfoAndTree = MutableStateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?>(null)
     val modelInfoAndTree: StateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?> = _modelInfoAndTree
 
@@ -114,10 +118,14 @@ class DownloadModelsViewModel(
                         inputStream?.copyTo(outputStream)
                     }
                 }
+                val ggufReader = GGUFReader()
+                ggufReader.load(File(context.filesDir, fileName).absolutePath)
+                val contextSize = ggufReader.getContextSize() ?: -1
                 modelsDB.addModel(
                     fileName,
                     "",
                     Paths.get(context.filesDir.absolutePath, fileName).toString(),
+                    contextSize.toInt(),
                 )
                 withContext(Dispatchers.Main) {
                     hideProgressDialog()

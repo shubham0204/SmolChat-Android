@@ -79,9 +79,8 @@ fun DrawerUI(
                 colors = ButtonDefaults.buttonColors(containerColor = AppAccentColor),
                 onClick = {
                     val chatCount = viewModel.chatsDB.getChatsCount()
-                    val newChatId =
-                        viewModel.chatsDB.addChat(chatName = "Untitled ${chatCount + 1}")
-                    onItemClick(Chat(id = newChatId, name = "Untitled ${chatCount + 1}", systemPrompt = "You are a helpful assistant."))
+                    val newChat = viewModel.chatsDB.addChat(chatName = "Untitled ${chatCount + 1}")
+                    onItemClick(newChat)
                 },
             ) {
                 Icon(Icons.Default.Add, contentDescription = "New Chat")
@@ -97,7 +96,10 @@ fun DrawerUI(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(
-            modifier = Modifier.fillMaxWidth().clickable { onManageTasksClick() },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { onManageTasksClick() },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -107,7 +109,10 @@ fun DrawerUI(
             )
             Text(
                 "Manage Tasks",
-                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                 fontFamily = AppFontFamily,
             )
         }

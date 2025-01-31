@@ -1,26 +1,25 @@
-#include "llama.h"
-#include "common.h"
 #include "LLMInference.h"
 #include <jni.h>
 
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_io_shubham0204_smollm_SmolLM_loadModel(
-    JNIEnv *env,
-    jobject thiz,
-    jstring modelPath,
-    jfloat minP,
-    jfloat temperature,
-    jboolean storeChats
+        JNIEnv *env,
+        jobject thiz,
+        jstring modelPath,
+        jfloat minP,
+        jfloat temperature,
+        jboolean storeChats,
+        jlong contextSize
 ) {
     jboolean isCopy = true;
     const char *modelPathCstr = env->GetStringUTFChars(modelPath, &isCopy);
-    LLMInference* llmInference = new LLMInference();
+    LLMInference *llmInference = new LLMInference();
 
     try {
-        llmInference->loadModel(modelPathCstr, minP, temperature, storeChats);
+        llmInference->loadModel(modelPathCstr, minP, temperature, storeChats, contextSize);
     }
-    catch (std::runtime_error& error) {
+    catch (std::runtime_error &error) {
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
     }
 
@@ -49,11 +48,18 @@ Java_io_shubham0204_smollm_SmolLM_getResponseGenerationSpeed(JNIEnv *env, jobjec
 }
 
 extern "C"
+JNIEXPORT jint JNICALL
+Java_io_shubham0204_smollm_SmolLM_getContextSizeUsed(JNIEnv *env, jobject thiz, jlong modelPtr) {
+    LLMInference *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
+    return llmInference->getContextSizeUsed();
+}
+
+extern "C"
 JNIEXPORT void JNICALL
 Java_io_shubham0204_smollm_SmolLM_close(
-    JNIEnv *env,
-    jobject thiz,
-    jlong modelPtr
+        JNIEnv *env,
+        jobject thiz,
+        jlong modelPtr
 ) {
     LLMInference *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
     delete llmInference;
@@ -63,10 +69,10 @@ Java_io_shubham0204_smollm_SmolLM_close(
 extern "C"
 JNIEXPORT void JNICALL
 Java_io_shubham0204_smollm_SmolLM_startCompletion(
-    JNIEnv *env,
-    jobject thiz,
-    jlong modelPtr,
-    jstring prompt
+        JNIEnv *env,
+        jobject thiz,
+        jlong modelPtr,
+        jstring prompt
 ) {
     jboolean isCopy = true;
     const char *promptCstr = env->GetStringUTFChars(prompt, &isCopy);
@@ -79,16 +85,16 @@ Java_io_shubham0204_smollm_SmolLM_startCompletion(
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_io_shubham0204_smollm_SmolLM_completionLoop(
-    JNIEnv *env,
-    jobject thiz,
-    jlong modelPtr
+        JNIEnv *env,
+        jobject thiz,
+        jlong modelPtr
 ) {
     LLMInference *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
     try {
         std::string response = llmInference->completionLoop();
         return env->NewStringUTF(response.c_str());
     }
-    catch (std::runtime_error& error) {
+    catch (std::runtime_error &error) {
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
         return nullptr;
     }
@@ -98,9 +104,9 @@ Java_io_shubham0204_smollm_SmolLM_completionLoop(
 extern "C"
 JNIEXPORT void JNICALL
 Java_io_shubham0204_smollm_SmolLM_stopCompletion(
-    JNIEnv *env,
-    jobject thiz,
-    jlong modelPtr
+        JNIEnv *env,
+        jobject thiz,
+        jlong modelPtr
 ) {
     LLMInference *llmInference = reinterpret_cast<LLMInference *>(modelPtr);
     llmInference->stopCompletion();

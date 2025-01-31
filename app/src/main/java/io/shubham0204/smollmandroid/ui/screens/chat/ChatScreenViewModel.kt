@@ -29,6 +29,7 @@ import io.noties.markwon.Markwon
 import io.noties.markwon.core.CorePlugin
 import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.ext.latex.JLatexMathPlugin
+import io.noties.markwon.html.HtmlPlugin
 import io.noties.markwon.inlineparser.MarkwonInlineParserPlugin
 import io.noties.markwon.linkify.LinkifyPlugin
 import io.noties.markwon.syntax.Prism4jThemeDarkula
@@ -58,7 +59,7 @@ import org.koin.android.annotation.KoinViewModel
 import java.util.Date
 import kotlin.time.measureTime
 
-const val LOGTAG = "[SmolLMAndroid]"
+const val LOGTAG = "[SmolLMAndroid-Kt]"
 val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 
 @KoinViewModel
@@ -100,6 +101,10 @@ class ChatScreenViewModel(
 
     private var responseGenerationJob: Job? = null
     private val smolLM = SmolLM()
+
+    // regex to replace <think> tags with <blockquote>
+    // to render them correctly in Markdown
+    private val findThinkTagRegex = Regex("<think>(.*?)</think>")
     var responseGenerationsSpeed: Float? = null
     var responseGenerationTimeSecs: Int? = null
     val markwon: Markwon
@@ -122,6 +127,7 @@ class ChatScreenViewModel(
                         },
                     ),
                 ).usePlugin(LinkifyPlugin.create(Linkify.WEB_URLS))
+                .usePlugin(HtmlPlugin.create())
                 .usePlugin(
                     object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
@@ -183,7 +189,17 @@ class ChatScreenViewModel(
                                     _partialResponse.value += it
                                 }
                             }
+                        // Replace <think> tags with <blockquote> tags
+                        // to get a neat Markdown rendering
+                        _partialResponse.value =
+                            findThinkTagRegex.replace(_partialResponse.value) { matchResult ->
+                                "<blockquote>${matchResult.groupValues[1]}</blockquote>"
+                            }
+                        // once the response is generated
+                        // add to the messages database
+                        // and update the context length used for the current chat
                         messagesDB.addAssistantMessage(chat.id, _partialResponse.value)
+                        chatsDB.updateChat(chat.copy(contextSizeConsumed = smolLM.getContextLengthUsed()))
                         withContext(Dispatchers.Main) {
                             _isGeneratingResponse.value = false
                             responseGenerationsSpeed = smolLM.getResponseGenerationSpeed()
@@ -234,7 +250,6 @@ class ChatScreenViewModel(
         modelsRepository.deleteModel(modelId)
         if (_currChatState.value?.llmModelId == modelId) {
             _currChatState.value = _currChatState.value?.copy(llmModelId = -1)
-            smolLM.close()
         }
     }
 
@@ -244,6 +259,8 @@ class ChatScreenViewModel(
      * read the system prompt and user messages from the database and add them to the model.
      */
     fun loadModel() {
+        // clear resources occupied by the previous model
+        smolLM.close()
         _currChatState.value?.let { chat ->
             if (chat.llmModelId == -1L) {
                 _showSelectModelListDialogState.value = true
@@ -253,8 +270,13 @@ class ChatScreenViewModel(
                     _modelLoadState.value = ModelLoadingState.IN_PROGRESS
                     CoroutineScope(Dispatchers.Default).launch {
                         try {
-                            smolLM.close()
-                            smolLM.create(model.path, chat.minP, chat.temperature, !chat.isTask)
+                            smolLM.create(
+                                model.path,
+                                chat.minP,
+                                chat.temperature,
+                                !chat.isTask,
+                                chat.contextSize.toLong(),
+                            )
                             LOGD("Model loaded")
                             if (chat.systemPrompt.isNotEmpty()) {
                                 smolLM.addSystemPrompt(chat.systemPrompt)
@@ -294,6 +316,19 @@ class ChatScreenViewModel(
     override fun onCleared() {
         super.onCleared()
         smolLM.close()
+    }
+
+    fun showContextLengthUsageDialog() {
+        _currChatState.value?.let { chat ->
+            createAlertDialog(
+                dialogTitle = "Context Length Usage",
+                dialogText = "You have consumed ${chat.contextSizeConsumed} tokens out of available ${chat.contextSize} tokens.",
+                dialogPositiveButtonText = "Close",
+                onPositiveButtonClick = {},
+                dialogNegativeButtonText = null,
+                onNegativeButtonClick = null,
+            )
+        }
     }
 
     fun showSelectModelListDialog() {

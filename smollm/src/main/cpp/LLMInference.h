@@ -32,15 +32,20 @@ class LLMInference {
     int64_t _responseGenerationTime = 0;
     long _responseNumTokens = 0;
 
+    // length of context window consumed during the conversation
+    int _nCtxUsed = 0;
+
     bool _isValidUtf8(const char *response);
 
 public:
 
-    void loadModel(const char *model_path, float min_p, float temperature, bool store_chats);
+    void loadModel(const char *modelPath, float minP, float temperature, bool storeChats, long contextSize);
 
     void addChatMessage(const char *message, const char *role);
 
-    float getResponseGenerationTime();
+    float getResponseGenerationTime() const;
+
+    int getContextSizeUsed() const;
 
     void startCompletion(const char *query);
 

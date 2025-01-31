@@ -16,6 +16,8 @@
 
 package io.shubham0204.smollmandroid.data
 
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import io.objectbox.kotlin.flow
 import io.shubham0204.smollmandroid.ui.screens.chat.LOGD
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +26,21 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import org.koin.core.annotation.Single
 import java.util.Date
+
+@Entity
+data class Chat(
+    @Id var id: Long = 0,
+    var name: String = "",
+    var systemPrompt: String = "",
+    var dateCreated: Date = Date(),
+    var dateUsed: Date = Date(),
+    var llmModelId: Long = -1L,
+    var minP: Float = 0.05f,
+    var temperature: Float = 1.0f,
+    var isTask: Boolean = false,
+    var contextSize: Int = 0,
+    var contextSizeConsumed: Int = 0,
+)
 
 @Single
 class ChatsDB {
@@ -64,20 +81,29 @@ class ChatsDB {
             .build()
             .findFirst()
 
+    /**
+     * Adds a new chat to the database initialized with given
+     * arguments and returns the new Chat object
+     */
     fun addChat(
         chatName: String,
         systemPrompt: String = "You are a helpful assistant.",
         llmModelId: Long = -1,
-    ): Long =
-        chatsBox.put(
+        isTask: Boolean = false,
+    ): Chat {
+        val newChat =
             Chat(
                 name = chatName,
                 systemPrompt = systemPrompt,
                 dateCreated = Date(),
                 dateUsed = Date(),
                 llmModelId = llmModelId,
-            ),
-        )
+                contextSize = 2048,
+                isTask = isTask,
+            )
+        val newChatId = chatsBox.put(newChat)
+        return newChat.copy(id = newChatId)
+    }
 
     /** Update the chat in the database. ObjectBox overwrites the entry if it already exists. */
     fun updateChat(modifiedChat: Chat) {

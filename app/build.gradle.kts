@@ -1,5 +1,3 @@
-import java.lang.System
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -104,6 +102,7 @@ dependencies {
     implementation("io.noties.markwon:ext-tables:4.6.2")
     implementation("io.noties.markwon:ext-tasklist:4.6.2")
     implementation("io.noties.markwon:linkify:4.6.2")
+    implementation("io.noties.markwon:html:4.6.2")
     implementation("io.noties.markwon:syntax-highlight:4.6.2")
     implementation("io.noties:prism4j:2.0.0")
     annotationProcessor("io.noties:prism4j-bundler:2.0.0")

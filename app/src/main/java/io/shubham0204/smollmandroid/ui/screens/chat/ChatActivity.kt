@@ -270,9 +270,9 @@ private fun ColumnScope.MessagesList(
     LazyColumn(
         state = listState,
         modifier =
-        Modifier
-            .fillMaxSize()
-            .weight(1f),
+            Modifier
+                .fillMaxSize()
+                .weight(1f),
     ) {
         itemsIndexed(messages) { i, chatMessage ->
             MessageListItem(
@@ -596,21 +596,14 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                             it.copy(modelName = modelName)
                         },
                         onTaskSelected = { task ->
-                            val newChatId =
+                            val newTask =
                                 viewModel.chatsDB.addChat(
                                     chatName = task.name,
                                     systemPrompt = task.systemPrompt,
                                     llmModelId = task.modelId,
-                                )
-                            viewModel.switchChat(
-                                Chat(
-                                    id = newChatId,
-                                    name = task.name,
-                                    systemPrompt = task.systemPrompt,
-                                    llmModelId = task.modelId,
                                     isTask = true,
-                                ),
-                            )
+                                )
+                            viewModel.switchChat(newTask)
                             viewModel.showTaskListBottomList()
                         },
                         onEditTaskClick = { // Not applicable as showTaskOptions is set to `false`

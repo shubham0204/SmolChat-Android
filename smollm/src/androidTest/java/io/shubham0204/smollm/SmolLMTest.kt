@@ -36,7 +36,7 @@ class SmolLMTest {
     @Before
     fun setup() =
         runTest {
-            val isModelLoaded = smolLM.create(modelPath, minP, temperature, storeChats = true)
+            val isModelLoaded = smolLM.create(modelPath, minP, temperature, storeChats = true, contextSize = 0)
             smolLM.addSystemPrompt(systemPrompt)
             assert(isModelLoaded)
         }
@@ -57,6 +57,15 @@ class SmolLMTest {
             val speedAfterPrediction = smolLM.getResponseGenerationSpeed().toInt()
             assert(speedBeforePrediction == 0)
             assert(speedAfterPrediction > 0)
+        }
+
+    @Test
+    fun getContextSize_works() =
+        runTest {
+            val ggufReader = GGUFReader()
+            ggufReader.load(modelPath)
+            val contextSize = ggufReader.getContextSize()
+            assert(contextSize == 8192L)
         }
 
     @After

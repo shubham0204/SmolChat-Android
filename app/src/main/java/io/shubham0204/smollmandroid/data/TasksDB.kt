@@ -16,12 +16,23 @@
 
 package io.shubham0204.smollmandroid.data
 
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import io.objectbox.kotlin.flow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import org.koin.core.annotation.Single
+
+@Entity
+data class Task(
+    @Id var id: Long = 0,
+    var name: String = "",
+    var systemPrompt: String = "",
+    var modelId: Long = -1,
+    @Transient var modelName: String = "",
+)
 
 @Single
 class TasksDB {

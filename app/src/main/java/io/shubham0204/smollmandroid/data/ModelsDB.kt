@@ -16,11 +16,22 @@
 
 package io.shubham0204.smollmandroid.data
 
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import io.objectbox.kotlin.flow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import org.koin.core.annotation.Single
+
+@Entity
+data class LLMModel(
+    @Id var id: Long = 0,
+    var name: String = "",
+    var url: String = "",
+    var path: String = "",
+    var contextSize: Int = 0,
+)
 
 @Single
 class ModelsDB {
@@ -30,8 +41,9 @@ class ModelsDB {
         name: String,
         url: String,
         path: String,
+        contextSize: Int,
     ) {
-        modelsBox.put(LLMModel(name = name, url = url, path = path))
+        modelsBox.put(LLMModel(name = name, url = url, path = path, contextSize = contextSize))
     }
 
     fun getModel(id: Long): LLMModel? = modelsBox.get(id)

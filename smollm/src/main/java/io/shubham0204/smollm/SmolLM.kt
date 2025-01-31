@@ -25,12 +25,18 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
 
+/**
+ * This class interacts with the JNI binding and provides a Kotlin API
+ * to infer a GGUF LLM model
+ */
 class SmolLM {
     companion object {
         init {
             val logTag = SmolLM::class.java.simpleName
-            val cpuFeatures = getCPUFeatures()
 
+            // check if the following CPU features are available,
+            // and load the native library accordingly
+            val cpuFeatures = getCPUFeatures()
             val hasFp16 = cpuFeatures.contains("fp16") || cpuFeatures.contains("fphp")
             val hasDotProd = cpuFeatures.contains("dotprod") || cpuFeatures.contains("asimddp")
             val hasSve = cpuFeatures.contains("sve")
@@ -76,6 +82,11 @@ class SmolLM {
             }
         }
 
+        /**
+         * Reads the /proc/cpuinfo file and returns the line
+         * starting with 'Features :' that containing the available
+         * CPU features
+         */
         private fun getCPUFeatures(): String {
             val cpuInfo =
                 try {
@@ -102,35 +113,63 @@ class SmolLM {
         minP: Float,
         temperature: Float,
         storeChats: Boolean,
+        contextSize: Long,
     ): Boolean =
         withContext(Dispatchers.IO) {
-            nativePtr = loadModel(modelPath, minP, temperature, storeChats)
+            nativePtr = loadModel(modelPath, minP, temperature, storeChats, contextSize)
             return@withContext nativePtr != 0L
         }
 
     fun addUserMessage(message: String) {
-        assert(nativePtr != 0L) { "Model is not loaded. Use SmolLM.create to load the model" }
+        verifyHandle()
         addChatMessage(nativePtr, message, "user")
     }
 
+    /**
+     * Adds the system prompt for the LLM
+     */
     fun addSystemPrompt(prompt: String) {
-        assert(nativePtr != 0L) { "Model is not loaded. Use SmolLM.create to load the model" }
+        verifyHandle()
         addChatMessage(nativePtr, prompt, "system")
     }
 
+    /**
+     * Adds the assistant message for LLM inference
+     * An assistant message is the response given by the LLM
+     * for a previous query in the conversation
+     */
     fun addAssistantMessage(message: String) {
-        assert(nativePtr != 0L) { "Model is not loaded. Use SmolLM.create to load the model" }
+        verifyHandle()
         addChatMessage(nativePtr, message, "assistant")
     }
 
+    /**
+     * Returns the rate (in tokens per second) at which the
+     * LLM generated its last response via `getResponse()`
+     */
     fun getResponseGenerationSpeed(): Float {
-        assert(nativePtr != 0L) { "Model is not loaded. Use SmolLM.create to load the model" }
+        verifyHandle()
         return getResponseGenerationSpeed(nativePtr)
     }
 
+    /**
+     * Returns the number of tokens consumed by the LLM's context
+     * window
+     * The context of the LLM is roughly the output of,
+     * tokenize(apply_chat_template(messages_in_conversation))
+     */
+    fun getContextLengthUsed(): Int {
+        verifyHandle()
+        return getContextSizeUsed(nativePtr)
+    }
+
+    /**
+     * Return the LLM response to the given query as an
+     * async Flow
+     */
     fun getResponse(query: String): Flow<String> =
         flow {
-            assert(nativePtr != 0L) { "Model is not loaded. Use SmolLM.create to load the model" }
+            verifyHandle()
             startCompletion(nativePtr, query)
             var piece = completionLoop(nativePtr)
             while (piece != "[EOG]") {
@@ -141,7 +180,14 @@ class SmolLM {
         }
 
     fun close() {
-        close(nativePtr)
+        if (nativePtr != 0L) {
+            close(nativePtr)
+            nativePtr = 0L
+        }
+    }
+
+    private fun verifyHandle() {
+        assert(nativePtr != 0L) { "Model is not loaded. Use SmolLM.create to load the model" }
     }
 
     private external fun loadModel(
@@ -149,6 +195,7 @@ class SmolLM {
         minP: Float,
         temperature: Float,
         storeChats: Boolean,
+        contextSize: Long,
     ): Long
 
     private external fun addChatMessage(
@@ -158,6 +205,8 @@ class SmolLM {
     )
 
     private external fun getResponseGenerationSpeed(modelPtr: Long): Float
+
+    private external fun getContextSizeUsed(modelPtr: Long): Int
 
     private external fun close(modelPtr: Long)
 

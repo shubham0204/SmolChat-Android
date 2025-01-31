@@ -1,15 +1,29 @@
 #include "LLMInference.h"
+#include "gguf.h"
 #include "common.h"
 #include <cstring>
 #include <iostream>
 #include <android/log.h>
 
-#define TAG "llama-android.cpp"
+#define TAG "[SmolLMAndroid-Cpp]"
 #define LOGi(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define LOGe(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
 
-void LLMInference::loadModel(const char *model_path, float min_p, float temperature, bool store_chats) {
+void LLMInference::loadModel(
+        const char *model_path,
+        float minP,
+        float temperature,
+        bool storeChats,
+        long contextSize
+) {
+    LOGi("loading model with"
+         "\n\tmodel_path = %s"
+         "\n\tminP = %f"
+         "\n\ttemperature = %f"
+         "\n\tstoreChats = %d"
+         "\n\tcontextSize = %li", model_path, minP, temperature, storeChats, contextSize);
+
     // create an instance of llama_model
     llama_model_params model_params = llama_model_default_params();
     _model = llama_model_load_from_file(model_path, model_params);
@@ -21,7 +35,7 @@ void LLMInference::loadModel(const char *model_path, float min_p, float temperat
 
     // create an instance of llama_context
     llama_context_params ctx_params = llama_context_default_params();
-    ctx_params.n_ctx = 0;               // take context size from the model GGUF file
+    ctx_params.n_ctx = contextSize;
     ctx_params.no_perf = true;          // disable performance metrics
     _ctx = llama_init_from_model(_model, ctx_params);
 
@@ -34,21 +48,25 @@ void LLMInference::loadModel(const char *model_path, float min_p, float temperat
     llama_sampler_chain_params sampler_params = llama_sampler_chain_default_params();
     sampler_params.no_perf = true;      // disable performance metrics
     _sampler = llama_sampler_chain_init(sampler_params);
-    llama_sampler_chain_add(_sampler, llama_sampler_init_min_p(min_p, 1));
+    llama_sampler_chain_add(_sampler, llama_sampler_init_min_p(minP, 1));
     llama_sampler_chain_add(_sampler, llama_sampler_init_temp(temperature));
     llama_sampler_chain_add(_sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
 
     _formattedMessages = std::vector<char>(llama_n_ctx(_ctx));
     _messages.clear();
-    this->_storeChats = store_chats;
+    this->_storeChats = storeChats;
 }
 
 void LLMInference::addChatMessage(const char *message, const char *role) {
     _messages.push_back({strdup(role), strdup(message)});
 }
 
-float LLMInference::getResponseGenerationTime() {
+float LLMInference::getResponseGenerationTime() const {
     return (float) _responseNumTokens / (_responseGenerationTime / 1e6);
+}
+
+int LLMInference::getContextSizeUsed() const {
+    return _nCtxUsed;
 }
 
 void LLMInference::startCompletion(const char *query) {
@@ -128,11 +146,10 @@ bool LLMInference::_isValidUtf8(const char *response) {
 std::string LLMInference::completionLoop() {
     // check if the length of the inputs to the model
     // have exceeded the context size of the model
-    int context_size = llama_n_ctx(_ctx);
-    int n_ctx_used = llama_get_kv_cache_used_cells(_ctx);
-    if (n_ctx_used + _batch.n_tokens > context_size) {
-        std::cerr << "context size exceeded" << '\n';
-        exit(0);
+    uint32_t contextSize = llama_n_ctx(_ctx);
+    _nCtxUsed = llama_get_kv_cache_used_cells(_ctx);
+    if (_nCtxUsed + _batch.n_tokens > contextSize) {
+        throw std::runtime_error("context size reached");
     }
 
     auto start = ggml_time_us();
@@ -150,6 +167,7 @@ std::string LLMInference::completionLoop() {
         return "[EOG]";
     }
     std::string piece = common_token_to_piece(_ctx, _currToken, true);
+    LOGi("common_token_to_piece: %s", piece.c_str());
     auto end = ggml_time_us();
     _responseGenerationTime += (end - start);
     _responseNumTokens += 1;
@@ -193,13 +211,13 @@ void LLMInference::stopCompletion() {
 
 
 LLMInference::~LLMInference() {
+    LOGi("deallocating LLMInference instance");
     // free memory held by the message text in messages
     // (as we had used strdup() to create a malloc'ed copy)
     for (llama_chat_message &message: _messages) {
-        delete message.content;
+        free(const_cast<char *>(message.role));
+        free(const_cast<char *>(message.content));
     }
-    llama_kv_cache_clear(_ctx);
-    llama_sampler_free(_sampler);
-    llama_free(_ctx);
     llama_model_free(_model);
+    llama_free(_ctx);
 }

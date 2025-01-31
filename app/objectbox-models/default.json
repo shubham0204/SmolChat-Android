@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:2836016800019494484",
-      "lastPropertyId": "9:6835412512220277382",
+      "lastPropertyId": "11:2362849161259116908",
       "name": "Chat",
       "properties": [
         {
@@ -53,6 +53,16 @@
           "id": "9:6835412512220277382",
           "name": "isTask",
           "type": 1
+        },
+        {
+          "id": "10:4704677617973091603",
+          "name": "contextSize",
+          "type": 5
+        },
+        {
+          "id": "11:2362849161259116908",
+          "name": "contextSizeConsumed",
+          "type": 5
         }
       ],
       "relations": []
@@ -88,7 +98,7 @@
     },
     {
       "id": "3:3976296884919346124",
-      "lastPropertyId": "4:7450064126351985275",
+      "lastPropertyId": "5:5106603935737186708",
       "name": "LLMModel",
       "properties": [
         {
@@ -111,6 +121,11 @@
           "id": "4:7450064126351985275",
           "name": "path",
           "type": 9
+        },
+        {
+          "id": "5:5106603935737186708",
+          "name": "contextSize",
+          "type": 5
         }
       ],
       "relations": []

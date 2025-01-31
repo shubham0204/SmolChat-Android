@@ -18,6 +18,7 @@ package io.shubham0204.smollmandroid.ui.screens.chat
 
 import android.widget.Toast
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ShortText
 import androidx.compose.material.icons.filled.Assistant
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
@@ -54,6 +55,14 @@ fun ChatMoreOptionsPopup(
             text = { Text("Change Model", fontFamily = AppFontFamily) },
             onClick = {
                 viewModel.showSelectModelListDialog()
+                viewModel.hideMoreOptionsPopup()
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.AutoMirrored.Filled.ShortText, contentDescription = "Context Usage") },
+            text = { Text("Context Length Usage", fontFamily = AppFontFamily) },
+            onClick = {
+                viewModel.showContextLengthUsageDialog()
                 viewModel.hideMoreOptionsPopup()
             },
         )

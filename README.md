@@ -64,11 +64,11 @@ git submodule update --init --recursive
 
 3. The `app` module contains the application logic and UI code. Whenever a new chat is opened, the app instantiates 
    the `SmolLM` class and provides it the model file-path which is stored by the [`LLMModel`](https://github.com/shubham0204/SmolChat-Android/blob/main/app/src/main/java/io/shubham0204/smollmandroid/data/DataModels.kt) entity in the ObjectBox.
-   Next, the app adds messages with role `user` and `system` to the chat by retrieving them from the database and 
-   using `LLMInference::add_chat_message`.
+   Next, the app adds messages with role `user` and `system` to the chat by retrieving them from the database and
+   using `LLMInference::addChatMessage`.
 
-4. For tasks, the messages are not persisted, and we inform to `LLMInference` by passing `store_chats=false` to 
-   `LLMInference::load_model`.
+4. For tasks, the messages are not persisted, and we inform to `LLMInference` by passing `_storeChats=false` to
+   `LLMInference::loadModel`.
 
 ## Technologies
 
