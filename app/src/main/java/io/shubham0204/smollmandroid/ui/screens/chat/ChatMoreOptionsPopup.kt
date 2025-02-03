@@ -50,7 +50,7 @@ fun ChatMoreOptionsPopup(
             text = {
                 Text(
                     stringResource(R.string.edit_chat_settings),
-                    fontFamily = AppFontFamily
+                    fontFamily = AppFontFamily,
                 )
             },
             onClick = {
@@ -70,13 +70,13 @@ fun ChatMoreOptionsPopup(
             leadingIcon = {
                 Icon(
                     Icons.AutoMirrored.Filled.ShortText,
-                    contentDescription = "Context Usage"
+                    contentDescription = "Context Usage",
                 )
             },
             text = {
                 Text(
                     stringResource(R.string.context_length_usage),
-                    fontFamily = AppFontFamily
+                    fontFamily = AppFontFamily,
                 )
             },
             onClick = {
@@ -88,13 +88,13 @@ fun ChatMoreOptionsPopup(
             leadingIcon = {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = context.getString(R.string.delete_chat)
+                    contentDescription = context.getString(R.string.delete_chat),
                 )
             },
             text = {
                 Text(
                     context.getString(R.string.delete_chat),
-                    fontFamily = AppFontFamily
+                    fontFamily = AppFontFamily,
                 )
             },
             onClick = {
@@ -106,17 +106,18 @@ fun ChatMoreOptionsPopup(
                         dialogNegativeButtonText = context.getString(R.string.cancel),
                         onPositiveButtonClick = {
                             viewModel.deleteChat(chat)
-                            Toast.makeText(
-                                viewModel.context,
-                                context.getString(R.string.chat_deleted, chat.name),
-                                Toast.LENGTH_LONG
-                            ).show()
+                            Toast
+                                .makeText(
+                                    viewModel.context,
+                                    context.getString(R.string.chat_deleted, chat.name),
+                                    Toast.LENGTH_LONG,
+                                ).show()
                         },
-                        onNegativeButtonClick = {}
+                        onNegativeButtonClick = {},
                     )
                 }
                 viewModel.hideMoreOptionsPopup()
-            }
+            },
         )
     }
 }

@@ -4,7 +4,7 @@ plugins {
     kotlin("plugin.serialization") version "2.1.0"
 }
 
-val ktorVersion = "3.0.3"
+val ktorVersion = "3.0.2"
 val kotlinSerializationVersion = "1.7.3"
 
 dependencies {
@@ -12,7 +12,7 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     testImplementation(kotlin("test"))
 }
 

@@ -328,7 +328,7 @@ private fun ColumnScope.MessagesList(
                         Text(
                             text = "Thinking ...",
                             modifier =
-                            Modifier
+                                Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp),
                             fontFamily = AppFontFamily,
@@ -354,9 +354,9 @@ private fun LazyItemScope.MessageListItem(
     if (!isUserMessage) {
         Row(
             modifier =
-            modifier
-                .fillMaxWidth()
-                .animateItem(),
+                modifier
+                    .fillMaxWidth()
+                    .animateItem(),
         ) {
             Column {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -372,11 +372,11 @@ private fun LazyItemScope.MessageListItem(
                     // to make pointerInput work in MarkdownText use disableLinkMovementMethod
                     // https://github.com/jeziellago/compose-markdown/issues/85#issuecomment-2184040304
                     modifier =
-                    Modifier
-                        .padding(4.dp)
-                        .background(Color.Transparent)
-                        .padding(4.dp)
-                        .fillMaxSize(),
+                        Modifier
+                            .padding(4.dp)
+                            .background(Color.Transparent)
+                            .padding(4.dp)
+                            .fillMaxSize(),
                     textColor = android.graphics.Color.BLACK,
                     textSize = 16f,
                     message = messageStr,
@@ -400,10 +400,10 @@ private fun LazyItemScope.MessageListItem(
                         Spacer(modifier = Modifier.width(6.dp))
                         Box(
                             modifier =
-                            Modifier
-                                .size(2.dp)
-                                .clip(CircleShape)
-                                .background(Color.DarkGray),
+                                Modifier
+                                    .size(2.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.DarkGray),
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
@@ -414,10 +414,10 @@ private fun LazyItemScope.MessageListItem(
                         Spacer(modifier = Modifier.width(6.dp))
                         Box(
                             modifier =
-                            Modifier
-                                .size(2.dp)
-                                .clip(CircleShape)
-                                .background(Color.DarkGray),
+                                Modifier
+                                    .size(2.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.DarkGray),
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
@@ -432,18 +432,18 @@ private fun LazyItemScope.MessageListItem(
     } else {
         Row(
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .animateItem(),
+                Modifier
+                    .fillMaxWidth()
+                    .animateItem(),
             horizontalArrangement = Arrangement.End,
         ) {
             ChatMessageText(
                 modifier =
-                Modifier
-                    .padding(8.dp)
-                    .background(AppAccentColor, RoundedCornerShape(16.dp))
-                    .padding(8.dp)
-                    .widthIn(max = 250.dp),
+                    Modifier
+                        .padding(8.dp)
+                        .background(AppAccentColor, RoundedCornerShape(16.dp))
+                        .padding(8.dp)
+                        .widthIn(max = 250.dp),
                 textColor = android.graphics.Color.WHITE,
                 textSize = 16f,
                 message = messageStr,
@@ -481,7 +481,7 @@ private fun MessageInput(
                 ChatScreenViewModel.ModelLoadingState.FAILURE -> {
                     Text(
                         modifier = Modifier.padding(8.dp),
-                        text =stringResource(R.string.model_load_failure),
+                        text = stringResource(R.string.model_load_failure),
                         fontFamily = AppFontFamily,
                     )
                 }
@@ -489,27 +489,27 @@ private fun MessageInput(
                 ChatScreenViewModel.ModelLoadingState.SUCCESS -> {
                     TextField(
                         modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
                         value = questionText,
                         onValueChange = { questionText = it },
                         shape = RoundedCornerShape(16.dp),
                         colors =
-                        TextFieldDefaults.colors(
-                            focusedTextColor = Color.Black,
-                            disabledTextColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                        ),
+                            TextFieldDefaults.colors(
+                                focusedTextColor = Color.Black,
+                                disabledTextColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                            ),
                         placeholder = {
                             Text(
                                 text = stringResource(R.string.ask_question),
                             )
                         },
                         keyboardOptions =
-                        KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+                            KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     if (isGeneratingResponse) {
@@ -558,10 +558,10 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
         ) {
             Column(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .background(Color.White, RoundedCornerShape(8.dp))
-                    .padding(8.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
@@ -626,7 +626,7 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
     val showSelectModelsListDialog by viewModel.showSelectModelListDialogState.collectAsStateWithLifecycle()
     if (showSelectModelsListDialog) {
         val modelsList by
-        viewModel.modelsRepository.getAvailableModels().collectAsState(emptyList())
+            viewModel.modelsRepository.getAvailableModels().collectAsState(emptyList())
         SelectModelsList(
             onDismissRequest = { viewModel.hideSelectModelListDialog() },
             modelsList,

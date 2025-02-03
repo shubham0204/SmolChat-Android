@@ -128,54 +128,54 @@ fun EditChatSettingsScreen(
             ) { paddingValues ->
                 Column(
                     modifier =
-                    Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .padding(paddingValues)
-                        .verticalScroll(rememberScrollState()),
+                        Modifier
+                            .background(MaterialTheme.colorScheme.background)
+                            .fillMaxSize()
+                            .padding(16.dp)
+                            .padding(paddingValues)
+                            .verticalScroll(rememberScrollState()),
                 ) {
                     TextField(
                         colors =
-                        TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                        ),
+                            TextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                            ),
                         modifier = Modifier.fillMaxWidth(),
                         value = chatName,
                         onValueChange = { chatName = it },
                         label = { Text(stringResource(R.string.chat_name), fontFamily = AppFontFamily) },
                         textStyle = TextStyle(fontFamily = AppFontFamily),
                         keyboardOptions =
-                        KeyboardOptions.Default.copy(
-                            capitalization = KeyboardCapitalization.Words,
-                        ),
+                            KeyboardOptions.Default.copy(
+                                capitalization = KeyboardCapitalization.Words,
+                            ),
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     TextField(
                         colors =
-                        TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                        ),
+                            TextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                            ),
                         modifier = Modifier.fillMaxWidth(),
                         value = systemPrompt,
                         onValueChange = { systemPrompt = it },
                         label = { Text(stringResource(R.string.system_prompt), fontFamily = AppFontFamily) },
                         textStyle = TextStyle(fontFamily = AppFontFamily),
                         keyboardOptions =
-                        KeyboardOptions.Default.copy(
-                            capitalization = KeyboardCapitalization.Sentences,
-                        ),
+                            KeyboardOptions.Default.copy(
+                                capitalization = KeyboardCapitalization.Sentences,
+                            ),
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (chat.isTask) {
                         SmallLabelText(
-                            stringResource(R.string.task_update_note)
+                            stringResource(R.string.task_update_note),
                         )
                     }
 
@@ -242,22 +242,22 @@ fun EditChatSettingsScreen(
                     TextField(
                         enabled = !takeContextSizeFromModel,
                         colors =
-                        TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                        ),
+                            TextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                            ),
                         modifier = Modifier.fillMaxWidth(),
                         value =
-                        if (takeContextSizeFromModel) {
-                            if (llmModel != null) {
-                                contextSize = llmModel.contextSize
-                                contextSize.toString()
+                            if (takeContextSizeFromModel) {
+                                if (llmModel != null) {
+                                    contextSize = llmModel.contextSize
+                                    contextSize.toString()
+                                } else {
+                                    stringResource(R.string.error_load_model)
+                                }
                             } else {
-                                stringResource(R.string.error_load_model)
-                            }
-                        } else {
-                            contextSize.toString()
-                        },
+                                contextSize.toString()
+                            },
                         onValueChange = {
                             contextSize =
                                 if (it.isNotEmpty()) {
@@ -280,10 +280,10 @@ fun EditChatSettingsScreen(
                         },
                         textStyle = TextStyle(fontFamily = AppFontFamily),
                         keyboardOptions =
-                        KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number,
-                            capitalization = KeyboardCapitalization.Sentences,
-                        ),
+                            KeyboardOptions.Default.copy(
+                                keyboardType = KeyboardType.Number,
+                                capitalization = KeyboardCapitalization.Sentences,
+                            ),
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
