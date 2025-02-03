@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">SmolChat</string>
+    <string name="select_a_chat">选择一个聊天</string>
+    <string name="message_copied">消息已复制</string>
+    <string name="ask_question">问个问题</string>
+    <string name="loading_model">正在加载模型…</string>
+    <string name="model_load_failure">为该聊天选择的模型无法加载</string>
+    <string name="no_tasks_created">未创建任何任务</string>
+    <string name="create_task">创建一个任务</string>
+    <string name="select_task">选择一个任务</string>
+    <string name="model_deleted">模型 \'%1$s\' 已删除</string>
+    <string name="edit_chat_settings">编辑聊天设置</string>
+    <string name="navigate_back">返回</string>
+    <string name="save_settings">保存设置</string>
+    <string name="new_settings_applied">新设置已应用到该聊天。</string>
+    <string name="chat_name">聊天名称</string>
+    <string name="system_prompt">系统提示语</string>
+    <string name="task_update_note">对名称和系统提示语的更新仅会反映在聊天中，不会影响任务。</string>
+    <string name="min_p_label">最小概率（min - p）</string>
+    <string name="min_p_description">最小概率（minP）是一种采样技术，在大语言模型推理过程中，它会限制词汇选择，确保只考虑概率超过 minP 阈值的词元，从而使输出更聚焦、随机性更小。</string>
+    <string name="temperature_label">温度</string>
+    <string name="temperature_description">温度是一个控制大语言模型输出随机性和创造性的参数。较低的温度会产生更确定、聚焦的回复，而较高的温度会带来更多样化和有创意的输出。</string>
+    <string name="context_size_label">上下文大小</string>
+    <string name="context_size_description">大语言模型（LLM）的上下文长度是指它在单个输入或输出序列中能够处理的最大词元（单词或子单词）数量。更大的上下文大小需要更多的内存。</string>
+    <string name="context_size_error">上下文大小至少应为 200 个词元</string>
+    <string name="context_size_from_model">上下文大小取自模型</string>
+    <string name="no_of_tokens">词元数量</string>
+    <string name="take_from_gguf_model">从 GGUF 模型获取</string>
+    <string name="error_load_model">错误：无法为该聊天加载大语言模型</string>
+    <string name="context_length_usage">上下文长度使用</string>
+    <string name="change_model">更换模型</string>
+    <string name="delete_chat">删除聊天</string>
+    <string name="delete_chat_dialog_text">你确定要删除聊天 \'%1$s\' 吗？</string>
+    <string name="delete">删除</string>
+    <string name="cancel">取消</string>
+    <string name="chat_deleted">聊天 \'%1$s\' 已删除</string>
+</resources>

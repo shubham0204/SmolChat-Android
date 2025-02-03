@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".SmolChatApplication"
@@ -24,9 +24,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.screens.chat.ChatActivity"/>
-        <activity android:name=".ui.screens.model_download.DownloadModelActivity"/>
-        <activity android:name=".ui.screens.manage_tasks.ManageTasksActivity"/>
+        <activity
+            android:name=".ui.screens.chat.ChatActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.screens.model_download.DownloadModelActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.screens.manage_tasks.ManageTasksActivity"
+            android:exported="true" />
     </application>
 
 </manifest>

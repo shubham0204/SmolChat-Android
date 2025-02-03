@@ -53,11 +53,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.SmallLabelText
 import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
@@ -83,12 +85,12 @@ fun EditChatSettingsScreen(
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { AppBarTitleText("Edit Chat Settings") },
+                        title = { AppBarTitleText(stringResource(R.string.edit_chat_settings)) },
                         navigationIcon = {
                             IconButton(onClick = { onBackClicked() }) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Navigate Back",
+                                    contentDescription = stringResource(R.string.navigate_back),
                                 )
                             }
                         },
@@ -108,7 +110,7 @@ fun EditChatSettingsScreen(
                                         Toast
                                             .makeText(
                                                 context,
-                                                "New settings have been applied to the chat.",
+                                                context.getString(R.string.new_settings_applied),
                                                 Toast.LENGTH_LONG,
                                             ).show()
                                     }
@@ -117,7 +119,7 @@ fun EditChatSettingsScreen(
                             ) {
                                 Icon(
                                     Icons.Default.Done,
-                                    contentDescription = "Save settings",
+                                    contentDescription = stringResource(R.string.save_settings),
                                 )
                             }
                         },
@@ -126,46 +128,46 @@ fun EditChatSettingsScreen(
             ) { paddingValues ->
                 Column(
                     modifier =
-                        Modifier
-                            .background(MaterialTheme.colorScheme.background)
-                            .fillMaxSize()
-                            .padding(16.dp)
-                            .padding(paddingValues)
-                            .verticalScroll(rememberScrollState()),
+                    Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .padding(paddingValues)
+                        .verticalScroll(rememberScrollState()),
                 ) {
                     TextField(
                         colors =
-                            TextFieldDefaults.colors(
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
-                            ),
+                        TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                        ),
                         modifier = Modifier.fillMaxWidth(),
                         value = chatName,
                         onValueChange = { chatName = it },
-                        label = { Text("Chat Name", fontFamily = AppFontFamily) },
+                        label = { Text(stringResource(R.string.chat_name), fontFamily = AppFontFamily) },
                         textStyle = TextStyle(fontFamily = AppFontFamily),
                         keyboardOptions =
-                            KeyboardOptions.Default.copy(
-                                capitalization = KeyboardCapitalization.Words,
-                            ),
+                        KeyboardOptions.Default.copy(
+                            capitalization = KeyboardCapitalization.Words,
+                        ),
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     TextField(
                         colors =
-                            TextFieldDefaults.colors(
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
+                        TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         value = systemPrompt,
                         onValueChange = { systemPrompt = it },
-                        label = { Text("System Prompt", fontFamily = AppFontFamily) },
+                        label = { Text(stringResource(R.string.system_prompt), fontFamily = AppFontFamily) },
                         textStyle = TextStyle(fontFamily = AppFontFamily),
                         keyboardOptions =
-                            KeyboardOptions.Default.copy(
-                                capitalization = KeyboardCapitalization.Sentences,
+                        KeyboardOptions.Default.copy(
+                            capitalization = KeyboardCapitalization.Sentences,
                         ),
                     )
 
@@ -173,21 +175,19 @@ fun EditChatSettingsScreen(
 
                     if (chat.isTask) {
                         SmallLabelText(
-                            "Updates to the name and system prompt will only be reflected in the chat and " +
-                                "not in the task.",
+                            stringResource(R.string.task_update_note)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        "min-p",
+                        stringResource(R.string.min_p_label),
                         style = MaterialTheme.typography.titleMedium,
                         fontFamily = AppFontFamily,
                     )
                     Text(
-                        "minP is a sampling technique that limits the vocabulary choices during LLM inference, ensuring that only " +
-                            "tokens with probabilities exceeding the minP threshold are considered, leading to more focused and less random outputs.",
+                        stringResource(R.string.min_p_description),
                         fontFamily = AppFontFamily,
                         style = MaterialTheme.typography.labelSmall,
                     )
@@ -206,14 +206,12 @@ fun EditChatSettingsScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        "Temperature",
+                        stringResource(R.string.temperature_label),
                         style = MaterialTheme.typography.titleMedium,
                         fontFamily = AppFontFamily,
                     )
                     Text(
-                        "Temperature is a parameter that controls the randomness and creativity of " +
-                            "LLM outputs, with lower temperatures producing more deterministic and focused responses," +
-                            " and higher temperatures leading to more diverse and creative outputs.",
+                        stringResource(R.string.temperature_description),
                         fontFamily = AppFontFamily,
                         style = MaterialTheme.typography.labelSmall,
                     )
@@ -232,36 +230,34 @@ fun EditChatSettingsScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        "Context Size",
+                        stringResource(R.string.context_size_label),
                         style = MaterialTheme.typography.titleMedium,
                         fontFamily = AppFontFamily,
                     )
                     Text(
-                        "The context length of a large language model (LLM) refers to the maximum number of tokens " +
-                            "(words or subwords) it can process in a single input or output sequence. Larger " +
-                            "context sizes need more memory.",
+                        stringResource(R.string.context_size_description),
                         fontFamily = AppFontFamily,
                         style = MaterialTheme.typography.labelSmall,
                     )
                     TextField(
                         enabled = !takeContextSizeFromModel,
                         colors =
-                            TextFieldDefaults.colors(
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
-                            ),
+                        TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                        ),
                         modifier = Modifier.fillMaxWidth(),
                         value =
-                            if (takeContextSizeFromModel) {
-                                if (llmModel != null) {
-                                    contextSize = llmModel.contextSize
-                                    contextSize.toString()
-                                } else {
-                                    "Error: Could not load LLM model for the chat"
-                                }
-                            } else {
+                        if (takeContextSizeFromModel) {
+                            if (llmModel != null) {
+                                contextSize = llmModel.contextSize
                                 contextSize.toString()
-                            },
+                            } else {
+                                stringResource(R.string.error_load_model)
+                            }
+                        } else {
+                            contextSize.toString()
+                        },
                         onValueChange = {
                             contextSize =
                                 if (it.isNotEmpty()) {
@@ -273,28 +269,28 @@ fun EditChatSettingsScreen(
                         isError = contextSize == 0,
                         label = {
                             if (contextSize == 0) {
-                                Text("Context size should be at least 200 tokens")
+                                Text(stringResource(R.string.context_size_error))
                             } else {
                                 if (takeContextSizeFromModel) {
-                                    Text("Context size taken from model")
+                                    Text(stringResource(R.string.context_size_from_model))
                                 } else {
-                                    Text("No. of tokens")
+                                    Text(stringResource(R.string.no_of_tokens))
                                 }
                             }
                         },
                         textStyle = TextStyle(fontFamily = AppFontFamily),
                         keyboardOptions =
-                            KeyboardOptions.Default.copy(
-                                keyboardType = KeyboardType.Number,
-                                capitalization = KeyboardCapitalization.Sentences,
-                            ),
+                        KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            capitalization = KeyboardCapitalization.Sentences,
+                        ),
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = takeContextSizeFromModel,
                             onCheckedChange = { takeContextSizeFromModel = it },
                         )
-                        SmallLabelText("Take from GGUF Model")
+                        SmallLabelText(stringResource(R.string.take_from_gguf_model))
                     }
                 }
             }

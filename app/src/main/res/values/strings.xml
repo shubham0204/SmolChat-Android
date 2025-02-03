@@ -1,3 +1,37 @@
 <resources>
     <string name="app_name">SmolChat</string>
+    <string name="select_a_chat">Select a chat</string>
+    <string name="message_copied">Message copied</string>
+    <string name="ask_question">Ask a question</string>
+    <string name="loading_model">Loading model…</string>
+    <string name="model_load_failure">The model selected for the chat cannot be loaded</string>
+    <string name="no_tasks_created">No tasks created</string>
+    <string name="create_task">Create a task</string>
+    <string name="select_task">Select A Task</string>
+    <string name="model_deleted">Model \'%1$s\' deleted</string>
+    <string name="edit_chat_settings">Edit Chat Settings</string>
+    <string name="navigate_back">Navigate Back</string>
+    <string name="save_settings">Save settings</string>
+    <string name="new_settings_applied">New settings have been applied to the chat.</string>
+    <string name="chat_name">Chat Name</string>
+    <string name="system_prompt">System Prompt</string>
+    <string name="task_update_note">Updates to the name and system prompt will only be reflected in the chat and not in the task.</string>
+    <string name="min_p_label">min-p</string>
+    <string name="min_p_description">minP is a sampling technique that limits the vocabulary choices during LLM inference, ensuring that only tokens with probabilities exceeding the minP threshold are considered, leading to more focused and less random outputs.</string>
+    <string name="temperature_label">Temperature</string>
+    <string name="temperature_description">Temperature is a parameter that controls the randomness and creativity of LLM outputs, with lower temperatures producing more deterministic and focused responses, and higher temperatures leading to more diverse and creative outputs.</string>
+    <string name="context_size_label">Context Size</string>
+    <string name="context_size_description">The context length of a large language model (LLM) refers to the maximum number of tokens (words or subwords) it can process in a single input or output sequence. Larger context sizes need more memory.</string>
+    <string name="context_size_error">Context size should be at least 200 tokens</string>
+    <string name="context_size_from_model">Context size taken from model</string>
+    <string name="no_of_tokens">No. of tokens</string>
+    <string name="take_from_gguf_model">Take from GGUF Model</string>
+    <string name="error_load_model">Error: Could not load LLM model for the chat</string>
+    <string name="context_length_usage">Context Length Usage</string>
+    <string name="change_model">Change Model</string>
+    <string name="delete_chat">Delete Chat</string>
+    <string name="delete_chat_dialog_text">Are you sure you want to delete chat \'%1$s\'?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="chat_deleted">Chat \'%1$s\' deleted</string>
 </resources>

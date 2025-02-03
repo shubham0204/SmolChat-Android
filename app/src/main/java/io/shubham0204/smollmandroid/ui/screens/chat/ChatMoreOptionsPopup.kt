@@ -28,7 +28,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
 
@@ -38,58 +40,83 @@ fun ChatMoreOptionsPopup(
     onEditChatSettingsClick: () -> Unit,
 ) {
     val expanded by viewModel.showMoreOptionsPopupState.collectAsStateWithLifecycle()
+    val context = viewModel.context
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { viewModel.hideMoreOptionsPopup() },
     ) {
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Settings, contentDescription = "Edit Chat Name") },
-            text = { Text("Edit Chat Settings", fontFamily = AppFontFamily) },
+            text = {
+                Text(
+                    stringResource(R.string.edit_chat_settings),
+                    fontFamily = AppFontFamily
+                )
+            },
             onClick = {
                 onEditChatSettingsClick()
                 viewModel.hideMoreOptionsPopup()
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Assistant, contentDescription = "Change Model") },
-            text = { Text("Change Model", fontFamily = AppFontFamily) },
+            leadingIcon = { Icon(Icons.Default.Assistant, contentDescription = stringResource(R.string.change_model)) },
+            text = { Text(stringResource(R.string.change_model), fontFamily = AppFontFamily) },
             onClick = {
                 viewModel.showSelectModelListDialog()
                 viewModel.hideMoreOptionsPopup()
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.AutoMirrored.Filled.ShortText, contentDescription = "Context Usage") },
-            text = { Text("Context Length Usage", fontFamily = AppFontFamily) },
+            leadingIcon = {
+                Icon(
+                    Icons.AutoMirrored.Filled.ShortText,
+                    contentDescription = "Context Usage"
+                )
+            },
+            text = {
+                Text(
+                    stringResource(R.string.context_length_usage),
+                    fontFamily = AppFontFamily
+                )
+            },
             onClick = {
                 viewModel.showContextLengthUsageDialog()
                 viewModel.hideMoreOptionsPopup()
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete Chat") },
-            text = { Text("Delete Chat", fontFamily = AppFontFamily) },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = context.getString(R.string.delete_chat)
+                )
+            },
+            text = {
+                Text(
+                    context.getString(R.string.delete_chat),
+                    fontFamily = AppFontFamily
+                )
+            },
             onClick = {
                 viewModel.currChatState.value?.let { chat ->
                     createAlertDialog(
-                        dialogTitle = "Delete Chat",
-                        dialogText = "Are you sure you want to delete chat '${chat.name}'?",
-                        dialogPositiveButtonText = "Delete",
-                        dialogNegativeButtonText = "Cancel",
+                        dialogTitle = context.getString(R.string.delete_chat),
+                        dialogText = context.getString(R.string.delete_chat_dialog_text, chat.name),
+                        dialogPositiveButtonText = context.getString(R.string.delete),
+                        dialogNegativeButtonText = context.getString(R.string.cancel),
                         onPositiveButtonClick = {
                             viewModel.deleteChat(chat)
-                            Toast
-                                .makeText(
-                                    viewModel.context,
-                                    "Chat '${chat.name}' deleted",
-                                    Toast.LENGTH_LONG,
-                                ).show()
+                            Toast.makeText(
+                                viewModel.context,
+                                context.getString(R.string.chat_deleted, chat.name),
+                                Toast.LENGTH_LONG
+                            ).show()
                         },
-                        onNegativeButtonClick = {},
+                        onNegativeButtonClick = {}
                     )
                 }
                 viewModel.hideMoreOptionsPopup()
-            },
+            }
         )
     }
 }

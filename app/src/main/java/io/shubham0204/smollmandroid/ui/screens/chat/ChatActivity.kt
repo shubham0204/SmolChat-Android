@@ -84,6 +84,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -93,6 +94,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
@@ -471,7 +473,7 @@ private fun MessageInput(
                 ChatScreenViewModel.ModelLoadingState.IN_PROGRESS -> {
                     Text(
                         modifier = Modifier.padding(8.dp),
-                        text = "Loading model...",
+                        text = stringResource(R.string.loading_model),
                         fontFamily = AppFontFamily,
                     )
                 }
@@ -479,7 +481,7 @@ private fun MessageInput(
                 ChatScreenViewModel.ModelLoadingState.FAILURE -> {
                     Text(
                         modifier = Modifier.padding(8.dp),
-                        text = "The model selected for the chat cannot be loaded",
+                        text =stringResource(R.string.model_load_failure),
                         fontFamily = AppFontFamily,
                     )
                 }
@@ -503,7 +505,7 @@ private fun MessageInput(
                         ),
                         placeholder = {
                             Text(
-                                text = "Ask a question",
+                                text = stringResource(R.string.ask_question),
                             )
                         },
                         keyboardOptions =
@@ -583,11 +585,11 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                             }
                         },
                     ) {
-                        MediumLabelText("Create a task")
+                        MediumLabelText(stringResource(R.string.create_task))
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 } else {
-                    AppBarTitleText("Select A Task")
+                    AppBarTitleText(stringResource(R.string.select_task))
                     TasksList(
                         tasks.map {
                             val modelName =
