@@ -22,7 +22,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -42,10 +41,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Title
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,19 +54,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import io.shubham0204.smollmandroid.data.LLMModel
-import io.shubham0204.smollmandroid.ui.components.DialogTitleText
-import io.shubham0204.smollmandroid.ui.components.SmallLabelText
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.screens.model_download.DownloadModelActivity
-import io.shubham0204.smollmandroid.ui.theme.AppAccentColor
-import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
 import java.io.File
 
 enum class SortOrder {
@@ -84,112 +79,124 @@ fun SelectModelsList(
 ) {
     val context = LocalContext.current
     var sortOrder by remember { mutableStateOf(SortOrder.NAME) }
-    Dialog(onDismissRequest = onDismissRequest) {
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .background(Color.White, RoundedCornerShape(8.dp))
-                    .padding(16.dp),
-        ) {
-            DialogTitleText(text = "Choose Model")
-            Spacer(modifier = Modifier.height(4.dp))
-            SmallLabelText(
-                "Select a downloaded model from below to use as a 'default' model for this chat.",
-                textColor = Color.DarkGray,
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Animate switching between different types of content
-            // See https://developer.android.com/develop/ui/compose/animation/quick-guide#switch-different
-            AnimatedContent(
-                sortOrder,
-                transitionSpec = {
-                    fadeIn(
-                        animationSpec = tween(100),
-                    ) togetherWith fadeOut(animationSpec = tween(100))
-                },
+    Surface {
+        Dialog(onDismissRequest = onDismissRequest) {
+            Column(
                 modifier =
-                    Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) {
-                        sortOrder =
-                            when (sortOrder) {
-                                SortOrder.NAME -> SortOrder.DATE_ADDED
-                                SortOrder.DATE_ADDED -> SortOrder.NAME
-                            }
-                    },
-                label = "change-sort-order-anim",
-            ) { targetSortOrder: SortOrder ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier
-                            .align(Alignment.End)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                            ) {
-                                sortOrder = if (sortOrder == SortOrder.NAME) SortOrder.DATE_ADDED else SortOrder.NAME
-                            },
-                ) {
-                    when (targetSortOrder) {
-                        SortOrder.DATE_ADDED -> {
-                            Image(
-                                imageVector = Icons.Default.Title,
-                                contentDescription = "Sort by Model Name",
-                                colorFilter = ColorFilter.tint(Color.DarkGray),
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            SmallLabelText("Sort by Name")
-                        }
-                        SortOrder.NAME -> {
-                            Image(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = "Sort by Date Added",
-                                colorFilter = ColorFilter.tint(Color.DarkGray),
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            SmallLabelText("Sort by Date Added")
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
-                if (sortOrder == SortOrder.NAME) {
-                    items(modelsList.sortedBy { it.name }) {
-                        ModelListItem(
-                            model = it,
-                            onModelListItemClick,
-                            onModelDeleteClick,
-                            showModelDeleteIcon,
-                        )
-                    }
-                } else {
-                    items(modelsList.reversed()) {
-                        ModelListItem(
-                            model = it,
-                            onModelListItemClick,
-                            onModelDeleteClick,
-                            showModelDeleteIcon,
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = {
-                    Intent(context, DownloadModelActivity::class.java).also {
-                        it.putExtra("openChatScreen", false)
-                        context.startActivity(it)
-                    }
-                },
+                    Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
+                        .padding(16.dp),
             ) {
-                SmallLabelText("Add model")
+                Text(
+                    text = "Choose Model",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Select a downloaded model from below to use as a 'default' model for this chat.",
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Animate switching between different types of content
+                // See https://developer.android.com/develop/ui/compose/animation/quick-guide#switch-different
+                AnimatedContent(
+                    sortOrder,
+                    transitionSpec = {
+                        fadeIn(
+                            animationSpec = tween(100),
+                        ) togetherWith fadeOut(animationSpec = tween(100))
+                    },
+                    modifier =
+                        Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) {
+                            sortOrder =
+                                when (sortOrder) {
+                                    SortOrder.NAME -> SortOrder.DATE_ADDED
+                                    SortOrder.DATE_ADDED -> SortOrder.NAME
+                                }
+                        },
+                    label = "change-sort-order-anim",
+                ) { targetSortOrder: SortOrder ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier =
+                            Modifier
+                                .align(Alignment.End)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                ) {
+                                    sortOrder = if (sortOrder == SortOrder.NAME) SortOrder.DATE_ADDED else SortOrder.NAME
+                                },
+                    ) {
+                        when (targetSortOrder) {
+                            SortOrder.DATE_ADDED -> {
+                                Icon(
+                                    imageVector = Icons.Default.Title,
+                                    contentDescription = "Sort by Model Name",
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Sort by Name",
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
+
+                            SortOrder.NAME -> {
+                                Icon(
+                                    imageVector = Icons.Default.CalendarToday,
+                                    contentDescription = "Sort by Date Added",
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Sort by Date Added",
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
+                    if (sortOrder == SortOrder.NAME) {
+                        items(modelsList.sortedBy { it.name }) {
+                            ModelListItem(
+                                model = it,
+                                onModelListItemClick,
+                                onModelDeleteClick,
+                                showModelDeleteIcon,
+                            )
+                        }
+                    } else {
+                        items(modelsList.reversed()) {
+                            ModelListItem(
+                                model = it,
+                                onModelListItemClick,
+                                onModelDeleteClick,
+                                showModelDeleteIcon,
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = {
+                        Intent(context, DownloadModelActivity::class.java).also {
+                            it.putExtra("openChatScreen", false)
+                            context.startActivity(it)
+                        }
+                    },
+                ) {
+                    Text("Add model")
+                }
             }
         }
     }
@@ -203,16 +210,26 @@ private fun ModelListItem(
     showModelDeleteIcon: Boolean,
 ) {
     Row(
-        modifier = Modifier.clickable { onModelListItemClick(model) }.fillMaxWidth(),
+        modifier =
+            Modifier
+                .padding(4.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                .padding(4.dp)
+                .clip(RoundedCornerShape(8.dp))
+            .clickable { onModelListItemClick(model) }
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = model.name, fontSize = 12.sp, fontFamily = AppFontFamily, maxLines = 1)
+            Text(
+                text = model.name,
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+            )
             Text(
                 text = "%.1f GB".format(File(model.path).length() / (1e+9)),
-                fontSize = 8.sp,
-                fontFamily = AppFontFamily,
+                style = MaterialTheme.typography.labelSmall,
                 maxLines = 1,
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -234,10 +251,8 @@ private fun ModelListItem(
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = "Delete Model",
-                    tint = AppAccentColor,
                 )
             }
         }
     }
-    HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Color.LightGray)
 }

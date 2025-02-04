@@ -16,30 +16,11 @@
 
 package io.shubham0204.smollmandroid.ui.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
-
-@Composable
-fun SmallLabelText(
-    text: String,
-    modifier: Modifier = Modifier,
-    textColor: Color = Color.Black,
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelSmall,
-        fontFamily = AppFontFamily,
-        modifier = modifier,
-        color = textColor,
-    )
-}
 
 @Composable
 fun MediumLabelText(
@@ -49,7 +30,6 @@ fun MediumLabelText(
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
-        fontFamily = AppFontFamily,
         modifier = modifier,
     )
 }
@@ -62,22 +42,7 @@ fun LargeLabelText(
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
-        fontFamily = AppFontFamily,
         modifier = modifier,
-    )
-}
-
-@Composable
-fun DialogTitleText(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleLarge,
-        fontFamily = AppFontFamily,
-        modifier = modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
     )
 }
 
@@ -89,7 +54,6 @@ fun AppBarTitleText(
     Text(
         text = text,
         style = MaterialTheme.typography.titleMedium,
-        fontFamily = AppFontFamily,
         modifier = modifier,
         fontWeight = FontWeight.Bold,
     )

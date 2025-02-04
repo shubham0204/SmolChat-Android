@@ -26,7 +26,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,11 +46,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -61,7 +62,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
@@ -70,8 +70,6 @@ import androidx.navigation.compose.rememberNavController
 import io.shubham0204.smollmandroid.llm.exampleModelsList
 import io.shubham0204.smollmandroid.ui.components.AppProgressDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatActivity
-import io.shubham0204.smollmandroid.ui.theme.AppAccentColor
-import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 import org.koin.android.ext.android.inject
 
@@ -141,91 +139,88 @@ class DownloadModelActivity : ComponentActivity() {
                 }
             }
         SmolLMAndroidTheme {
-            Column(
-                modifier =
-                Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .fillMaxSize()
-                    .padding(16.dp)
-                    .windowInsetsPadding(WindowInsets.safeContent)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    "Download Models",
-                    fontFamily = AppFontFamily,
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    "Popular Models",
-                    fontFamily = AppFontFamily,
-                    style = MaterialTheme.typography.titleSmall,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                ModelsList(viewModel)
-                Spacer(modifier = Modifier.height(4.dp))
-                ModelURLInput(viewModel)
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Row {
-                    OutlinedButton(
-                        modifier = Modifier.weight(1f),
-                        onClick = onHFModelSelectClick,
-                    ) {
-                        Text("Browse from HuggingFace")
-                    }
-                    OutlinedButton(
-                        modifier = Modifier.weight(1f),
-                        enabled =
-                            viewModel.selectedModelState.value != null ||
-                                viewModel.modelUrlState.value.isNotBlank(),
-                        onClick = { viewModel.downloadModel() },
-                    ) {
-                        Text("Download Model", fontFamily = AppFontFamily)
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.dp, AppAccentColor),
+            Surface {
+                Column(
+                    modifier =
+                        Modifier
+                            .background(MaterialTheme.colorScheme.background)
+                            .fillMaxSize()
+                            .padding(16.dp)
+                            .windowInsetsPadding(WindowInsets.safeContent)
+                            .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            "Models are downloaded in the 'Downloads' directory of your device",
-                            fontFamily = AppFontFamily,
-                            style = MaterialTheme.typography.headlineSmall,
-                        )
-                        Text(
-                            "Select a GGUF file from the file explorer",
-                            fontFamily = AppFontFamily,
-                            style = MaterialTheme.typography.titleSmall,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Download Models",
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Popular Models",
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    ModelsList(viewModel)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    ModelURLInput(viewModel)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row {
                         OutlinedButton(
-                            onClick = {
-                                val intent =
-                                    Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                                        setType("application/octet-stream")
-                                        putExtra(
-                                            DocumentsContract.EXTRA_INITIAL_URI,
-                                            Environment
-                                                .getExternalStoragePublicDirectory(
-                                                    Environment.DIRECTORY_DOWNLOADS,
-                                                ).toUri(),
-                                        )
-                                    }
-                                launcher.launch(intent)
-                            },
+                            modifier = Modifier.weight(1f),
+                            onClick = onHFModelSelectClick,
                         ) {
-                            Text("Select GGUF file", fontFamily = AppFontFamily)
+                            Text("Browse from HuggingFace")
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedButton(
+                            modifier = Modifier.weight(1f),
+                            enabled =
+                                viewModel.selectedModelState.value != null ||
+                                    viewModel.modelUrlState.value.isNotBlank(),
+                            onClick = { viewModel.downloadModel() },
+                        ) {
+                            Text("Download Model")
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                "Models are downloaded in the 'Downloads' directory of your device",
+                                style = MaterialTheme.typography.headlineSmall,
+                            )
+                            Text(
+                                "Select a GGUF file from the file explorer",
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = {
+                                    val intent =
+                                        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                                            setType("application/octet-stream")
+                                            putExtra(
+                                                DocumentsContract.EXTRA_INITIAL_URI,
+                                                Environment
+                                                    .getExternalStoragePublicDirectory(
+                                                        Environment.DIRECTORY_DOWNLOADS,
+                                                    ).toUri(),
+                                            )
+                                        }
+                                    launcher.launch(intent)
+                                },
+                            ) {
+                                Text("Select GGUF file")
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
                     }
                 }
+                AppProgressDialog()
             }
-            AppProgressDialog()
         }
     }
 
@@ -239,7 +234,11 @@ class DownloadModelActivity : ComponentActivity() {
                         .clickable { selectedModel = model }
                         .fillMaxWidth()
                         .background(
-                            if (model == selectedModel) AppAccentColor else Color.White,
+                            if (model == selectedModel) {
+                                MaterialTheme.colorScheme.secondary
+                            } else {
+                                MaterialTheme.colorScheme.background
+                            },
                             RoundedCornerShape(
                                 8.dp,
                             ),
@@ -252,9 +251,14 @@ class DownloadModelActivity : ComponentActivity() {
                         Spacer(modifier = Modifier.width(4.dp))
                     }
                     Text(
-                        color = if (model == selectedModel) Color.White else Color.Black,
+                        color =
+                            if (model == selectedModel) {
+                                MaterialTheme.colorScheme.onSecondary
+                            } else {
+                                MaterialTheme
+                                    .colorScheme.onBackground
+                            },
                         text = model.name,
-                        fontFamily = AppFontFamily,
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -270,9 +274,8 @@ class DownloadModelActivity : ComponentActivity() {
             value = modelUrl,
             onValueChange = { modelUrl = it },
             placeholder = {
-                Text(text = "URL for GGUF Instruct Model", fontFamily = AppFontFamily)
+                Text(text = "URL for GGUF Instruct Model")
             },
-            textStyle = TextStyle(fontFamily = AppFontFamily),
             keyboardOptions =
                 KeyboardOptions.Default.copy(
                     keyboardType = androidx.compose.ui.text.input.KeyboardType.Uri,

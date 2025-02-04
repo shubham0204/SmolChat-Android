@@ -21,7 +21,6 @@ import android.graphics.Color
 import android.text.util.Linkify
 import android.util.Log
 import android.util.TypedValue
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModel
 import io.noties.markwon.AbstractMarkwonPlugin
@@ -45,7 +44,6 @@ import io.shubham0204.smollmandroid.data.TasksDB
 import io.shubham0204.smollmandroid.llm.ModelsRepository
 import io.shubham0204.smollmandroid.prism4j.PrismGrammarLocator
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
-import io.shubham0204.smollmandroid.ui.theme.AppAccentColor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -143,7 +141,6 @@ class ChatScreenViewModel(
                                 .codeTextSize(spToPx(10f))
                                 .codeTextColor(Color.WHITE)
                                 .codeBackgroundColor(Color.BLACK)
-                                .linkColor(AppAccentColor.toArgb())
                                 .isLinkUnderlined(true)
                         }
                     },

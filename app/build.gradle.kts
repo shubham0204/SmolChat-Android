@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.annotations)
     implementation(libs.koin.androidx.compose)
+    implementation(libs.androidx.ui.text.google.fonts)
     ksp(libs.koin.ksp.compiler)
 
     // ObjectBox: on-device NoSQL database

@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
-import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
 
 @Composable
 fun ChatMoreOptionsPopup(
@@ -44,7 +43,7 @@ fun ChatMoreOptionsPopup(
     ) {
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Settings, contentDescription = "Edit Chat Name") },
-            text = { Text("Edit Chat Settings", fontFamily = AppFontFamily) },
+            text = { Text("Edit Chat Settings") },
             onClick = {
                 onEditChatSettingsClick()
                 viewModel.hideMoreOptionsPopup()
@@ -52,7 +51,7 @@ fun ChatMoreOptionsPopup(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Assistant, contentDescription = "Change Model") },
-            text = { Text("Change Model", fontFamily = AppFontFamily) },
+            text = { Text("Change Model") },
             onClick = {
                 viewModel.showSelectModelListDialog()
                 viewModel.hideMoreOptionsPopup()
@@ -60,7 +59,7 @@ fun ChatMoreOptionsPopup(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.AutoMirrored.Filled.ShortText, contentDescription = "Context Usage") },
-            text = { Text("Context Length Usage", fontFamily = AppFontFamily) },
+            text = { Text("Context Length Usage") },
             onClick = {
                 viewModel.showContextLengthUsageDialog()
                 viewModel.hideMoreOptionsPopup()
@@ -68,7 +67,7 @@ fun ChatMoreOptionsPopup(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete Chat") },
-            text = { Text("Delete Chat", fontFamily = AppFontFamily) },
+            text = { Text("Delete Chat") },
             onClick = {
                 viewModel.currChatState.value?.let { chat ->
                     createAlertDialog(

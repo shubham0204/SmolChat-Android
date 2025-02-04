@@ -53,9 +53,6 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import io.shubham0204.hf_model_hub_api.HFModelSearch
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
-import io.shubham0204.smollmandroid.ui.components.LargeLabelText
-import io.shubham0204.smollmandroid.ui.components.SmallLabelText
-import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,9 +81,9 @@ fun HFModelDownloadScreen(
         ) { innerPadding ->
             Column(
                 modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .background(MaterialTheme.colorScheme.background),
+                    Modifier
+                        .padding(innerPadding)
+                        .background(MaterialTheme.colorScheme.background),
             ) {
                 var query by remember { mutableStateOf("") }
                 TextField(
@@ -94,12 +91,11 @@ fun HFModelDownloadScreen(
                         Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 4.dp),
-                        value = query,
+                    value = query,
                     onValueChange = { query = it },
                     shape = RoundedCornerShape(16.dp),
                     colors =
                         TextFieldDefaults.colors(
-                            focusedTextColor = Color.Black,
                             disabledTextColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
@@ -150,13 +146,19 @@ private fun ModelListItem(
     val modelName = model.id.split("/")[1]
     Column(
         modifier =
-        Modifier
-            .clickable { onModelClick(model.id) }
-            .padding(8.dp)
-            .fillMaxWidth(),
+            Modifier
+                .clickable { onModelClick(model.id) }
+                .padding(8.dp)
+                .fillMaxWidth(),
     ) {
-        SmallLabelText(text = modelAuthor)
-        LargeLabelText(text = modelName)
+        Text(
+            text = modelAuthor,
+            style = MaterialTheme.typography.labelSmall,
+        )
+        Text(
+            text = modelName,
+            style = MaterialTheme.typography.labelSmall,
+        )
         LazyRow {
             items(
                 model.tags.filter { !listOf("GGUF", "conversational").contains(it) },
@@ -165,11 +167,10 @@ private fun ModelListItem(
                     modifier =
                         Modifier
                             .padding(2.dp)
-                            .background(Color.White, RoundedCornerShape(2.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(2.dp))
                             .padding(2.dp),
                     text = it,
                     fontSize = 8.sp,
-                    fontFamily = AppFontFamily,
                 )
             }
         }

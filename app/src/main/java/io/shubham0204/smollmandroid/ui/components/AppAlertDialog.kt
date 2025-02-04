@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
 
 private var title = ""
 private var text = ""
@@ -38,8 +37,8 @@ fun AppAlertDialog() {
     val visible by remember { alertDialogShowStatus }
     if (visible) {
         AlertDialog(
-            title = { Text(text = title, fontFamily = AppFontFamily) },
-            text = { Text(text = text, fontFamily = AppFontFamily) },
+            title = { Text(text = title) },
+            text = { Text(text = text) },
             onDismissRequest = { /* All alert dialogs are non-cancellable */ },
             confirmButton = {
                 TextButton(

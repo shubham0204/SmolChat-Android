@@ -24,7 +24,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
 
 @Composable
 fun TaskOptionsPopup(
@@ -38,12 +37,12 @@ fun TaskOptionsPopup(
     ) {
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Edit Task") },
-            text = { Text("Edit Task", fontFamily = AppFontFamily) },
+            text = { Text("Edit Task") },
             onClick = { onEditTaskClick() },
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete Task") },
-            text = { Text("Delete Task", fontFamily = AppFontFamily) },
+            text = { Text("Delete Task") },
             onClick = { onDeleteTaskClick() },
         )
     }

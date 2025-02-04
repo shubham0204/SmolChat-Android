@@ -18,7 +18,6 @@ package io.shubham0204.smollmandroid.ui.screens.model_download
 
 import android.content.Intent
 import android.text.format.DateUtils
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -55,7 +54,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -67,10 +65,7 @@ import io.shubham0204.hf_model_hub_api.HFModelTree
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.LargeLabelText
-import io.shubham0204.smollmandroid.ui.components.SmallLabelText
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
-import io.shubham0204.smollmandroid.ui.theme.AppAccentColor
-import io.shubham0204.smollmandroid.ui.theme.AppFontFamily
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 import java.time.ZoneId
 
@@ -120,10 +115,10 @@ fun ViewHFModelScreen(
             ) { innerPadding ->
                 Column(
                     modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(innerPadding),
+                        Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(innerPadding),
                 ) {
                     LaunchedEffect(0) {
                         viewModel.fetchModelInfoAndTree(modelId)
@@ -187,14 +182,21 @@ private fun GGUFModelListItem(
             Modifier
                 .clickable { onModelFileClick(modelFile) }
                 .padding(8.dp)
-        .fillMaxWidth()
-        ) {
-        Text(text = modelFile.path)
-        if (fileSizeGB < 1) {
-            Text(text = "${(fileSizeGB * 1000).toInt()} MB")
-        } else {
-            Text(text = "${fileSizeGB.toInt()} GB")
-        }
+                .fillMaxWidth(),
+    ) {
+        Text(
+            text = modelFile.path,
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Text(
+            text =
+                if (fileSizeGB < 1) {
+                    "${(fileSizeGB * 1000).toInt()} MB"
+                } else {
+                    "${fileSizeGB.toInt()} GB"
+                },
+            style = MaterialTheme.typography.labelLarge,
+        )
     }
     HorizontalDivider(modifier = Modifier.fillMaxWidth())
 }
@@ -202,8 +204,7 @@ private fun GGUFModelListItem(
 @Composable
 private fun ModelInfoCard(modelInfo: HFModelInfo.ModelInfo) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, AppAccentColor),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.padding(8.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -212,13 +213,11 @@ private fun ModelInfoCard(modelInfo: HFModelInfo.ModelInfo) {
             Text(
                 text = modelAuthor,
                 style = MaterialTheme.typography.labelMedium,
-                fontFamily = AppFontFamily,
                 modifier = Modifier.fillMaxWidth(),
             )
             Text(
                 text = modelName,
                 style = MaterialTheme.typography.titleMedium,
-                fontFamily = AppFontFamily,
                 modifier = Modifier.fillMaxWidth(),
             )
             Row {
@@ -261,16 +260,18 @@ private fun ModelInfoIconBubble(
         modifier =
         Modifier
             .padding(4.dp)
-            .background(Color.White, RoundedCornerShape(4.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(4.dp))
             .padding(4.dp),
     ) {
         Icon(
             modifier = Modifier.size(16.dp),
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = AppAccentColor,
         )
         Spacer(modifier = Modifier.width(2.dp))
-        SmallLabelText(text = text)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+        )
     }
 }
