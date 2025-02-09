@@ -85,6 +85,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -94,6 +95,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
@@ -174,7 +176,7 @@ fun ChatActivityScreenUI(
                         title = {
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 AppBarTitleText(
-                                    currChat?.name ?: "Select a chat",
+                                    currChat?.name ?: stringResource(R.string.chat_select_chat),
                                     modifier = Modifier.fillMaxWidth(),
                                 )
                                 Text(
@@ -193,7 +195,7 @@ fun ChatActivityScreenUI(
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(
                                     Icons.Default.Menu,
-                                    contentDescription = "View Chats",
+                                    contentDescription = stringResource(R.string.chat_view_chats),
                                 )
                             }
                         },
@@ -282,7 +284,7 @@ private fun ColumnScope.MessagesList(
                         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     val clip = ClipData.newPlainText("Copied message", chatMessage.message)
                     clipboard.setPrimaryClip(clip)
-                    Toast.makeText(context, "Message copied", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.chat_message_copied), Toast.LENGTH_SHORT).show()
                 },
                 onShareClicked = {
                     context.startActivity(
@@ -321,7 +323,7 @@ private fun ColumnScope.MessagesList(
                             tint = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            text = "Thinking ...",
+                            text = stringResource(R.string.chat_thinking),
                             modifier =
                             Modifier
                                 .fillMaxWidth()
@@ -377,13 +379,13 @@ private fun LazyItemScope.MessageListItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = "Copy",
+                        text = stringResource(R.string.chat_message_copy),
                         modifier = Modifier.clickable { onCopyClicked() },
                         fontSize = 8.sp,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Share",
+                        text = stringResource(R.string.chat_message_share),
                         modifier = Modifier.clickable { onShareClicked() },
                         fontSize = 8.sp,
                     )
@@ -422,7 +424,7 @@ private fun LazyItemScope.MessageListItem(
         Row(
             modifier =
                 Modifier
-                    .fillMaxWidth()
+                .fillMaxWidth()
                 .animateItem(),
             horizontalArrangement = Arrangement.End,
         ) {
@@ -431,7 +433,7 @@ private fun LazyItemScope.MessageListItem(
                     Modifier
                         .padding(8.dp)
                         .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
-                        .padding(8.dp)
+                    .padding(8.dp)
                     .widthIn(max = 250.dp),
                 textColor = android.graphics.Color.WHITE,
                 textSize = 16f,
@@ -451,7 +453,7 @@ private fun MessageInput(
     if ((currChat?.llmModelId ?: -1L) == -1L) {
         Text(
             modifier = Modifier.padding(8.dp),
-            text = "Select a model ...",
+            text = stringResource(R.string.chat_select_model),
         )
     } else {
         var questionText by remember { mutableStateOf("") }
@@ -461,14 +463,14 @@ private fun MessageInput(
                 ChatScreenViewModel.ModelLoadingState.IN_PROGRESS -> {
                     Text(
                         modifier = Modifier.padding(8.dp),
-                        text = "Loading model...",
+                        text = stringResource(R.string.chat_loading_model),
                     )
                 }
 
                 ChatScreenViewModel.ModelLoadingState.FAILURE -> {
                     Text(
                         modifier = Modifier.padding(8.dp),
-                        text = "The model selected for the chat cannot be loaded",
+                        text = stringResource(R.string.chat_model_cannot_be_loaded),
                     )
                 }
 
@@ -476,7 +478,7 @@ private fun MessageInput(
                     TextField(
                         modifier =
                             Modifier
-                                .fillMaxWidth()
+                            .fillMaxWidth()
                             .weight(1f),
                         value = questionText,
                         onValueChange = { questionText = it },
@@ -490,7 +492,7 @@ private fun MessageInput(
                         ),
                         placeholder = {
                             Text(
-                                text = "Ask a question",
+                                text = stringResource(R.string.chat_ask_question),
                             )
                         },
                         keyboardOptions =
@@ -554,7 +556,7 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                 if (tasks.isEmpty()) {
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        "No tasks created",
+                        stringResource(R.string.chat_no_task_created),
                         modifier = Modifier.fillMaxWidth(),
                         style = MaterialTheme.typography.labelMedium,
                         textAlign = TextAlign.Center,
@@ -568,11 +570,11 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                             }
                         },
                     ) {
-                        MediumLabelText("Create a task")
+                        MediumLabelText(stringResource(R.string.chat_create_task))
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 } else {
-                    AppBarTitleText("Select A Task")
+                    AppBarTitleText(stringResource(R.string.chat_select_task))
                     TasksList(
                         tasks.map {
                             val modelName =
@@ -607,6 +609,7 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
 @Composable
 private fun SelectModelsList(viewModel: ChatScreenViewModel) {
     val showSelectModelsListDialog by viewModel.showSelectModelListDialogState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     if (showSelectModelsListDialog) {
         val modelsList by
         viewModel.modelsRepository.getAvailableModels().collectAsState(emptyList())
@@ -623,7 +626,7 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
                 Toast
                     .makeText(
                         viewModel.context,
-                        "Model '${model.name}' deleted",
+                        context.getString(R.string.chat_model_deleted, model.name),
                         Toast.LENGTH_LONG,
                     ).show()
             },

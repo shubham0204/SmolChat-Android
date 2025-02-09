@@ -43,10 +43,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.screens.chat.SelectModelsList
 
 @Composable
@@ -80,7 +82,7 @@ fun EditTaskDialog(viewModel: TasksViewModel) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
-                            text = "Edit Task",
+                            text = stringResource(R.string.task_edit_task_title),
                             style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Center,
@@ -90,7 +92,7 @@ fun EditTaskDialog(viewModel: TasksViewModel) {
                             modifier = Modifier.fillMaxWidth(),
                             value = taskName,
                             onValueChange = { taskName = it },
-                            label = { Text("Task Name") },
+                            label = { Text(stringResource(R.string.task_create_task_name)) },
                             keyboardOptions =
                                 KeyboardOptions.Default.copy(
                                     capitalization = KeyboardCapitalization.Words,
@@ -102,7 +104,7 @@ fun EditTaskDialog(viewModel: TasksViewModel) {
                             modifier = Modifier.fillMaxWidth(),
                             value = systemPrompt,
                             onValueChange = { systemPrompt = it },
-                            label = { Text("System Prompt") },
+                            label = { Text(stringResource(R.string.task_create_task_sys_prompt)) },
                             keyboardOptions =
                                 KeyboardOptions.Default.copy(
                                     capitalization = KeyboardCapitalization.Sentences,
@@ -118,8 +120,12 @@ fun EditTaskDialog(viewModel: TasksViewModel) {
                                     .border(width = 1.dp, Color.DarkGray)
                                     .clickable { isModelListDialogVisible = true }
                                     .padding(8.dp),
-                            text = if (selectedModel == null) "Select Model" else selectedModel!!.name,
-                        )
+                            text =
+                                if (selectedModel == null) {
+                                    stringResource(R.string.task_create_task_select_model)
+                                } else selectedModel!!
+                                .name,
+                                )
 
                         if (isModelListDialogVisible) {
                             SelectModelsList(
@@ -154,7 +160,7 @@ fun EditTaskDialog(viewModel: TasksViewModel) {
                             },
                         ) {
                             Icon(Icons.Default.Done, contentDescription = "Update")
-                            Text("Update")
+                            Text(stringResource(R.string.task_edit_task_update))
                         }
                     }
                 }

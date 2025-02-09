@@ -56,9 +56,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.screens.model_download.DownloadModelActivity
@@ -83,20 +85,20 @@ fun SelectModelsList(
         Dialog(onDismissRequest = onDismissRequest) {
             Column(
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
+                Modifier
+                    .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
                         .padding(16.dp),
             ) {
                 Text(
-                    text = "Choose Model",
+                    text = stringResource(R.string.chat_model_list_screen_title),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Select a downloaded model from below to use as a 'default' model for this chat.",
+                    text = stringResource(R.string.chat_model_list_desc),
                     style = MaterialTheme.typography.labelSmall,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -126,7 +128,7 @@ fun SelectModelsList(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
-                            Modifier
+                        Modifier
                                 .align(Alignment.End)
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
@@ -143,7 +145,7 @@ fun SelectModelsList(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Sort by Name",
+                                    text = stringResource(R.string.chat_model_list_sort_name),
                                     style = MaterialTheme.typography.labelSmall,
                                 )
                             }
@@ -155,7 +157,7 @@ fun SelectModelsList(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Sort by Date Added",
+                                    text = stringResource(R.string.chat_model_list_sort_date),
                                     style = MaterialTheme.typography.labelSmall,
                                 )
                             }
@@ -195,7 +197,7 @@ fun SelectModelsList(
                         }
                     },
                 ) {
-                    Text("Add model")
+                    Text(stringResource(R.string.chat_model_list_add_model))
                 }
             }
         }
@@ -209,6 +211,7 @@ private fun ModelListItem(
     onModelDeleteClick: (LLMModel) -> Unit,
     showModelDeleteIcon: Boolean,
 ) {
+    val context = LocalContext.current
     Row(
         modifier =
             Modifier
@@ -239,10 +242,10 @@ private fun ModelListItem(
                 modifier = Modifier.size(24.dp),
                 onClick = {
                     createAlertDialog(
-                        dialogTitle = "Delete Model",
-                        dialogText = "Are you sure you want to delete the model '${model.name}'?",
-                        dialogPositiveButtonText = "Delete",
-                        dialogNegativeButtonText = "Cancel",
+                        dialogTitle = context.getString(R.string.dialog_title_delete_chat),
+                        dialogText = context.getString(R.string.dialog_text_delete_chat),
+                        dialogPositiveButtonText = context.getString(R.string.dialog_pos_delete),
+                        dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
                         onPositiveButtonClick = { onModelDeleteClick(model) },
                         onNegativeButtonClick = {},
                     )

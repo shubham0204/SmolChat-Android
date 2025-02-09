@@ -24,6 +24,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import io.shubham0204.smollmandroid.R
 
 @Composable
 fun TaskOptionsPopup(
@@ -37,12 +39,12 @@ fun TaskOptionsPopup(
     ) {
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Edit Task") },
-            text = { Text("Edit Task") },
+            text = { Text(stringResource(R.string.task_popup_edit_task)) },
             onClick = { onEditTaskClick() },
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete Task") },
-            text = { Text("Delete Task") },
+            text = { Text(stringResource(R.string.task_popup_delete_task)) },
             onClick = { onDeleteTaskClick() },
         )
     }

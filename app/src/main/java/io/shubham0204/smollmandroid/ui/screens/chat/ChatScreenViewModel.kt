@@ -294,11 +294,11 @@ class ChatScreenViewModel(
                         } catch (e: Exception) {
                             _modelLoadState.value = ModelLoadingState.FAILURE
                             createAlertDialog(
-                                dialogTitle = "An error occurred",
-                                dialogText = "The app is unable to load the model. The error message is: ${e.message}",
-                                dialogPositiveButtonText = "Change model",
+                                dialogTitle = context.getString(R.string.dialog_err_title),
+                                dialogText = context.getString(R.string.dialog_err_text, e.message),
+                                dialogPositiveButtonText = context.getString(R.string.dialog_err_change_model),
                                 onPositiveButtonClick = { showSelectModelListDialog() },
-                                dialogNegativeButtonText = "Close",
+                                dialogNegativeButtonText = context.getString(R.string.dialog_err_close),
                                 onNegativeButtonClick = {},
                             )
                         }
@@ -318,9 +318,14 @@ class ChatScreenViewModel(
     fun showContextLengthUsageDialog() {
         _currChatState.value?.let { chat ->
             createAlertDialog(
-                dialogTitle = "Context Length Usage",
-                dialogText = "You have consumed ${chat.contextSizeConsumed} tokens out of available ${chat.contextSize} tokens.",
-                dialogPositiveButtonText = "Close",
+                dialogTitle = context.getString(R.string.dialog_ctx_usage_title),
+                dialogText =
+                    context.getString(
+                        R.string.dialog_ctx_usage_text,
+                        chat.contextSizeConsumed,
+                        chat.contextSize,
+                    ),
+                dialogPositiveButtonText = context.getString(R.string.dialog_ctx_usage_close),
                 onPositiveButtonClick = {},
                 dialogNegativeButtonText = null,
                 onNegativeButtonClick = null,

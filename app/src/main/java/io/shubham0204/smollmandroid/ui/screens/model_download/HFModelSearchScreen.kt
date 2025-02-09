@@ -47,11 +47,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import io.shubham0204.hf_model_hub_api.HFModelSearch
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 
@@ -67,7 +69,7 @@ fun HFModelDownloadScreen(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
-                    title = { AppBarTitleText("Browse Models from HuggingFace") },
+                    title = { AppBarTitleText(stringResource(R.string.download_model_hf_screen_title)) },
                     navigationIcon = {
                         IconButton(onClick = { onBackClicked() }) {
                             Icon(
@@ -109,7 +111,7 @@ fun HFModelDownloadScreen(
                         )
                     },
                     placeholder = {
-                        Text(text = "Search for models ...")
+                        Text(text = stringResource(R.string.download_model_hf_search_label))
                     },
                     keyboardOptions =
                         KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
@@ -149,7 +151,7 @@ private fun ModelListItem(
             Modifier
                 .clickable { onModelClick(model.id) }
                 .padding(8.dp)
-                .fillMaxWidth(),
+            .fillMaxWidth(),
     ) {
         Text(
             text = modelAuthor,

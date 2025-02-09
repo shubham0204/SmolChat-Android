@@ -62,11 +62,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.llm.exampleModelsList
 import io.shubham0204.smollmandroid.ui.components.AppProgressDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatActivity
@@ -151,12 +153,12 @@ class DownloadModelActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        "Download Models",
+                        stringResource(R.string.download_model_title),
                         style = MaterialTheme.typography.headlineMedium,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "Popular Models",
+                        stringResource(R.string.download_model_popular_models),
                         style = MaterialTheme.typography.titleSmall,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -170,7 +172,7 @@ class DownloadModelActivity : ComponentActivity() {
                             modifier = Modifier.weight(1f),
                             onClick = onHFModelSelectClick,
                         ) {
-                            Text("Browse from HuggingFace")
+                            Text(stringResource(R.string.download_model_browse_hf))
                         }
                         OutlinedButton(
                             modifier = Modifier.weight(1f),
@@ -179,7 +181,7 @@ class DownloadModelActivity : ComponentActivity() {
                                     viewModel.modelUrlState.value.isNotBlank(),
                             onClick = { viewModel.downloadModel() },
                         ) {
-                            Text("Download Model")
+                            Text(stringResource(R.string.download_model_download))
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -189,11 +191,11 @@ class DownloadModelActivity : ComponentActivity() {
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                "Models are downloaded in the 'Downloads' directory of your device",
+                                stringResource(R.string.download_model_desc_download_location),
                                 style = MaterialTheme.typography.headlineSmall,
                             )
                             Text(
-                                "Select a GGUF file from the file explorer",
+                                stringResource(R.string.download_model_select_gguf),
                                 style = MaterialTheme.typography.titleSmall,
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -213,7 +215,7 @@ class DownloadModelActivity : ComponentActivity() {
                                     launcher.launch(intent)
                                 },
                             ) {
-                                Text("Select GGUF file")
+                                Text(stringResource(R.string.download_models_select_gguf_button))
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                         }
@@ -274,7 +276,7 @@ class DownloadModelActivity : ComponentActivity() {
             value = modelUrl,
             onValueChange = { modelUrl = it },
             placeholder = {
-                Text(text = "URL for GGUF Instruct Model")
+                Text(text = stringResource(R.string.download_model_gguf_url))
             },
             keyboardOptions =
                 KeyboardOptions.Default.copy(

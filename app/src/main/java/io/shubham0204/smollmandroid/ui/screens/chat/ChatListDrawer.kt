@@ -50,7 +50,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 
@@ -80,13 +82,13 @@ fun DrawerUI(
                     },
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "New Chat")
-                    Text("New Chat")
+                    Text(stringResource(R.string.chat_drawer_new_chat))
                 }
                 Button(
                     onClick = onCreateTaskClick,
                 ) {
                     Icon(Icons.Default.AddTask, contentDescription = "New Task")
-                    Text("New Task")
+                    Text(stringResource(R.string.chat_drawer_new_task))
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -102,7 +104,7 @@ fun DrawerUI(
                     contentDescription = "Manage Tasks",
                 )
                 Text(
-                    "Manage Tasks",
+                    stringResource(R.string.chat_drawer_manage_tasks),
                     style = MaterialTheme.typography.labelLarge,
                     modifier =
                         Modifier
@@ -112,7 +114,7 @@ fun DrawerUI(
             }
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Previous Chats",
+                stringResource(R.string.chat_drawer_previous_chat),
                 style = MaterialTheme.typography.labelSmall,
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -141,12 +143,12 @@ private fun LazyItemScope.ChatListItem(
     Row(
         modifier =
             Modifier
-                .fillMaxWidth()
+            .fillMaxWidth()
             .padding(4.dp)
             .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(8.dp))
                 .padding(8.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .clickable { onItemClick(chat) }
+            .clickable { onItemClick(chat) }
             .animateItem(),
         verticalAlignment = Alignment.CenterVertically,
     ) {

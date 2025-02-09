@@ -56,12 +56,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.shubham0204.hf_model_hub_api.HFModelInfo
 import io.shubham0204.hf_model_hub_api.HFModelTree
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.LargeLabelText
@@ -82,7 +84,7 @@ fun ViewHFModelScreen(
                 modifier = Modifier.fillMaxSize(),
                 topBar = {
                     TopAppBar(
-                        title = { AppBarTitleText("Model Details") },
+                        title = { AppBarTitleText(stringResource(R.string.download_model_hf_details_title)) },
                         navigationIcon = {
                             IconButton(onClick = { onBackClicked() }) {
                                 Icon(
@@ -115,10 +117,10 @@ fun ViewHFModelScreen(
             ) { innerPadding ->
                 Column(
                     modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background)
-                            .padding(innerPadding),
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(innerPadding),
                 ) {
                     LaunchedEffect(0) {
                         viewModel.fetchModelInfoAndTree(modelId)
@@ -179,10 +181,10 @@ private fun GGUFModelListItem(
     val fileSizeGB = modelFile.size / 1e+9
     Column(
         modifier =
-            Modifier
-                .clickable { onModelFileClick(modelFile) }
-                .padding(8.dp)
-                .fillMaxWidth(),
+        Modifier
+            .clickable { onModelFileClick(modelFile) }
+            .padding(8.dp)
+            .fillMaxWidth(),
     ) {
         Text(
             text = modelFile.path,
@@ -258,10 +260,10 @@ private fun ModelInfoIconBubble(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
-        Modifier
-            .padding(4.dp)
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(4.dp))
-            .padding(4.dp),
+            Modifier
+                .padding(4.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(4.dp))
+                .padding(4.dp),
     ) {
         Icon(
             modifier = Modifier.size(16.dp),

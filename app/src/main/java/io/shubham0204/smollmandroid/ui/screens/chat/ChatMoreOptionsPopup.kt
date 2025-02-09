@@ -28,7 +28,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 
 @Composable
@@ -37,13 +40,14 @@ fun ChatMoreOptionsPopup(
     onEditChatSettingsClick: () -> Unit,
 ) {
     val expanded by viewModel.showMoreOptionsPopupState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { viewModel.hideMoreOptionsPopup() },
     ) {
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Settings, contentDescription = "Edit Chat Name") },
-            text = { Text("Edit Chat Settings") },
+            text = { Text(stringResource(R.string.chat_options_edit_settings)) },
             onClick = {
                 onEditChatSettingsClick()
                 viewModel.hideMoreOptionsPopup()
@@ -51,7 +55,7 @@ fun ChatMoreOptionsPopup(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Assistant, contentDescription = "Change Model") },
-            text = { Text("Change Model") },
+            text = { Text(stringResource(R.string.chat_options_change_model)) },
             onClick = {
                 viewModel.showSelectModelListDialog()
                 viewModel.hideMoreOptionsPopup()
@@ -59,7 +63,7 @@ fun ChatMoreOptionsPopup(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.AutoMirrored.Filled.ShortText, contentDescription = "Context Usage") },
-            text = { Text("Context Length Usage") },
+            text = { Text(stringResource(R.string.chat_options_ctx_length_usage)) },
             onClick = {
                 viewModel.showContextLengthUsageDialog()
                 viewModel.hideMoreOptionsPopup()
@@ -67,14 +71,14 @@ fun ChatMoreOptionsPopup(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete Chat") },
-            text = { Text("Delete Chat") },
+            text = { Text(stringResource(R.string.dialog_title_delete_chat)) },
             onClick = {
                 viewModel.currChatState.value?.let { chat ->
                     createAlertDialog(
-                        dialogTitle = "Delete Chat",
-                        dialogText = "Are you sure you want to delete chat '${chat.name}'?",
-                        dialogPositiveButtonText = "Delete",
-                        dialogNegativeButtonText = "Cancel",
+                        dialogTitle = context.getString(R.string.dialog_title_delete_chat),
+                        dialogText = context.getString(R.string.dialog_text_delete_chat, chat.name),
+                        dialogPositiveButtonText = context.getString(R.string.dialog_pos_delete),
+                        dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
                         onPositiveButtonClick = {
                             viewModel.deleteChat(chat)
                             Toast

@@ -30,6 +30,7 @@ import io.shubham0204.hf_model_hub_api.HFModelInfo
 import io.shubham0204.hf_model_hub_api.HFModelSearch
 import io.shubham0204.hf_model_hub_api.HFModelTree
 import io.shubham0204.smollm.GGUFReader
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.HFModelsAPI
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.data.ModelsDB
@@ -107,9 +108,9 @@ class DownloadModelsViewModel(
             fileName = cursor.getString(nameIndex)
         }
         if (fileName.isNotEmpty()) {
-            setProgressDialogTitle("Copying model file...")
+            setProgressDialogTitle(context.getString(R.string.dialog_progress_copy_model_title))
             setProgressDialogText(
-                "$fileName\n(The model needs to be copied to the app's internal directory for use)",
+                context.getString(R.string.dialog_progress_copy_model_text, fileName),
             )
             showProgressDialog()
             CoroutineScope(Dispatchers.IO).launch {
@@ -133,7 +134,7 @@ class DownloadModelsViewModel(
                 }
             }
         } else {
-            Toast.makeText(context, "Invalid file", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.toast_invalid_file), Toast.LENGTH_SHORT).show()
         }
     }
 

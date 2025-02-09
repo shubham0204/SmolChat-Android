@@ -51,7 +51,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
@@ -76,7 +78,7 @@ fun TasksActivityScreenUI() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { AppBarTitleText(text = "Manage Tasks") },
+                    title = { AppBarTitleText(text = stringResource(R.string.tasks_manage_tasks_title)) },
                     actions = {
                         IconButton(
                             onClick = { viewModel.showCreateTaskDialogState.value = true },
@@ -104,9 +106,7 @@ fun TasksActivityScreenUI() {
             ) {
                 val tasks by viewModel.tasksDB.getTasks().collectAsState(emptyList())
                 Text(
-                    text =
-                        "Tasks are chat templates with a system prompt and model defined. Use them to perform quick " +
-                            "actions with the selected SLM model.",
+                    text = stringResource(R.string.tasks_manage_tasks_desc),
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(16.dp),
                 )
@@ -125,10 +125,10 @@ fun TasksActivityScreenUI() {
                     },
                     onDeleteTaskClick = { task ->
                         createAlertDialog(
-                            dialogTitle = "Delete Task",
+                            dialogTitle = context.getString(R.string.dialog_delete_task_title),
                             dialogText = "Are you sure you want to delete task '${task.name}'?",
-                            dialogPositiveButtonText = "Delete",
-                            dialogNegativeButtonText = "Cancel",
+                            dialogPositiveButtonText = context.getString(R.string.dialog_pos_delete),
+                            dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
                             onPositiveButtonClick = {
                                 viewModel.deleteTask(task.id)
                                 Toast
