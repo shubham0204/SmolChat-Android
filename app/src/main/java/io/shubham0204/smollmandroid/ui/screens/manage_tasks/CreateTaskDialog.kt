@@ -49,7 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.data.LLMModel
+import io.shubham0204.smollmandroid.data.models.LLMModel
 import io.shubham0204.smollmandroid.ui.screens.chat.SelectModelsList
 
 @Composable

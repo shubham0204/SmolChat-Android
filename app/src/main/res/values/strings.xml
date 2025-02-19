@@ -79,4 +79,5 @@
     <string name="dialog_progress_copy_model_title">Copying model file...</string>
     <string name="dialog_progress_copy_model_text">%1$s\n(The model needs to be copied to the app\'s internal directory for use)</string>
     <string name="toast_invalid_file">Invalid file</string>
+    <string name="chat_options_add_docs">Add Documents</string>
 </resources>

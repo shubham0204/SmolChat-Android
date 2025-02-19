@@ -158,10 +158,75 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "5:7509259609274513781",
+      "lastPropertyId": "5:8885788153234298395",
+      "name": "Chunk",
+      "properties": [
+        {
+          "id": "1:6736676712834826830",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5943155050915064209",
+          "name": "docId",
+          "type": 6
+        },
+        {
+          "id": "3:6339135797582662745",
+          "name": "chatId",
+          "type": 6
+        },
+        {
+          "id": "4:482726401519450290",
+          "name": "text",
+          "type": 9
+        },
+        {
+          "id": "5:8885788153234298395",
+          "name": "embedding",
+          "indexId": "1:3954059301946430148",
+          "type": 28,
+          "flags": 8
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:1236422469178850242",
+      "lastPropertyId": "4:6435870570680251307",
+      "name": "Document",
+      "properties": [
+        {
+          "id": "1:6299031600183295854",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4306118828240116817",
+          "name": "chatId",
+          "type": 6
+        },
+        {
+          "id": "3:1266482462635641671",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "4:6435870570680251307",
+          "name": "fileSize",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "4:7562610393009768351",
-  "lastIndexId": "0:0",
+  "lastEntityId": "6:1236422469178850242",
+  "lastIndexId": "1:3954059301946430148",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

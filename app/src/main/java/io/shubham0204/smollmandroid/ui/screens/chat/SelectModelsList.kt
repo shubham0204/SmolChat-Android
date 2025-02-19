@@ -61,7 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.data.LLMModel
+import io.shubham0204.smollmandroid.data.models.LLMModel
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.screens.model_download.DownloadModelActivity
 import java.io.File
@@ -85,8 +85,8 @@ fun SelectModelsList(
         Dialog(onDismissRequest = onDismissRequest) {
             Column(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
+                    Modifier
+                        .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
                         .padding(16.dp),
             ) {
@@ -128,7 +128,7 @@ fun SelectModelsList(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
-                        Modifier
+                            Modifier
                                 .align(Alignment.End)
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
@@ -219,8 +219,8 @@ private fun ModelListItem(
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                 .padding(4.dp)
                 .clip(RoundedCornerShape(8.dp))
-            .clickable { onModelListItemClick(model) }
-            .fillMaxWidth(),
+                .clickable { onModelListItemClick(model) }
+                .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {

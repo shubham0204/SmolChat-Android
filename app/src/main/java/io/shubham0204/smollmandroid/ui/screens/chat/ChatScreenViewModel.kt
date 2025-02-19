@@ -36,12 +36,13 @@ import io.noties.markwon.syntax.SyntaxHighlightPlugin
 import io.noties.prism4j.Prism4j
 import io.shubham0204.smollm.SmolLM
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.data.Chat
-import io.shubham0204.smollmandroid.data.ChatMessage
-import io.shubham0204.smollmandroid.data.ChatsDB
-import io.shubham0204.smollmandroid.data.MessagesDB
-import io.shubham0204.smollmandroid.data.TasksDB
-import io.shubham0204.smollmandroid.llm.ModelsRepository
+import io.shubham0204.smollmandroid.data.chat.Chat
+import io.shubham0204.smollmandroid.data.chat.ChatMessage
+import io.shubham0204.smollmandroid.data.chat.ChatsDB
+import io.shubham0204.smollmandroid.data.chat.MessagesDB
+import io.shubham0204.smollmandroid.data.docs.DocumentsDB
+import io.shubham0204.smollmandroid.data.models.ModelsRepository
+import io.shubham0204.smollmandroid.data.tasks.TasksDB
 import io.shubham0204.smollmandroid.prism4j.PrismGrammarLocator
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import kotlinx.coroutines.CancellationException
@@ -65,6 +66,7 @@ class ChatScreenViewModel(
     val context: Context,
     val messagesDB: MessagesDB,
     val chatsDB: ChatsDB,
+    val documentsDB: DocumentsDB,
     val modelsRepository: ModelsRepository,
     val tasksDB: TasksDB,
 ) : ViewModel() {
@@ -96,6 +98,9 @@ class ChatScreenViewModel(
 
     private val _showTaskListBottomListState = MutableStateFlow(false)
     val showTaskListBottomListState: StateFlow<Boolean> = _showTaskListBottomListState
+
+    private val _showManageDocsDialogState = MutableStateFlow(false)
+    val showManageDocsDialogState: StateFlow<Boolean> = _showManageDocsDialogState
 
     private var responseGenerationJob: Job? = null
     private val smolLM = SmolLM()
@@ -331,6 +336,16 @@ class ChatScreenViewModel(
                 onNegativeButtonClick = null,
             )
         }
+    }
+
+    // fun getDocuments(): Flow<List<Document>> = documentsDB.get
+
+    fun showManageDocsDialog() {
+        _showManageDocsDialogState.value = true
+    }
+
+    fun hideManageDocsDialog() {
+        _showManageDocsDialogState.value = false
     }
 
     fun showSelectModelListDialog() {

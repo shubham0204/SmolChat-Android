@@ -113,6 +113,9 @@ dependencies {
     implementation("androidx.paging:paging-runtime:$pagingVersion")
     implementation("androidx.paging:paging-compose:$pagingVersion")
 
+    // iTextPDF: for parsing PDF files
+    implementation("com.itextpdf:itextpdf:5.5.13.3")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
