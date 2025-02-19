@@ -34,7 +34,6 @@ import io.noties.markwon.linkify.LinkifyPlugin
 import io.noties.markwon.syntax.Prism4jThemeDarkula
 import io.noties.markwon.syntax.SyntaxHighlightPlugin
 import io.noties.prism4j.Prism4j
-import io.shubham0204.smollm.SmolLM
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.ChatMessage
@@ -42,23 +41,17 @@ import io.shubham0204.smollmandroid.data.ChatsDB
 import io.shubham0204.smollmandroid.data.MessagesDB
 import io.shubham0204.smollmandroid.data.TasksDB
 import io.shubham0204.smollmandroid.llm.ModelsRepository
+import io.shubham0204.smollmandroid.llm.SmolLMManager
 import io.shubham0204.smollmandroid.prism4j.PrismGrammarLocator
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.android.annotation.KoinViewModel
 import java.util.Date
-import kotlin.time.measureTime
 
-const val LOGTAG = "[SmolLMAndroid-Kt]"
-val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
+private const val LOGTAG = "[SmolLMAndroid-Kt]"
+private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 
 @KoinViewModel
 class ChatScreenViewModel(
@@ -67,6 +60,7 @@ class ChatScreenViewModel(
     val chatsDB: ChatsDB,
     val modelsRepository: ModelsRepository,
     val tasksDB: TasksDB,
+    val smolLMManager: SmolLMManager,
 ) : ViewModel() {
     enum class ModelLoadingState {
         NOT_LOADED, // model loading not started
@@ -97,12 +91,9 @@ class ChatScreenViewModel(
     private val _showTaskListBottomListState = MutableStateFlow(false)
     val showTaskListBottomListState: StateFlow<Boolean> = _showTaskListBottomListState
 
-    private var responseGenerationJob: Job? = null
-    private val smolLM = SmolLM()
-
     // regex to replace <think> tags with <blockquote>
     // to render them correctly in Markdown
-    private val findThinkTagRegex = Regex("<think>(.*?)</think>")
+    private val findThinkTagRegex = Regex("<think>(.*?)</think>", RegexOption.DOT_MATCHES_ALL)
     var responseGenerationsSpeed: Float? = null
     var responseGenerationTimeSecs: Int? = null
     val markwon: Markwon
@@ -176,59 +167,48 @@ class ChatScreenViewModel(
             }
             messagesDB.addUserMessage(chat.id, query)
             _isGeneratingResponse.value = true
-            responseGenerationJob =
-                CoroutineScope(Dispatchers.Default).launch {
-                    _partialResponse.value = ""
-                    try {
-                        val responseDuration =
-                            measureTime {
-                                smolLM.getResponse(query).collect {
-                                    _partialResponse.value += it
-                                }
-                            }
-                        // Replace <think> tags with <blockquote> tags
-                        // to get a neat Markdown rendering
-                        _partialResponse.value =
-                            findThinkTagRegex.replace(_partialResponse.value) { matchResult ->
-                                "<blockquote>${matchResult.groupValues[1]}</blockquote>"
-                            }
-                        // once the response is generated
-                        // add to the messages database
-                        // and update the context length used for the current chat
-                        messagesDB.addAssistantMessage(chat.id, _partialResponse.value)
-                        chatsDB.updateChat(chat.copy(contextSizeConsumed = smolLM.getContextLengthUsed()))
-                        withContext(Dispatchers.Main) {
-                            _isGeneratingResponse.value = false
-                            responseGenerationsSpeed = smolLM.getResponseGenerationSpeed()
-                            responseGenerationTimeSecs = responseDuration.inWholeSeconds.toInt()
-                        }
-                    } catch (e: CancellationException) {
-                        // ignore CancellationException, as it was called because
-                        // `responseGenerationJob` was cancelled in the `stopGeneration` method
-                    } catch (e: Exception) {
-                        _partialResponse.value = ""
-                        _isGeneratingResponse.value = false
-                        createAlertDialog(
-                            dialogTitle = "An error occurred",
-                            dialogText = "The app is unable to process the query. The error message is: ${e.message}",
-                            dialogPositiveButtonText = "Change model",
-                            onPositiveButtonClick = {},
-                            dialogNegativeButtonText = "",
-                            onNegativeButtonClick = {},
-                        )
+            _partialResponse.value = ""
+            smolLMManager.getResponse(
+                query,
+                responseTransform = {
+                    // Replace <think> tags with <blockquote> tags
+                    // to get a neat Markdown rendering
+                    findThinkTagRegex.replace(it) { matchResult ->
+                        "<blockquote>${matchResult.groupValues[1]}</blockquote>"
                     }
-                }
+                },
+                onPartialResponseGenerated = {
+                    _partialResponse.value = it
+                },
+                onSuccess = { response ->
+                    _isGeneratingResponse.value = false
+                    responseGenerationsSpeed = response.generationSpeed
+                    responseGenerationTimeSecs = response.generationTimeSecs
+                    chatsDB.updateChat(chat.copy(contextSizeConsumed = response.contextLengthUsed))
+                },
+                onCancelled = {
+                    // ignore CancellationException, as it was called because
+                    // `responseGenerationJob` was cancelled in the `stopGeneration` method
+                },
+                onError = { exception ->
+                    _isGeneratingResponse.value = false
+                    createAlertDialog(
+                        dialogTitle = "An error occurred",
+                        dialogText = "The app is unable to process the query. The error message is: ${exception.message}",
+                        dialogPositiveButtonText = "Change model",
+                        onPositiveButtonClick = {},
+                        dialogNegativeButtonText = "",
+                        onNegativeButtonClick = {},
+                    )
+                },
+            )
         }
     }
 
     fun stopGeneration() {
         _isGeneratingResponse.value = false
         _partialResponse.value = ""
-        responseGenerationJob?.let { job ->
-            if (job.isActive) {
-                job.cancel()
-            }
-        }
+        smolLMManager.stopResponseGeneration()
     }
 
     fun switchChat(chat: Chat) {
@@ -257,7 +237,7 @@ class ChatScreenViewModel(
      */
     fun loadModel() {
         // clear resources occupied by the previous model
-        smolLM.close()
+        smolLMManager.close()
         _currChatState.value?.let { chat ->
             if (chat.llmModelId == -1L) {
                 _showSelectModelListDialogState.value = true
@@ -265,33 +245,16 @@ class ChatScreenViewModel(
                 val model = modelsRepository.getModelFromId(chat.llmModelId)
                 if (model != null) {
                     _modelLoadState.value = ModelLoadingState.IN_PROGRESS
-                    CoroutineScope(Dispatchers.Default).launch {
-                        try {
-                            smolLM.create(
-                                model.path,
-                                chat.minP,
-                                chat.temperature,
-                                !chat.isTask,
-                                chat.contextSize.toLong(),
-                            )
-                            LOGD("Model loaded")
-                            if (chat.systemPrompt.isNotEmpty()) {
-                                smolLM.addSystemPrompt(chat.systemPrompt)
-                                LOGD("System prompt added")
-                            }
-                            if (!chat.isTask) {
-                                messagesDB.getMessagesForModel(chat.id).forEach { message ->
-                                    if (message.isUserMessage) {
-                                        smolLM.addUserMessage(message.message)
-                                        LOGD("User message added: ${message.message}")
-                                    } else {
-                                        smolLM.addAssistantMessage(message.message)
-                                        LOGD("Assistant message added: ${message.message}")
-                                    }
-                                }
-                            }
-                            withContext(Dispatchers.Main) { _modelLoadState.value = ModelLoadingState.SUCCESS }
-                        } catch (e: Exception) {
+                    smolLMManager.create(
+                        SmolLMManager.SmolLMInitParams(
+                            chat,
+                            model.path,
+                            chat.minP,
+                            chat.temperature,
+                            !chat.isTask,
+                            chat.contextSize.toLong(),
+                        ),
+                        onError = { e ->
                             _modelLoadState.value = ModelLoadingState.FAILURE
                             createAlertDialog(
                                 dialogTitle = context.getString(R.string.dialog_err_title),
@@ -301,8 +264,11 @@ class ChatScreenViewModel(
                                 dialogNegativeButtonText = context.getString(R.string.dialog_err_close),
                                 onNegativeButtonClick = {},
                             )
-                        }
-                    }
+                        },
+                        onSuccess = {
+                            _modelLoadState.value = ModelLoadingState.SUCCESS
+                        },
+                    )
                 } else {
                     _showSelectModelListDialogState.value = true
                 }
@@ -310,9 +276,12 @@ class ChatScreenViewModel(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        smolLM.close()
+    /**
+     * Clears the resources occupied by the model.
+     */
+    fun unloadModel() {
+        smolLMManager.close()
+        _modelLoadState.value = ModelLoadingState.NOT_LOADED
     }
 
     fun showContextLengthUsageDialog() {

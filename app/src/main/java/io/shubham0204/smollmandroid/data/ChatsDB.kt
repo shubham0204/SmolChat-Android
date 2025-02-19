@@ -16,16 +16,19 @@
 
 package io.shubham0204.smollmandroid.data
 
+import android.util.Log
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.kotlin.flow
-import io.shubham0204.smollmandroid.ui.screens.chat.LOGD
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import org.koin.core.annotation.Single
 import java.util.Date
+
+private const val LOGTAG = "[ChatDB-Kt]"
+private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 
 @Entity
 data class Chat(
