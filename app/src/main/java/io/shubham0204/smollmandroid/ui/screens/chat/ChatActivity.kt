@@ -97,7 +97,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.data.Chat
+import io.shubham0204.smollmandroid.data.chat.Chat
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
@@ -255,8 +255,9 @@ fun ChatActivityScreenUI(
                     }
                 }
             }
-            SelectModelsList(viewModel)
+            ShowSelectModelsList(viewModel)
             TasksListBottomSheet(viewModel)
+            ShowManageDocsDialog(viewModel)
         }
     }
 }
@@ -634,7 +635,7 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
 }
 
 @Composable
-private fun SelectModelsList(viewModel: ChatScreenViewModel) {
+private fun ShowSelectModelsList(viewModel: ChatScreenViewModel) {
     val showSelectModelsListDialog by viewModel.showSelectModelListDialogState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     if (showSelectModelsListDialog) {
@@ -658,5 +659,13 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
                     ).show()
             },
         )
+    }
+}
+
+@Composable
+private fun ShowManageDocsDialog(viewModel: ChatScreenViewModel) {
+    val showManageDocsDialog by viewModel.showManageDocsDialogState.collectAsStateWithLifecycle()
+    if (showManageDocsDialog) {
+        ManageDocsDialog(viewModel)
     }
 }

@@ -58,6 +58,7 @@ class ChatScreenViewModel(
     val context: Context,
     val messagesDB: MessagesDB,
     val chatsDB: ChatsDB,
+    val documentsDB: DocumentsDB,
     val modelsRepository: ModelsRepository,
     val tasksDB: TasksDB,
     val smolLMManager: SmolLMManager,
@@ -90,6 +91,12 @@ class ChatScreenViewModel(
 
     private val _showTaskListBottomListState = MutableStateFlow(false)
     val showTaskListBottomListState: StateFlow<Boolean> = _showTaskListBottomListState
+
+    private val _showManageDocsDialogState = MutableStateFlow(false)
+    val showManageDocsDialogState: StateFlow<Boolean> = _showManageDocsDialogState
+
+    private var responseGenerationJob: Job? = null
+    private val smolLM = SmolLM()
 
     // regex to replace <think> tags with <blockquote>
     // to render them correctly in Markdown
@@ -301,6 +308,16 @@ class ChatScreenViewModel(
                 onNegativeButtonClick = null,
             )
         }
+    }
+
+    // fun getDocuments(): Flow<List<Document>> = documentsDB.get
+
+    fun showManageDocsDialog() {
+        _showManageDocsDialogState.value = true
+    }
+
+    fun hideManageDocsDialog() {
+        _showManageDocsDialogState.value = false
     }
 
     fun showSelectModelListDialog() {

@@ -18,9 +18,9 @@ package io.shubham0204.smollmandroid.ui.screens.manage_tasks
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import io.shubham0204.smollmandroid.data.Task
-import io.shubham0204.smollmandroid.data.TasksDB
-import io.shubham0204.smollmandroid.llm.ModelsRepository
+import io.shubham0204.smollmandroid.data.models.ModelsRepository
+import io.shubham0204.smollmandroid.data.tasks.Task
+import io.shubham0204.smollmandroid.data.tasks.TasksDB
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel

@@ -54,7 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.data.Task
+import io.shubham0204.smollmandroid.data.tasks.Task
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.LargeLabelText
@@ -99,10 +99,10 @@ fun TasksActivityScreenUI() {
         ) { paddingValues ->
             Column(
                 modifier =
-                Modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                    Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .fillMaxSize()
+                        .padding(paddingValues),
             ) {
                 val tasks by viewModel.tasksDB.getTasks().collectAsState(emptyList())
                 Text(
@@ -196,10 +196,13 @@ private fun TaskItem(
             }.background(MaterialTheme.colorScheme.surfaceContainerHighest),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
     ) {
-        Column(modifier = Modifier
-            .weight(1f)
-            .padding(4.dp)
-            .padding(8.dp)) {
+        Column(
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(4.dp)
+                    .padding(8.dp),
+        ) {
             LargeLabelText(text = task.name)
             Spacer(modifier = Modifier.height(4.dp))
             Text(

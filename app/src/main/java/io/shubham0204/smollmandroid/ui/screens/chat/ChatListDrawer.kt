@@ -53,7 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.data.Chat
+import io.shubham0204.smollmandroid.data.chat.Chat
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 
 @Composable
@@ -143,13 +143,13 @@ private fun LazyItemScope.ChatListItem(
     Row(
         modifier =
             Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(8.dp))
+                .fillMaxWidth()
+                .padding(4.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(8.dp))
                 .padding(8.dp)
                 .clip(RoundedCornerShape(8.dp))
-            .clickable { onItemClick(chat) }
-            .animateItem(),
+                .clickable { onItemClick(chat) }
+                .animateItem(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {

@@ -16,7 +16,7 @@
 
 package io.shubham0204.smollmandroid.llm
 
-import io.shubham0204.smollmandroid.data.LLMModel
+import io.shubham0204.smollmandroid.data.models.LLMModel
 
 /**
  * A list of models that are shown in the DownloadModelActivity for the user to quickly get started

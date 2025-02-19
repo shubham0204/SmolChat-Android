@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShortText
 import androidx.compose.material.icons.filled.Assistant
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FilePresent
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -58,6 +59,14 @@ fun ChatMoreOptionsPopup(
             text = { Text(stringResource(R.string.chat_options_change_model)) },
             onClick = {
                 viewModel.showSelectModelListDialog()
+                viewModel.hideMoreOptionsPopup()
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.Default.FilePresent, contentDescription = "Add Documents") },
+            text = { Text(stringResource(R.string.chat_options_add_docs)) },
+            onClick = {
+                viewModel.showManageDocsDialog()
                 viewModel.hideMoreOptionsPopup()
             },
         )
