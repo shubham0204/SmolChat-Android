@@ -52,11 +52,25 @@ class SmolLM {
             Log.d(logTag, "- hasI8mm: $hasI8mm")
             Log.d(logTag, "- isAtLeastArmV82: $isAtLeastArmV82")
             Log.d(logTag, "- isAtLeastArmV84: $isAtLeastArmV84")
+            Log.d(logTag, "Build Information: ")
+            Log.d(logTag, "- ABIs: ${Build.SUPPORTED_ABIS.contentToString()}")
+            Log.d(logTag, "- BOARD: ${Build.BOARD}")
+            Log.d(logTag, "- BRAND: ${Build.BRAND}")
+            Log.d(logTag, "- DEVICE: ${Build.DEVICE}")
+            Log.d(logTag, "- DISPLAY: ${Build.DISPLAY}")
+            Log.d(logTag, "- FINGERPRINT: ${Build.FINGERPRINT}")
+            Log.d(logTag, "- HARDWARE: ${Build.HARDWARE}")
+            Log.d(logTag, "- HOST: ${Build.HOST}")
+            Log.d(logTag, "- ID: ${Build.ID}")
+            Log.d(logTag, "- MANUFACTURER: ${Build.MANUFACTURER}")
+            Log.d(logTag, "- MODEL: ${Build.MODEL}")
+            Log.d(logTag, "- PRODUCT: ${Build.PRODUCT}")
 
             if (supportsArm64V8a()) {
                 if (isAtLeastArmV84 && hasSve && hasI8mm && hasFp16 && hasDotProd) {
                     Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod_i8mm_sve.so")
-                    System.loadLibrary("smollm_v8_4_fp16_dotprod_i8mm_sve")
+                    // System.loadLibrary("smollm_v8_4_fp16_dotprod_i8mm_sve")
+                    System.loadLibrary("smollm_v8")
                 } else if (isAtLeastArmV84 && hasSve && hasFp16 && hasDotProd) {
                     Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod_sve.so")
                     System.loadLibrary("smollm_v8_4_fp16_dotprod_sve")

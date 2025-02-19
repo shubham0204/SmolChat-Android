@@ -48,8 +48,9 @@ set(SMOLLM_SOURCES
         ${COMMON_DIR}/ngram-cache.cpp
         ${COMMON_DIR}/sampling.cpp
 
-        LLMInference.cpp
-        smollm.cpp
+        llm/LLMInference.cpp
+        splitters/RecursiveTextSplitter.cpp
+        SmolLM.cpp
 )
 set(GGUF_READER_SOURCES
         ${GGML_DIR}/src/ggml.c
@@ -66,6 +67,10 @@ set(GGUF_READER_SOURCES
         ${GGML_DIR}/src/ggml-cpu/ggml-cpu-traits.cpp
         ${GGML_DIR}/src/gguf.cpp
         GGUFReader.cpp
+)
+set(TEXTSPLITTER_SOURCES
+        splitters/RecursiveTextSplitter.cpp
+        TextSplitters.cpp
 )
 
 # compiling for different CPU extensions for Arm64 (aarch64)
@@ -148,3 +153,8 @@ target_include_directories(
         ${GGML_DIR}/src
         ${GGML_DIR}/src/ggml-cpu
 )
+
+
+# library target for TextSplitter
+set(TARGET_NAME_GGUF_READER textsplitters)
+add_library(${TARGET_NAME_GGUF_READER} SHARED ${TEXTSPLITTER_SOURCES})

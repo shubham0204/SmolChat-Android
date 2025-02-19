@@ -20,7 +20,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
-import io.shubham0204.smollmandroid.llm.ModelsRepository
+import io.shubham0204.smollmandroid.data.models.ModelsRepository
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatActivity
 import io.shubham0204.smollmandroid.ui.screens.model_download.DownloadModelActivity
 import org.koin.android.ext.android.inject

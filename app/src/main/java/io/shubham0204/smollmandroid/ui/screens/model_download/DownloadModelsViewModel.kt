@@ -31,9 +31,9 @@ import io.shubham0204.hf_model_hub_api.HFModelSearch
 import io.shubham0204.hf_model_hub_api.HFModelTree
 import io.shubham0204.smollm.GGUFReader
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.data.HFModelsAPI
-import io.shubham0204.smollmandroid.data.LLMModel
-import io.shubham0204.smollmandroid.data.ModelsDB
+import io.shubham0204.smollmandroid.data.models.HFModelsAPI
+import io.shubham0204.smollmandroid.data.models.LLMModel
+import io.shubham0204.smollmandroid.data.models.ModelsDB
 import io.shubham0204.smollmandroid.ui.components.hideProgressDialog
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogText
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogTitle
