@@ -38,8 +38,10 @@ class SmolLMManager(
 ) {
     private val instance = SmolLM()
     private var responseGenerationJob: Job? = null
+    private var modelInitJob: Job? = null
     private var chat: Chat? = null
     var isInstanceLoaded = false
+    var isInferenceOn = false
 
     data class SmolLMInitParams(
         val chat: Chat,
@@ -63,39 +65,40 @@ class SmolLMManager(
         onSuccess: () -> Unit,
     ) {
         try {
-            CoroutineScope(Dispatchers.Default).launch {
-                chat = initParams.chat
-                if (isInstanceLoaded) {
-                    close()
-                }
-                instance.create(
-                    initParams.modelPath,
-                    initParams.minP,
-                    initParams.temperature,
-                    initParams.storeChats,
-                    initParams.contextSize,
-                )
-                LOGD("Model loaded")
-                if (initParams.chat.systemPrompt.isNotEmpty()) {
-                    instance.addSystemPrompt(initParams.chat.systemPrompt)
-                    LOGD("System prompt added")
-                }
-                if (!initParams.chat.isTask) {
-                    messagesDB.getMessagesForModel(initParams.chat.id).forEach { message ->
-                        if (message.isUserMessage) {
-                            instance.addUserMessage(message.message)
-                            LOGD("User message added: ${message.message}")
-                        } else {
-                            instance.addAssistantMessage(message.message)
-                            LOGD("Assistant message added: ${message.message}")
+            modelInitJob =
+                CoroutineScope(Dispatchers.Default).launch {
+                    chat = initParams.chat
+                    if (isInstanceLoaded) {
+                        close()
+                    }
+                    instance.create(
+                        initParams.modelPath,
+                        initParams.minP,
+                        initParams.temperature,
+                        initParams.storeChats,
+                        initParams.contextSize,
+                    )
+                    LOGD("Model loaded")
+                    if (initParams.chat.systemPrompt.isNotEmpty()) {
+                        instance.addSystemPrompt(initParams.chat.systemPrompt)
+                        LOGD("System prompt added")
+                    }
+                    if (!initParams.chat.isTask) {
+                        messagesDB.getMessagesForModel(initParams.chat.id).forEach { message ->
+                            if (message.isUserMessage) {
+                                instance.addUserMessage(message.message)
+                                LOGD("User message added: ${message.message}")
+                            } else {
+                                instance.addAssistantMessage(message.message)
+                                LOGD("Assistant message added: ${message.message}")
+                            }
                         }
                     }
+                    withContext(Dispatchers.Main) {
+                        isInstanceLoaded = true
+                        onSuccess()
+                    }
                 }
-                withContext(Dispatchers.Main) {
-                    isInstanceLoaded = true
-                    onSuccess()
-                }
-            }
         } catch (e: Exception) {
             onError(e)
         }
@@ -113,6 +116,7 @@ class SmolLMManager(
             assert(chat != null) { "Please call SmolLMManager.create() first." }
             responseGenerationJob =
                 CoroutineScope(Dispatchers.Default).launch {
+                    isInferenceOn = true
                     var response = ""
                     val duration =
                         measureTime {
@@ -127,6 +131,7 @@ class SmolLMManager(
                     // add it to the messages database
                     messagesDB.addAssistantMessage(chat!!.id, response)
                     withContext(Dispatchers.Main) {
+                        isInferenceOn = false
                         onSuccess(
                             SmolLMResponse(
                                 response = response,
@@ -138,22 +143,28 @@ class SmolLMManager(
                     }
                 }
         } catch (e: CancellationException) {
+            isInferenceOn = false
             onCancelled()
         } catch (e: Exception) {
+            isInferenceOn = false
             onError(e)
         }
     }
 
     fun stopResponseGeneration() {
-        responseGenerationJob?.let {
-            if (it.isActive) {
-                it.cancel()
-            }
-        }
+        responseGenerationJob?.let { cancelJobIfActive(it) }
     }
 
     fun close() {
+        stopResponseGeneration()
+        modelInitJob?.let { cancelJobIfActive(it) }
         instance.close()
         isInstanceLoaded = false
+    }
+
+    private fun cancelJobIfActive(job: Job) {
+        if (job.isActive) {
+            job.cancel()
+        }
     }
 }

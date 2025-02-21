@@ -111,6 +111,7 @@ private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 
 class ChatActivity : ComponentActivity() {
     private val viewModel: ChatScreenViewModel by inject()
+    private var modelUnloaded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,14 +146,19 @@ class ChatActivity : ComponentActivity() {
      */
     override fun onStart() {
         super.onStart()
-        viewModel.loadModel()
-        LOGD("onStart() called - model loaded")
+        if (modelUnloaded) {
+            viewModel.loadModel()
+            LOGD("onStart() called - model loaded")
+        }
     }
 
     override fun onStop() {
         super.onStop()
-        viewModel.unloadModel()
-        LOGD("onStop() called - model unloaded")
+        modelUnloaded = viewModel.unloadModel()
+        if (modelUnloaded) {
+            Toast.makeText(this, "Model unloaded from memory", Toast.LENGTH_SHORT).show()
+        }
+        LOGD("onStop() called - model unloaded result: $modelUnloaded")
     }
 }
 

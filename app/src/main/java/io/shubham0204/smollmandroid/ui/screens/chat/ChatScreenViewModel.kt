@@ -239,50 +239,51 @@ class ChatScreenViewModel(
         // clear resources occupied by the previous model
         smolLMManager.close()
         _currChatState.value?.let { chat ->
-            if (chat.llmModelId == -1L) {
+            val model = modelsRepository.getModelFromId(chat.llmModelId)
+            if (chat.llmModelId == -1L || model == null) {
                 _showSelectModelListDialogState.value = true
             } else {
-                val model = modelsRepository.getModelFromId(chat.llmModelId)
-                if (model != null) {
-                    _modelLoadState.value = ModelLoadingState.IN_PROGRESS
-                    smolLMManager.create(
-                        SmolLMManager.SmolLMInitParams(
-                            chat,
-                            model.path,
-                            chat.minP,
-                            chat.temperature,
-                            !chat.isTask,
-                            chat.contextSize.toLong(),
-                        ),
-                        onError = { e ->
-                            _modelLoadState.value = ModelLoadingState.FAILURE
-                            createAlertDialog(
-                                dialogTitle = context.getString(R.string.dialog_err_title),
-                                dialogText = context.getString(R.string.dialog_err_text, e.message),
-                                dialogPositiveButtonText = context.getString(R.string.dialog_err_change_model),
-                                onPositiveButtonClick = { showSelectModelListDialog() },
-                                dialogNegativeButtonText = context.getString(R.string.dialog_err_close),
-                                onNegativeButtonClick = {},
-                            )
-                        },
-                        onSuccess = {
-                            _modelLoadState.value = ModelLoadingState.SUCCESS
-                        },
-                    )
-                } else {
-                    _showSelectModelListDialogState.value = true
-                }
+                _modelLoadState.value = ModelLoadingState.IN_PROGRESS
+                smolLMManager.create(
+                    SmolLMManager.SmolLMInitParams(
+                        chat,
+                        model.path,
+                        chat.minP,
+                        chat.temperature,
+                        !chat.isTask,
+                        chat.contextSize.toLong(),
+                    ),
+                    onError = { e ->
+                        _modelLoadState.value = ModelLoadingState.FAILURE
+                        createAlertDialog(
+                            dialogTitle = context.getString(R.string.dialog_err_title),
+                            dialogText = context.getString(R.string.dialog_err_text, e.message),
+                            dialogPositiveButtonText = context.getString(R.string.dialog_err_change_model),
+                            onPositiveButtonClick = { showSelectModelListDialog() },
+                            dialogNegativeButtonText = context.getString(R.string.dialog_err_close),
+                            onNegativeButtonClick = {},
+                        )
+                    },
+                    onSuccess = {
+                        _modelLoadState.value = ModelLoadingState.SUCCESS
+                    },
+                )
             }
         }
     }
 
     /**
-     * Clears the resources occupied by the model.
+     * Clears the resources occupied by the model only
+     * if the inference is not in progress.
      */
-    fun unloadModel() {
-        smolLMManager.close()
-        _modelLoadState.value = ModelLoadingState.NOT_LOADED
-    }
+    fun unloadModel(): Boolean =
+        if (!smolLMManager.isInferenceOn) {
+            smolLMManager.close()
+            _modelLoadState.value = ModelLoadingState.NOT_LOADED
+            true
+        } else {
+            false
+        }
 
     fun showContextLengthUsageDialog() {
         _currChatState.value?.let { chat ->
