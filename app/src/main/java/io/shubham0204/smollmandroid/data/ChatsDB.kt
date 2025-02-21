@@ -43,6 +43,10 @@ data class Chat(
     var isTask: Boolean = false,
     var contextSize: Int = 0,
     var contextSizeConsumed: Int = 0,
+    var chatTemplate: String = "",
+    var nThreads: Int = 4,
+    var useMmap: Boolean = true,
+    var useMlock: Boolean = false,
 )
 
 @Single

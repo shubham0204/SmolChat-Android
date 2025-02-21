@@ -1,16 +1,15 @@
 #include "llama.h"
+#include <jni.h>
 #include <string>
 #include <vector>
-#include <jni.h>
 
 class LLMInference {
-
     // llama.cpp-specific types
-    llama_context *_ctx;
-    llama_model *_model;
-    llama_sampler *_sampler;
-    llama_token _currToken;
-    llama_batch _batch;
+    llama_context* _ctx;
+    llama_model*   _model;
+    llama_sampler* _sampler;
+    llama_token    _currToken;
+    llama_batch    _batch;
 
     // container to store user/assistant messages in the chat
     std::vector<llama_chat_message> _messages;
@@ -20,7 +19,8 @@ class LLMInference {
     // stores the tokens for the last query
     // appended to `_messages`
     std::vector<llama_token> _promptTokens;
-    int _prevLen = 0;
+    int                      _prevLen = 0;
+    const char*              _chatTemplate;
 
     // stores the complete response for the given query
     std::string _response;
@@ -30,29 +30,28 @@ class LLMInference {
 
     // response generation metrics
     int64_t _responseGenerationTime = 0;
-    long _responseNumTokens = 0;
+    long    _responseNumTokens      = 0;
 
     // length of context window consumed during the conversation
     int _nCtxUsed = 0;
 
-    bool _isValidUtf8(const char *response);
+    bool _isValidUtf8(const char* response);
 
-public:
+  public:
+    void loadModel(const char* modelPath, float minP, float temperature, bool storeChats, long contextSize,
+                   const char* chatTemplate, int nThreads, bool useMmap, bool useMlock);
 
-    void loadModel(const char *modelPath, float minP, float temperature, bool storeChats, long contextSize);
-
-    void addChatMessage(const char *message, const char *role);
+    void addChatMessage(const char* message, const char* role);
 
     float getResponseGenerationTime() const;
 
     int getContextSizeUsed() const;
 
-    void startCompletion(const char *query);
+    void startCompletion(const char* query);
 
     std::string completionLoop();
 
     void stopCompletion();
 
     ~LLMInference();
-
 };

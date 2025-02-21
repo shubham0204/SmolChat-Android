@@ -94,5 +94,30 @@ fun ChatMoreOptionsPopup(
                 viewModel.hideMoreOptionsPopup()
             },
         )
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Clear Chat Messages") },
+            text = { Text(stringResource(R.string.chat_options_clear_messages)) },
+            onClick = {
+                viewModel.currChatState.value?.let { chat ->
+                    createAlertDialog(
+                        dialogTitle = context.getString(R.string.chat_options_clear_messages),
+                        dialogText = context.getString(R.string.chat_options_clear_messages_text),
+                        dialogPositiveButtonText = context.getString(R.string.dialog_pos_clear),
+                        dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
+                        onPositiveButtonClick = {
+                            viewModel.deleteChatMessages(chat)
+                            Toast
+                                .makeText(
+                                    viewModel.context,
+                                    "Chat '${chat.name}' cleared",
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                        },
+                        onNegativeButtonClick = {},
+                    )
+                }
+                viewModel.hideMoreOptionsPopup()
+            },
+        )
     }
 }

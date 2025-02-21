@@ -122,11 +122,14 @@ class DownloadModelsViewModel(
                 val ggufReader = GGUFReader()
                 ggufReader.load(File(context.filesDir, fileName).absolutePath)
                 val contextSize = ggufReader.getContextSize() ?: -1
+                // TODO: Add a default chat template when the model does not contain one
+                val chatTemplate = ggufReader.getChatTemplate() ?: ""
                 modelsDB.addModel(
                     fileName,
                     "",
                     Paths.get(context.filesDir.absolutePath, fileName).toString(),
                     contextSize.toInt(),
+                    chatTemplate,
                 )
                 withContext(Dispatchers.Main) {
                     hideProgressDialog()

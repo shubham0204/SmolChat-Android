@@ -155,9 +155,6 @@ class ChatActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         modelUnloaded = viewModel.unloadModel()
-        if (modelUnloaded) {
-            Toast.makeText(this, "Model unloaded from memory", Toast.LENGTH_SHORT).show()
-        }
         LOGD("onStop() called - model unloaded result: $modelUnloaded")
     }
 }
@@ -644,7 +641,7 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
             onDismissRequest = { viewModel.hideSelectModelListDialog() },
             modelsList,
             onModelListItemClick = { model ->
-                viewModel.updateChatLLM(model.id)
+                viewModel.updateChatLLMParams(model.id, model.chatTemplate)
                 viewModel.loadModel()
                 viewModel.hideSelectModelListDialog()
             },

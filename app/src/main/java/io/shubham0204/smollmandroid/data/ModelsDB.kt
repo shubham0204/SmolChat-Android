@@ -31,6 +31,7 @@ data class LLMModel(
     var url: String = "",
     var path: String = "",
     var contextSize: Int = 0,
+    var chatTemplate: String = "",
 )
 
 @Single
@@ -42,11 +43,25 @@ class ModelsDB {
         url: String,
         path: String,
         contextSize: Int,
+        chatTemplate: String,
     ) {
-        modelsBox.put(LLMModel(name = name, url = url, path = path, contextSize = contextSize))
+        modelsBox.put(
+            LLMModel(
+                name = name,
+                url = url,
+                path = path,
+                contextSize = contextSize,
+                chatTemplate = chatTemplate,
+            ),
+        )
     }
 
-    fun getModel(id: Long): LLMModel? = modelsBox.get(id)
+    fun getModel(id: Long): LLMModel? =
+        try {
+            modelsBox.get(id)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
 
     fun getModels(): Flow<List<LLMModel>> =
         modelsBox

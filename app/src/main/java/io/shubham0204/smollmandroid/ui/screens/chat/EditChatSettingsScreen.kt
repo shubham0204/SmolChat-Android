@@ -73,9 +73,16 @@ fun EditChatSettingsScreen(
         var minP by remember { mutableFloatStateOf(chat.minP) }
         var temperature by remember { mutableFloatStateOf(chat.temperature) }
         var contextSize by remember { mutableIntStateOf(chat.contextSize) }
+        var nThreads by remember { mutableIntStateOf(chat.nThreads) }
         var takeContextSizeFromModel by remember { mutableStateOf(false) }
+        var chatTemplate by remember { mutableStateOf(chat.chatTemplate) }
+        var useMmap by remember { mutableStateOf(chat.useMmap) }
+        var useMlock by remember { mutableStateOf(chat.useMlock) }
         val context = LocalContext.current
         val llmModel = viewModel.modelsRepository.getModelFromId(chat.llmModelId)
+
+        val totalThreads = Runtime.getRuntime().availableProcessors()
+
         SmolLMAndroidTheme {
             Scaffold(
                 topBar = {
@@ -99,6 +106,10 @@ fun EditChatSettingsScreen(
                                             minP = minP,
                                             temperature = temperature,
                                             contextSize = contextSize,
+                                            chatTemplate = chatTemplate,
+                                            nThreads = nThreads,
+                                            useMmap = useMmap,
+                                            useMlock = useMlock,
                                         )
                                     if (chat != updatedChat) {
                                         viewModel.updateChat(updatedChat)
@@ -152,6 +163,21 @@ fun EditChatSettingsScreen(
                             KeyboardOptions.Default.copy(
                                 capitalization = KeyboardCapitalization.Sentences,
                             ),
+                        maxLines = 5,
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = chatTemplate,
+                        onValueChange = { chatTemplate = it },
+                        label = { Text("Chat template") },
+                        keyboardOptions =
+                            KeyboardOptions.Default.copy(
+                                capitalization = KeyboardCapitalization.Sentences,
+                            ),
+                        maxLines = 5,
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -266,6 +292,64 @@ fun EditChatSettingsScreen(
                             style = MaterialTheme.typography.labelSmall,
                         )
                     }
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "Number of Threads",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = "num threads desc",
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                    Slider(
+                        value = nThreads.toFloat(),
+                        onValueChange = { nThreads = it.toInt() },
+                        valueRange = 0.0f..(totalThreads).toFloat(),
+                        steps = totalThreads,
+                    )
+                    Text(
+                        text = "$nThreads",
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Checkbox(
+                            checked = useMmap,
+                            onCheckedChange = { useMmap = it },
+                        )
+                        Column {
+                            Text(
+                                text = "Use mmap",
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            Text(
+                                text = "Disable memory mapping (mmap) for potentially fewer pageouts and better performance on low-memory systems, but with slower load times and a risk of preventing loading large models.",
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Checkbox(
+                            checked = useMlock,
+                            onCheckedChange = { useMlock = it },
+                        )
+                        Column {
+                            Text(
+                                text = "Use mlock",
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            Text(
+                                text = "Keep the model loaded in RAM for faster performance, but uses more memory and may load slower.",
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }

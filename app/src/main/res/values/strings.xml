@@ -79,4 +79,7 @@
     <string name="dialog_progress_copy_model_title">Copying model file...</string>
     <string name="dialog_progress_copy_model_text">%1$s\n(The model needs to be copied to the app\'s internal directory for use)</string>
     <string name="toast_invalid_file">Invalid file</string>
+    <string name="chat_options_clear_messages">Clear Chat Messages</string>
+    <string name="chat_options_clear_messages_text">Are you sure you clear all messages from this chat?</string>
+    <string name="dialog_pos_clear">Clear</string>
 </resources>

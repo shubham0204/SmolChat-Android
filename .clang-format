@@ -1,0 +1,21 @@
+---
+BasedOnStyle: GNU
+Language: Cpp
+IndentWidth: 4
+UseTab: Never
+PointerAlignment: Left
+ReferenceAlignment: Left
+AlwaysBreakAfterReturnType: None
+SpaceBeforeParens: ControlStatements
+IndentPPDirectives: None
+BreakBeforeBraces: Attach
+ColumnLimit: 120
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: true
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+IndentCaseLabels: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+SortIncludes: true
+IndentWrappedFunctionNames: false

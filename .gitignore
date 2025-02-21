@@ -9,3 +9,5 @@
 .cxx
 local.properties
 .kotlin
+ktlint
+ktlint.bat

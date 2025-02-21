@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:2836016800019494484",
-      "lastPropertyId": "11:2362849161259116908",
+      "lastPropertyId": "15:5655950154838757763",
       "name": "Chat",
       "properties": [
         {
@@ -63,6 +63,26 @@
           "id": "11:2362849161259116908",
           "name": "contextSizeConsumed",
           "type": 5
+        },
+        {
+          "id": "12:454958936887824250",
+          "name": "chatTemplate",
+          "type": 9
+        },
+        {
+          "id": "13:4856054665752880536",
+          "name": "nThreads",
+          "type": 5
+        },
+        {
+          "id": "14:3913930867701003089",
+          "name": "useMmap",
+          "type": 1
+        },
+        {
+          "id": "15:5655950154838757763",
+          "name": "useMlock",
+          "type": 1
         }
       ],
       "relations": []
@@ -98,7 +118,7 @@
     },
     {
       "id": "3:3976296884919346124",
-      "lastPropertyId": "5:5106603935737186708",
+      "lastPropertyId": "6:9128691076308457471",
       "name": "LLMModel",
       "properties": [
         {
@@ -126,6 +146,11 @@
           "id": "5:5106603935737186708",
           "name": "contextSize",
           "type": 5
+        },
+        {
+          "id": "6:9128691076308457471",
+          "name": "chatTemplate",
+          "type": 9
         }
       ],
       "relations": []

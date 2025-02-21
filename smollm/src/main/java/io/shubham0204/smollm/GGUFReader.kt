@@ -43,6 +43,14 @@ class GGUFReader {
         }
     }
 
+    fun getChatTemplate(): String? {
+        assert(nativeHandle != 0L) { "Use GGUFReader.load() to initialize the reader" }
+        val chatTemplate = getChatTemplate(nativeHandle)
+        return chatTemplate.ifEmpty {
+            null
+        }
+    }
+
     /**
      * Returns the native handle (pointer to gguf_context created on the native side)
      */
@@ -52,4 +60,9 @@ class GGUFReader {
      * Read the context size (in no. of tokens) from the GGUF file, given the native handle
      */
     private external fun getContextSize(nativeHandle: Long): Long
+
+    /**
+     * Read the chat template from the GGUF file, given the native handle
+     */
+    private external fun getChatTemplate(nativeHandle: Long): String
 }

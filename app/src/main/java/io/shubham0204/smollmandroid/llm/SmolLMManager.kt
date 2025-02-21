@@ -40,7 +40,7 @@ class SmolLMManager(
     private var responseGenerationJob: Job? = null
     private var modelInitJob: Job? = null
     private var chat: Chat? = null
-    var isInstanceLoaded = false
+    private var isInstanceLoaded = false
     var isInferenceOn = false
 
     data class SmolLMInitParams(
@@ -50,6 +50,10 @@ class SmolLMManager(
         val temperature: Float,
         val storeChats: Boolean,
         val contextSize: Long,
+        val chatTemplate: String,
+        val nThreads: Int,
+        val useMmap: Boolean,
+        val useMlock: Boolean,
     )
 
     data class SmolLMResponse(
@@ -77,6 +81,10 @@ class SmolLMManager(
                         initParams.temperature,
                         initParams.storeChats,
                         initParams.contextSize,
+                        initParams.chatTemplate,
+                        initParams.nThreads,
+                        initParams.useMmap,
+                        initParams.useMlock,
                     )
                     LOGD("Model loaded")
                     if (initParams.chat.systemPrompt.isNotEmpty()) {

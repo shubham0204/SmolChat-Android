@@ -147,8 +147,11 @@ class ChatScreenViewModel(
 
     fun getChatMessages(chatId: Long): Flow<List<ChatMessage>> = messagesDB.getMessages(chatId)
 
-    fun updateChatLLM(modelId: Long) {
-        _currChatState.value = _currChatState.value?.copy(llmModelId = modelId)
+    fun updateChatLLMParams(
+        modelId: Long,
+        chatTemplate: String,
+    ) {
+        _currChatState.value = _currChatState.value?.copy(llmModelId = modelId, chatTemplate = chatTemplate)
         chatsDB.updateChat(_currChatState.value!!)
     }
 
@@ -223,6 +226,11 @@ class ChatScreenViewModel(
         _currChatState.value = null
     }
 
+    fun deleteChatMessages(chat: Chat) {
+        stopGeneration()
+        messagesDB.deleteMessages(chat.id)
+    }
+
     fun deleteModel(modelId: Long) {
         modelsRepository.deleteModel(modelId)
         if (_currChatState.value?.llmModelId == modelId) {
@@ -252,6 +260,10 @@ class ChatScreenViewModel(
                         chat.temperature,
                         !chat.isTask,
                         chat.contextSize.toLong(),
+                        chat.chatTemplate,
+                        chat.nThreads,
+                        chat.useMmap,
+                        chat.useMlock,
                     ),
                     onError = { e ->
                         _modelLoadState.value = ModelLoadingState.FAILURE

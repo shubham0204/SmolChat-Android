@@ -114,9 +114,24 @@ class SmolLM {
         temperature: Float,
         storeChats: Boolean,
         contextSize: Long,
+        chatTemplate: String,
+        nThreads: Int,
+        useMmap: Boolean,
+        useMlock: Boolean,
     ): Boolean =
         withContext(Dispatchers.IO) {
-            nativePtr = loadModel(modelPath, minP, temperature, storeChats, contextSize)
+            nativePtr =
+                loadModel(
+                    modelPath,
+                    minP,
+                    temperature,
+                    storeChats,
+                    contextSize,
+                    chatTemplate,
+                    nThreads,
+                    useMmap,
+                    useMlock,
+                )
             return@withContext nativePtr != 0L
         }
 
@@ -196,6 +211,10 @@ class SmolLM {
         temperature: Float,
         storeChats: Boolean,
         contextSize: Long,
+        chatTemplate: String,
+        nThreads: Int,
+        useMmap: Boolean,
+        useMlock: Boolean,
     ): Long
 
     private external fun addChatMessage(
