@@ -31,12 +31,13 @@ class SmolLMTest {
     private val temperature = 1.0f
     private val systemPrompt = "You are a helpful assistant"
     private val query = "How are you?"
+    private val chatTemplate = "{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}"
     private val smolLM = SmolLM()
 
     @Before
     fun setup() =
         runTest {
-            val isModelLoaded = smolLM.create(modelPath, minP, temperature, storeChats = true, contextSize = 0)
+            val isModelLoaded = smolLM.create(modelPath, minP, temperature, storeChats = true, contextSize = 0, chatTemplate, nThreads = 4, useMmap = true, useMlock = false)
             smolLM.addSystemPrompt(systemPrompt)
             assert(isModelLoaded)
         }
