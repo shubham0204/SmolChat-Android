@@ -64,6 +64,10 @@ android {
             exclude(group = "org.jetbrains", module = "annotations")
         }
     }
+    packaging {
+        resources.excludes.add("META-INF/INDEX.LIST")
+        resources.excludes.add("META-INF/io.netty.versions.properties")
+    }
 }
 
 ksp {
@@ -84,6 +88,7 @@ dependencies {
 
     implementation(project(":smollm"))
     implementation(project(":hf-model-hub-api"))
+    implementation(project(":smollm-server"))
 
     // Koin: dependency injection
     implementation(libs.koin.android)

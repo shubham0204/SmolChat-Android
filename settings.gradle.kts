@@ -1,5 +1,8 @@
 import java.net.URI
 
+include(":smollm-server")
+
+
 include(":hf-model-hub-api")
 
 
