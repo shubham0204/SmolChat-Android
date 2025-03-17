@@ -21,7 +21,6 @@ import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.kotlin.flow
 import io.shubham0204.smollmandroid.data.ObjectBoxStore
-import io.shubham0204.smollmandroid.ui.screens.chat.LOGD
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

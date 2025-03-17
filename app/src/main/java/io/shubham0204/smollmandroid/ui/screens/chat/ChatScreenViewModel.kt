@@ -35,12 +35,13 @@ import io.noties.markwon.syntax.Prism4jThemeDarkula
 import io.noties.markwon.syntax.SyntaxHighlightPlugin
 import io.noties.prism4j.Prism4j
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.data.Chat
-import io.shubham0204.smollmandroid.data.ChatMessage
-import io.shubham0204.smollmandroid.data.ChatsDB
-import io.shubham0204.smollmandroid.data.MessagesDB
-import io.shubham0204.smollmandroid.data.TasksDB
-import io.shubham0204.smollmandroid.llm.ModelsRepository
+import io.shubham0204.smollmandroid.data.chat.Chat
+import io.shubham0204.smollmandroid.data.chat.ChatMessage
+import io.shubham0204.smollmandroid.data.chat.ChatsDB
+import io.shubham0204.smollmandroid.data.chat.MessagesDB
+import io.shubham0204.smollmandroid.data.docs.DocumentsDB
+import io.shubham0204.smollmandroid.data.models.ModelsRepository
+import io.shubham0204.smollmandroid.data.tasks.TasksDB
 import io.shubham0204.smollmandroid.llm.SmolLMManager
 import io.shubham0204.smollmandroid.prism4j.PrismGrammarLocator
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
@@ -94,9 +95,6 @@ class ChatScreenViewModel(
 
     private val _showManageDocsDialogState = MutableStateFlow(false)
     val showManageDocsDialogState: StateFlow<Boolean> = _showManageDocsDialogState
-
-    private var responseGenerationJob: Job? = null
-    private val smolLM = SmolLM()
 
     // regex to replace <think> tags with <blockquote>
     // to render them correctly in Markdown

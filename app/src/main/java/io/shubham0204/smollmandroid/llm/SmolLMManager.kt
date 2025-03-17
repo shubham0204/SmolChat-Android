@@ -18,8 +18,8 @@ package io.shubham0204.smollmandroid.llm
 
 import android.util.Log
 import io.shubham0204.smollm.SmolLM
-import io.shubham0204.smollmandroid.data.Chat
-import io.shubham0204.smollmandroid.data.MessagesDB
+import io.shubham0204.smollmandroid.data.chat.Chat
+import io.shubham0204.smollmandroid.data.chat.MessagesDB
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

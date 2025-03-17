@@ -123,12 +123,12 @@ fun EditChatSettingsScreen(
             ) { paddingValues ->
                 Column(
                     modifier =
-                    Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .padding(paddingValues)
-                        .verticalScroll(rememberScrollState()),
+                        Modifier
+                            .background(MaterialTheme.colorScheme.background)
+                            .fillMaxSize()
+                            .padding(16.dp)
+                            .padding(paddingValues)
+                            .verticalScroll(rememberScrollState()),
                 ) {
                     TextField(
                         modifier = Modifier.fillMaxWidth(),

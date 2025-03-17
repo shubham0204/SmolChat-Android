@@ -197,7 +197,7 @@
     },
     {
       "id": "6:1236422469178850242",
-      "lastPropertyId": "4:6435870570680251307",
+      "lastPropertyId": "5:5484903638633797125",
       "name": "Document",
       "properties": [
         {
@@ -220,6 +220,11 @@
           "id": "4:6435870570680251307",
           "name": "fileSize",
           "type": 6
+        },
+        {
+          "id": "5:5484903638633797125",
+          "name": "dateAdded",
+          "type": 10
         }
       ],
       "relations": []
