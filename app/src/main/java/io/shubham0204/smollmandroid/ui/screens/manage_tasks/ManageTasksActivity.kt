@@ -16,6 +16,7 @@
 
 package io.shubham0204.smollmandroid.ui.screens.manage_tasks
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -53,12 +54,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.drawable.IconCompat
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.LargeLabelText
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
+import io.shubham0204.smollmandroid.ui.screens.chat.ChatActivity
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -99,10 +104,10 @@ fun TasksActivityScreenUI() {
         ) { paddingValues ->
             Column(
                 modifier =
-                Modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                    Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .fillMaxSize()
+                        .padding(paddingValues),
             ) {
                 val tasks by viewModel.tasksDB.getTasks().collectAsState(emptyList())
                 Text(
@@ -119,6 +124,9 @@ fun TasksActivityScreenUI() {
                         it.copy(modelName = modelName)
                     },
                     onTaskSelected = { /* Not applicable as enableTaskClick is set to `false` */ },
+                    onUpdateTaskClick = { task ->
+                        viewModel.updateTask(task)
+                    },
                     onEditTaskClick = { task ->
                         viewModel.selectedTaskState.value = task
                         viewModel.showEditTaskDialogState.value = true
@@ -159,6 +167,7 @@ fun TasksList(
     onTaskSelected: (Task) -> Unit,
     onEditTaskClick: (Task) -> Unit,
     onDeleteTaskClick: (Task) -> Unit,
+    onUpdateTaskClick: (Task) -> Unit,
     enableTaskClick: Boolean,
     showTaskOptions: Boolean,
 ) {
@@ -169,6 +178,7 @@ fun TasksList(
                 onTaskSelected = { onTaskSelected(task) },
                 onDeleteTaskClick = { onDeleteTaskClick(task) },
                 onEditTaskClick = { onEditTaskClick(task) },
+                onUpdateTask = { onUpdateTaskClick(it) },
                 enableTaskClick,
                 showTaskOptions,
             )
@@ -182,6 +192,7 @@ private fun TaskItem(
     onTaskSelected: () -> Unit,
     onDeleteTaskClick: () -> Unit,
     onEditTaskClick: () -> Unit,
+    onUpdateTask: (Task) -> Unit,
     enableTaskClick: Boolean = false,
     showTaskOptions: Boolean = true,
 ) {
@@ -196,10 +207,14 @@ private fun TaskItem(
             }.background(MaterialTheme.colorScheme.surfaceContainerHighest),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
     ) {
-        Column(modifier = Modifier
-            .weight(1f)
-            .padding(4.dp)
-            .padding(8.dp)) {
+        val context = LocalContext.current
+        Column(
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(4.dp)
+                    .padding(8.dp),
+        ) {
             LargeLabelText(text = task.name)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -225,6 +240,7 @@ private fun TaskItem(
                 }
                 if (showTaskOptionsPopup) {
                     TaskOptionsPopup(
+                        task.shortcutId != null,
                         onDismiss = { showTaskOptionsPopup = false },
                         onDeleteTaskClick = {
                             onDeleteTaskClick()
@@ -232,6 +248,31 @@ private fun TaskItem(
                         },
                         onEditTaskClick = {
                             onEditTaskClick()
+                            showTaskOptionsPopup = false
+                        },
+                        onAddTaskShortcut = {
+                            val shortcut =
+                                ShortcutInfoCompat
+                                    .Builder(context, "${task.id}")
+                                    .setShortLabel(task.name)
+                                    .setIcon(IconCompat.createWithResource(context, R.drawable.task_shortcut_icon))
+                                    .setIntent(
+                                        Intent(context, ChatActivity::class.java).apply {
+                                            action = Intent.ACTION_VIEW
+                                            putExtra("task_id", task.id)
+                                        },
+                                    ).build()
+                            ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
+                            Toast.makeText(context, "Shortcut for task '${task.name}' added", Toast.LENGTH_LONG).show()
+                            onUpdateTask(task.copy(shortcutId = shortcut.id))
+                            showTaskOptionsPopup = false
+                        },
+                        onRemoveTaskShortcut = {
+                            task.shortcutId?.let {
+                                ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(it))
+                                onUpdateTask(task.copy(shortcutId = null))
+                                Toast.makeText(context, "Shortcut for task '${task.name}' removed", Toast.LENGTH_LONG).show()
+                            }
                             showTaskOptionsPopup = false
                         },
                     )

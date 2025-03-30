@@ -31,12 +31,15 @@ data class Task(
     var name: String = "",
     var systemPrompt: String = "",
     var modelId: Long = -1,
+    var shortcutId: String? = null,
     @Transient var modelName: String = "",
 )
 
 @Single
 class TasksDB {
     private val tasksBox = ObjectBoxStore.store.boxFor(Task::class.java)
+
+    fun getTask(taskId: Long): Task? = tasksBox.get(taskId)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getTasks(): Flow<List<Task>> =

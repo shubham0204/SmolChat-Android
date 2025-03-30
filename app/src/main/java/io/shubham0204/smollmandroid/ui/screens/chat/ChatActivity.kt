@@ -25,6 +25,7 @@ import android.text.Spanned
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -98,6 +99,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
+import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
@@ -126,6 +128,18 @@ class ChatActivity : ComponentActivity() {
                 val newChat = viewModel.chatsDB.addChat(chatName = "Untitled ${chatCount + 1}")
                 viewModel.switchChat(newChat)
                 viewModel.questionTextDefaultVal = text
+            }
+        }
+
+        /**
+         * Check if the activity was launched by an intent created by a dynamic shortcut
+         * If yes, get the corresponding task (task ID is stored within the intent)
+         * and create a new chat instance with the task's parameters
+         */
+        if (intent?.action == Intent.ACTION_VIEW && intent.getLongExtra("task_id", 0L) != 0L) {
+            val taskId = intent.getLongExtra("task_id", 0L)
+            viewModel.tasksDB.getTask(taskId)?.let { task ->
+                createChatFromTask(viewModel, task)
             }
         }
 
@@ -205,6 +219,9 @@ fun ChatActivityScreenUI(
                         viewModel.showTaskListBottomList()
                     },
                 )
+                BackHandler(drawerState.isOpen) {
+                    scope.launch { drawerState.close() }
+                }
             },
         ) {
             Scaffold(
@@ -621,15 +638,9 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                             it.copy(modelName = modelName)
                         },
                         onTaskSelected = { task ->
-                            val newTask =
-                                viewModel.chatsDB.addChat(
-                                    chatName = task.name,
-                                    systemPrompt = task.systemPrompt,
-                                    llmModelId = task.modelId,
-                                    isTask = true,
-                                )
-                            viewModel.switchChat(newTask)
-                            viewModel.showTaskListBottomList()
+                            createChatFromTask(viewModel, task)
+                        },
+                        onUpdateTaskClick = { // Not applicable as showTaskOptions is set to `false`
                         },
                         onEditTaskClick = { // Not applicable as showTaskOptions is set to `false`
                         },
@@ -669,5 +680,25 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
                     ).show()
             },
         )
+    }
+}
+
+private fun createChatFromTask(
+    viewModel: ChatScreenViewModel,
+    task: Task,
+) {
+    // Using parameters from the `task`
+    // create a `Chat` instance and switch to it
+    viewModel.modelsRepository.getModelFromId(task.modelId)?.let { model ->
+        val newTask =
+            viewModel.chatsDB.addChat(
+                chatName = task.name,
+                chatTemplate = model.chatTemplate,
+                systemPrompt = task.systemPrompt,
+                llmModelId = task.modelId,
+                isTask = true,
+            )
+        viewModel.switchChat(newTask)
+        viewModel.hideTaskListBottomList()
     }
 }

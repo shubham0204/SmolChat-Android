@@ -17,8 +17,10 @@
 package io.shubham0204.smollmandroid.ui.screens.manage_tasks
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -29,9 +31,12 @@ import io.shubham0204.smollmandroid.R
 
 @Composable
 fun TaskOptionsPopup(
+    isTaskShortcut: Boolean,
     onDismiss: () -> Unit,
     onEditTaskClick: () -> Unit,
     onDeleteTaskClick: () -> Unit,
+    onAddTaskShortcut: () -> Unit,
+    onRemoveTaskShortcut: () -> Unit,
 ) {
     DropdownMenu(
         expanded = true,
@@ -47,5 +52,18 @@ fun TaskOptionsPopup(
             text = { Text(stringResource(R.string.task_popup_delete_task)) },
             onClick = { onDeleteTaskClick() },
         )
+        if (isTaskShortcut) {
+            DropdownMenuItem(
+                leadingIcon = { Icon(Icons.Default.Remove, contentDescription = "Remove Task Shortcut") },
+                text = { Text(stringResource(R.string.task_popup_remove_shortcut)) },
+                onClick = { onRemoveTaskShortcut() },
+            )
+        } else {
+            DropdownMenuItem(
+                leadingIcon = { Icon(Icons.Default.Add, contentDescription = "Add Task Shortcut") },
+                text = { Text(stringResource(R.string.task_popup_add_shortcut)) },
+                onClick = { onAddTaskShortcut() },
+            )
+        }
     }
 }

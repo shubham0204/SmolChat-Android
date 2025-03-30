@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShortText
 import androidx.compose.material.icons.filled.Assistant
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
@@ -95,7 +96,7 @@ fun ChatMoreOptionsPopup(
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Clear Chat Messages") },
+            leadingIcon = { Icon(Icons.Default.Clear, contentDescription = "Clear Chat Messages") },
             text = { Text(stringResource(R.string.chat_options_clear_messages)) },
             onClick = {
                 viewModel.currChatState.value?.let { chat ->

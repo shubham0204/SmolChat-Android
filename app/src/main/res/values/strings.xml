@@ -82,4 +82,6 @@
     <string name="chat_options_clear_messages">Clear Chat Messages</string>
     <string name="chat_options_clear_messages_text">Are you sure you clear all messages from this chat?</string>
     <string name="dialog_pos_clear">Clear</string>
+    <string name="task_popup_add_shortcut">Add Shortcut</string>
+    <string name="task_popup_remove_shortcut">Remove Shortcut</string>
 </resources>

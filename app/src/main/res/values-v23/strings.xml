@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="task_popup_add_shortcut">Add Shortcut</string>
+    <string name="task_popup_remove_shortcut">Remove Shortcut</string>
+</resources>

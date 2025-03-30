@@ -81,6 +81,7 @@ LLMInference::startCompletion(const char* query) {
     if (!_storeChats) {
         _prevLen = 0;
         _formattedMessages.clear();
+        _formattedMessages = std::vector<char>(llama_n_ctx(_ctx));
     }
     _responseGenerationTime = 0;
     _responseNumTokens      = 0;

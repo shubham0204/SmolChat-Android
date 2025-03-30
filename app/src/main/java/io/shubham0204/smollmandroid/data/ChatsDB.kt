@@ -133,6 +133,7 @@ class ChatsDB {
      */
     fun addChat(
         chatName: String,
+        chatTemplate: String = "",
         systemPrompt: String = "You are a helpful assistant.",
         llmModelId: Long = -1,
         isTask: Boolean = false,
@@ -145,6 +146,7 @@ class ChatsDB {
                 dateUsed = Date(),
                 llmModelId = llmModelId,
                 contextSize = 2048,
+                chatTemplate = chatTemplate,
                 isTask = isTask,
             )
         val newChatId = chatsBox.put(newChat)
