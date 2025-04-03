@@ -43,6 +43,10 @@
         <activity android:name=".ui.screens.model_download.DownloadModelActivity"/>
 
         <activity android:name=".ui.screens.manage_tasks.ManageTasksActivity"/>
+        <service
+            android:name=".server.LlamaServerService"
+            android:exported="false"
+            />
     </application>
 
 </manifest>
