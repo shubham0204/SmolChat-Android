@@ -1,11 +1,9 @@
-name: Build and Release Android APK
+name: Build Release APK
 
 on:
   push:
-    tags:
-      - 'v*'
     branches:
-      - 'test-ci-*'
+      - '**'
 
 jobs:
   build_apk:
@@ -51,24 +49,8 @@ jobs:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew assembleRelease --stacktrace
 
-      - name: Create a release
-        uses: actions/create-release@v1
-        id: create_release
+      - name: Upload APK to artifacts
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: false
-          prerelease: false
-          body_path: CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Upload APK to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/release/app-release.apk
-          asset_name: SmolChat_${{ github.ref_name }}.apk
-          asset_content_type: application/vnd.android.package-archive
+          name: app-release.apk
+          path: app/build/outputs/apk/release/app-release.apk
