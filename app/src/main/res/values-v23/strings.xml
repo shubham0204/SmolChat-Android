@@ -2,4 +2,7 @@
 <resources>
     <string name="task_popup_add_shortcut">Add Shortcut</string>
     <string name="task_popup_remove_shortcut">Remove Shortcut</string>
+    <string name="chat_options_change_folder">Change Folder</string>
+    <string name="chat_drawer_folders">Folders</string>
+    <string name="dialog_select_folder_title">Select a Folder to store the chat</string>
 </resources>

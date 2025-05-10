@@ -85,6 +85,11 @@ data class Chat(
      * They do not store conversation messages thus being 'stateless' in nature.
      */
     var isTask: Boolean = false,
+    /**
+     * The ID of the folder that this chat belongs to.
+     * -1 indicates that the chat does not belong to any folder.
+     */
+    var folderId: Long = -1L,
 )
 
 @Dao
@@ -101,9 +106,21 @@ interface ChatsDao {
     @Query("DELETE FROM Chat WHERE id = :chatId")
     suspend fun deleteChat(chatId: Long)
 
+    @Query("DELETE FROM Chat WHERE folderId = :folderId")
+    suspend fun deleteChatsInFolder(folderId: Long)
+
     @Update
     suspend fun updateChat(chat: Chat)
 
     @Query("SELECT COUNT(*) FROM Chat")
     suspend fun getChatsCount(): Long
+
+    @Query("SELECT * FROM Chat WHERE folderId = :folderId")
+    fun getChatsForFolder(folderId: Long): Flow<List<Chat>>
+
+    @Query("UPDATE Chat SET folderId = :newFolderId WHERE folderId = :oldFolderId")
+    fun updateFolderIds(
+        oldFolderId: Long,
+        newFolderId: Long,
+    )
 }
