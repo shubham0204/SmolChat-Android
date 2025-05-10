@@ -31,9 +31,9 @@ import io.shubham0204.hf_model_hub_api.HFModelSearch
 import io.shubham0204.hf_model_hub_api.HFModelTree
 import io.shubham0204.smollm.GGUFReader
 import io.shubham0204.smollmandroid.R
+import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.HFModelsAPI
 import io.shubham0204.smollmandroid.data.LLMModel
-import io.shubham0204.smollmandroid.data.ModelsDB
 import io.shubham0204.smollmandroid.ui.components.hideProgressDialog
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogText
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogTitle
@@ -53,14 +53,16 @@ import java.nio.file.Paths
 @Single
 class DownloadModelsViewModel(
     val context: Context,
-    val modelsDB: ModelsDB,
+    val appDB: AppDB,
     val hfModelsAPI: HFModelsAPI,
 ) : ViewModel() {
     // default context size for the LLM
     private val defaultContextSize = 2048
 
-    private val _modelInfoAndTree = MutableStateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?>(null)
-    val modelInfoAndTree: StateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?> = _modelInfoAndTree
+    private val _modelInfoAndTree =
+        MutableStateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?>(null)
+    val modelInfoAndTree: StateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?> =
+        _modelInfoAndTree
 
     val selectedModelState = mutableStateOf<LLMModel?>(null)
     val modelUrlState = mutableStateOf("")
@@ -124,7 +126,7 @@ class DownloadModelsViewModel(
                 val contextSize = ggufReader.getContextSize() ?: -1
                 // TODO: Add a default chat template when the model does not contain one
                 val chatTemplate = ggufReader.getChatTemplate() ?: ""
-                modelsDB.addModel(
+                appDB.addModel(
                     fileName,
                     "",
                     Paths.get(context.filesDir.absolutePath, fileName).toString(),
@@ -137,7 +139,12 @@ class DownloadModelsViewModel(
                 }
             }
         } else {
-            Toast.makeText(context, context.getString(R.string.toast_invalid_file), Toast.LENGTH_SHORT).show()
+            Toast
+                .makeText(
+                    context,
+                    context.getString(R.string.toast_invalid_file),
+                    Toast.LENGTH_SHORT,
+                ).show()
         }
     }
 

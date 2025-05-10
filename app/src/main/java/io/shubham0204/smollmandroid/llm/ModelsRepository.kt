@@ -17,8 +17,8 @@
 package io.shubham0204.smollmandroid.llm
 
 import android.content.Context
+import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.LLMModel
-import io.shubham0204.smollmandroid.data.ModelsDB
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.annotation.Single
 import java.io.File
@@ -26,10 +26,10 @@ import java.io.File
 @Single
 class ModelsRepository(
     private val context: Context,
-    private val modelsDB: ModelsDB,
+    private val appDB: AppDB,
 ) {
     init {
-        for (model in modelsDB.getModelsList()) {
+        for (model in appDB.getModelsList()) {
             if (!File(model.path).exists()) {
                 deleteModel(model.id)
             }
@@ -47,16 +47,16 @@ class ModelsRepository(
         }
     }
 
-    fun getModelFromId(id: Long): LLMModel? = modelsDB.getModel(id)
+    fun getModelFromId(id: Long): LLMModel? = appDB.getModel(id)
 
-    fun getAvailableModels(): Flow<List<LLMModel>> = modelsDB.getModels()
+    fun getAvailableModels(): Flow<List<LLMModel>> = appDB.getModels()
 
-    fun getAvailableModelsList(): List<LLMModel> = modelsDB.getModelsList()
+    fun getAvailableModelsList(): List<LLMModel> = appDB.getModelsList()
 
     fun deleteModel(id: Long) {
-        modelsDB.getModel(id)?.let {
+        appDB.getModel(id)?.let {
             File(it.path).delete()
-            modelsDB.deleteModel(it.id)
+            appDB.deleteModel(it.id)
         }
     }
 }

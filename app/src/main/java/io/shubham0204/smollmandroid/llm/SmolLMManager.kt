@@ -18,8 +18,8 @@ package io.shubham0204.smollmandroid.llm
 
 import android.util.Log
 import io.shubham0204.smollm.SmolLM
+import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.Chat
-import io.shubham0204.smollmandroid.data.MessagesDB
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +34,7 @@ private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 
 @Single
 class SmolLMManager(
-    private val messagesDB: MessagesDB,
+    private val appDB: AppDB,
 ) {
     private val instance = SmolLM()
     private var responseGenerationJob: Job? = null
@@ -92,7 +92,7 @@ class SmolLMManager(
                         LOGD("System prompt added")
                     }
                     if (!initParams.chat.isTask) {
-                        messagesDB.getMessagesForModel(initParams.chat.id).forEach { message ->
+                        appDB.getMessagesForModel(initParams.chat.id).forEach { message ->
                             if (message.isUserMessage) {
                                 instance.addUserMessage(message.message)
                                 LOGD("User message added: ${message.message}")
@@ -138,7 +138,7 @@ class SmolLMManager(
                     response = responseTransform(response)
                     // once the response is generated
                     // add it to the messages database
-                    messagesDB.addAssistantMessage(chat!!.id, response)
+                    appDB.addAssistantMessage(chat!!.id, response)
                     withContext(Dispatchers.Main) {
                         isInferenceOn = false
                         onSuccess(

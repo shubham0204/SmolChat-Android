@@ -16,21 +16,13 @@
 
 package io.shubham0204.smollmandroid.data
 
-import android.content.Context
 import androidx.room.Dao
-import androidx.room.Database
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
-import androidx.room.Room
-import androidx.room.RoomDatabase
 import androidx.room.Update
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.runBlocking
-import org.koin.core.annotation.Single
 
 @Entity(tableName = "Task")
 data class Task(
@@ -58,48 +50,4 @@ interface TaskDao {
 
     @Query("DELETE FROM Task WHERE id = :taskId")
     suspend fun deleteTask(taskId: Long)
-}
-
-@Database(entities = [Task::class], version = 1)
-abstract class TaskDatabase : RoomDatabase() {
-    abstract fun taskDao(): TaskDao
-}
-
-@Single
-class TasksDB(
-    context: Context,
-) {
-    private val db =
-        Room
-            .databaseBuilder(
-                context,
-                TaskDatabase::class.java,
-                "task-database",
-            ).build()
-
-    fun getTask(taskId: Long): Task? =
-        runBlocking(Dispatchers.IO) {
-            db.taskDao().getTask(taskId)
-        }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun getTasks(): Flow<List<Task>> = db.taskDao().getTasks()
-
-    fun addTask(
-        name: String,
-        systemPrompt: String,
-        modelId: Long,
-    ) = runBlocking(Dispatchers.IO) {
-        db.taskDao().insertTask(Task(name = name, systemPrompt = systemPrompt, modelId = modelId))
-    }
-
-    fun deleteTask(taskId: Long) =
-        runBlocking(Dispatchers.IO) {
-            db.taskDao().deleteTask(taskId)
-        }
-
-    fun updateTask(task: Task) =
-        runBlocking(Dispatchers.IO) {
-            db.taskDao().updateTask(task)
-        }
 }

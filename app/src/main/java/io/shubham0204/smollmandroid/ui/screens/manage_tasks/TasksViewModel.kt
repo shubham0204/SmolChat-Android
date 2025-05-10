@@ -18,15 +18,15 @@ package io.shubham0204.smollmandroid.ui.screens.manage_tasks
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.Task
-import io.shubham0204.smollmandroid.data.TasksDB
 import io.shubham0204.smollmandroid.llm.ModelsRepository
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
 class TasksViewModel(
     val modelsRepository: ModelsRepository,
-    val tasksDB: TasksDB,
+    val appDB: AppDB,
 ) : ViewModel() {
     val showCreateTaskDialogState = mutableStateOf(false)
     val showEditTaskDialogState = mutableStateOf(false)
@@ -37,14 +37,14 @@ class TasksViewModel(
         systemPrompt: String,
         modelId: Long,
     ) {
-        tasksDB.addTask(name, systemPrompt, modelId)
+        appDB.addTask(name, systemPrompt, modelId)
     }
 
     fun updateTask(newTask: Task) {
-        tasksDB.updateTask(newTask)
+        appDB.updateTask(newTask)
     }
 
     fun deleteTask(taskId: Long) {
-        tasksDB.deleteTask(taskId)
+        appDB.deleteTask(taskId)
     }
 }

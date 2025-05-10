@@ -16,19 +16,12 @@
 
 package io.shubham0204.smollmandroid.data
 
-import android.content.Context
 import androidx.room.Dao
-import androidx.room.Database
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.runBlocking
-import org.koin.core.annotation.Single
 
 @Entity(tableName = "LLMModel")
 data class LLMModel(
@@ -56,58 +49,4 @@ interface LLMModelDao {
 
     @Query("DELETE FROM LLMModel WHERE id = :id")
     suspend fun deleteModel(id: Long)
-}
-
-@Database(entities = [LLMModel::class], version = 1)
-abstract class LLMModelDatabase : RoomDatabase() {
-    abstract fun llmModelDao(): LLMModelDao
-}
-
-@Single
-class ModelsDB(
-    context: Context,
-) {
-    private val db =
-        Room
-            .databaseBuilder(
-                context,
-                LLMModelDatabase::class.java,
-                "llm-model-database",
-            ).build()
-
-    fun addModel(
-        name: String,
-        url: String,
-        path: String,
-        contextSize: Int,
-        chatTemplate: String,
-    ) = runBlocking(Dispatchers.IO) {
-        db.llmModelDao().insertModels(
-            LLMModel(
-                name = name,
-                url = url,
-                path = path,
-                contextSize = contextSize,
-                chatTemplate = chatTemplate,
-            ),
-        )
-    }
-
-    fun getModel(id: Long): LLMModel? =
-        runBlocking(Dispatchers.IO) {
-            try {
-                db.llmModelDao().getModel(id)
-            } catch (_: IllegalArgumentException) {
-                null
-            }
-        }
-
-    fun getModels(): Flow<List<LLMModel>> = runBlocking(Dispatchers.IO) { db.llmModelDao().getAllModels() }
-
-    fun getModelsList(): List<LLMModel> = runBlocking(Dispatchers.IO) { db.llmModelDao().getAllModelsList() }
-
-    fun deleteModel(id: Long) =
-        runBlocking(Dispatchers.IO) {
-            db.llmModelDao().deleteModel(id)
-        }
 }

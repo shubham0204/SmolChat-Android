@@ -36,11 +36,9 @@ import io.noties.markwon.syntax.Prism4jThemeDarkula
 import io.noties.markwon.syntax.SyntaxHighlightPlugin
 import io.noties.prism4j.Prism4j
 import io.shubham0204.smollmandroid.R
+import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.ChatMessage
-import io.shubham0204.smollmandroid.data.ChatsDB
-import io.shubham0204.smollmandroid.data.MessagesDB
-import io.shubham0204.smollmandroid.data.TasksDB
 import io.shubham0204.smollmandroid.llm.ModelsRepository
 import io.shubham0204.smollmandroid.llm.SmolLMManager
 import io.shubham0204.smollmandroid.prism4j.PrismGrammarLocator
@@ -57,10 +55,8 @@ private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 @KoinViewModel
 class ChatScreenViewModel(
     val context: Context,
-    val messagesDB: MessagesDB,
-    val chatsDB: ChatsDB,
+    val appDB: AppDB,
     val modelsRepository: ModelsRepository,
-    val tasksDB: TasksDB,
     val smolLMManager: SmolLMManager,
 ) : ViewModel() {
     enum class ModelLoadingState {
@@ -104,7 +100,7 @@ class ChatScreenViewModel(
     val markwon: Markwon
 
     init {
-        _currChatState.value = chatsDB.loadDefaultChat()
+        _currChatState.value = appDB.loadDefaultChat()
         val prism4j = Prism4j(PrismGrammarLocator())
         markwon =
             Markwon
@@ -148,26 +144,27 @@ class ChatScreenViewModel(
             .applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.resources.displayMetrics)
             .toInt()
 
-    fun getChats(): Flow<List<Chat>> = chatsDB.getChats()
+    fun getChats(): Flow<List<Chat>> = appDB.getChats()
 
-    fun getChatMessages(chatId: Long): Flow<List<ChatMessage>> = messagesDB.getMessages(chatId)
+    fun getChatMessages(chatId: Long): Flow<List<ChatMessage>> = appDB.getMessages(chatId)
 
     fun updateChatLLMParams(
         modelId: Long,
         chatTemplate: String,
     ) {
-        _currChatState.value = _currChatState.value?.copy(llmModelId = modelId, chatTemplate = chatTemplate)
-        chatsDB.updateChat(_currChatState.value!!)
+        _currChatState.value =
+            _currChatState.value?.copy(llmModelId = modelId, chatTemplate = chatTemplate)
+        appDB.updateChat(_currChatState.value!!)
     }
 
     fun updateChat(chat: Chat) {
         _currChatState.value = chat
-        chatsDB.updateChat(chat)
+        appDB.updateChat(chat)
         loadModel()
     }
 
     fun deleteMessage(messageId: Long) {
-        messagesDB.deleteMessage(messageId)
+        appDB.deleteMessage(messageId)
     }
 
     fun sendUserQuery(
@@ -178,16 +175,16 @@ class ChatScreenViewModel(
             // Update the 'dateUsed' attribute of the current Chat instance
             // when a query is sent by the user
             chat.dateUsed = Date()
-            chatsDB.updateChat(chat)
+            appDB.updateChat(chat)
 
             if (chat.isTask) {
                 // If the chat is a 'task', delete all existing messages
                 // to maintain the 'stateless' nature of the task
-                messagesDB.deleteMessages(chat.id)
+                appDB.deleteMessages(chat.id)
             }
 
             if (addMessageToDB) {
-                messagesDB.addUserMessage(chat.id, query)
+                appDB.addUserMessage(chat.id, query)
             }
             _isGeneratingResponse.value = true
             _partialResponse.value = ""
@@ -207,7 +204,7 @@ class ChatScreenViewModel(
                     _isGeneratingResponse.value = false
                     responseGenerationsSpeed = response.generationSpeed
                     responseGenerationTimeSecs = response.generationTimeSecs
-                    chatsDB.updateChat(chat.copy(contextSizeConsumed = response.contextLengthUsed))
+                    appDB.updateChat(chat.copy(contextSizeConsumed = response.contextLengthUsed))
                 },
                 onCancelled = {
                     // ignore CancellationException, as it was called because
@@ -241,14 +238,14 @@ class ChatScreenViewModel(
 
     fun deleteChat(chat: Chat) {
         stopGeneration()
-        chatsDB.deleteChat(chat)
-        messagesDB.deleteMessages(chat.id)
+        appDB.deleteChat(chat)
+        appDB.deleteMessages(chat.id)
         _currChatState.value = null
     }
 
     fun deleteChatMessages(chat: Chat) {
         stopGeneration()
-        messagesDB.deleteMessages(chat.id)
+        appDB.deleteMessages(chat.id)
     }
 
     fun deleteModel(modelId: Long) {

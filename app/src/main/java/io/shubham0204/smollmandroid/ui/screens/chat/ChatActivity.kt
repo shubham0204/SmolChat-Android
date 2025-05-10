@@ -128,8 +128,8 @@ class ChatActivity : ComponentActivity() {
          */
         if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
             intent.getStringExtra(Intent.EXTRA_TEXT)?.let { text ->
-                val chatCount = viewModel.chatsDB.getChatsCount()
-                val newChat = viewModel.chatsDB.addChat(chatName = "Untitled ${chatCount + 1}")
+                val chatCount = viewModel.appDB.getChatsCount()
+                val newChat = viewModel.appDB.addChat(chatName = "Untitled ${chatCount + 1}")
                 viewModel.switchChat(newChat)
                 viewModel.questionTextDefaultVal = text
             }
@@ -142,7 +142,7 @@ class ChatActivity : ComponentActivity() {
          */
         if (intent?.action == Intent.ACTION_VIEW && intent.getLongExtra("task_id", 0L) != 0L) {
             val taskId = intent.getLongExtra("task_id", 0L)
-            viewModel.tasksDB.getTask(taskId)?.let { task ->
+            viewModel.appDB.getTask(taskId)?.let { task ->
                 createChatFromTask(viewModel, task)
             }
         }
@@ -373,7 +373,7 @@ private fun ColumnScope.MessagesList(
                     if (!messages.last().isUserMessage) {
                         viewModel.deleteMessage(messages.last().id)
                     }
-                    viewModel.messagesDB.addUserMessage(chatId, newMessage)
+                    viewModel.appDB.addUserMessage(chatId, newMessage)
                     viewModel.unloadModel()
                     viewModel.loadModel(onComplete = {
                         if (it == ModelLoadingState.SUCCESS) {
@@ -735,7 +735,7 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                val tasks by viewModel.tasksDB.getTasks().collectAsState(emptyList())
+                val tasks by viewModel.appDB.getTasks().collectAsState(emptyList())
                 if (tasks.isEmpty()) {
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
@@ -819,7 +819,7 @@ private fun createChatFromTask(
     // create a `Chat` instance and switch to it
     viewModel.modelsRepository.getModelFromId(task.modelId)?.let { model ->
         val newTask =
-            viewModel.chatsDB.addChat(
+            viewModel.appDB.addChat(
                 chatName = task.name,
                 chatTemplate = model.chatTemplate,
                 systemPrompt = task.systemPrompt,

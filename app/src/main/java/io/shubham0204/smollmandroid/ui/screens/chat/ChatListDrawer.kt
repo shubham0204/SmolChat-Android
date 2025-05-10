@@ -85,9 +85,9 @@ fun DrawerUI(
             ) {
                 Button(
                     onClick = {
-                        val chatCount = viewModel.chatsDB.getChatsCount()
+                        val chatCount = viewModel.appDB.getChatsCount()
                         val newChat =
-                            viewModel.chatsDB.addChat(chatName = "Untitled ${chatCount + 1}")
+                            viewModel.appDB.addChat(chatName = "Untitled ${chatCount + 1}")
                         onItemClick(newChat)
                     },
                 ) {

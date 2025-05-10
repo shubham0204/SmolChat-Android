@@ -16,23 +16,14 @@
 
 package io.shubham0204.smollmandroid.data
 
-import android.content.Context
 import android.util.Log
 import androidx.room.Dao
-import androidx.room.Database
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import androidx.room.Update
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.runBlocking
-import org.koin.core.annotation.Single
 import java.util.Date
 
 private const val LOGTAG = "[ChatDB-Kt]"
@@ -115,93 +106,4 @@ interface ChatsDao {
 
     @Query("SELECT COUNT(*) FROM Chat")
     suspend fun getChatsCount(): Long
-}
-
-@Database(entities = [Chat::class], version = 1)
-@TypeConverters(Converters::class)
-abstract class ChatsDatabase : RoomDatabase() {
-    abstract fun chatsDao(): ChatsDao
-}
-
-@Single
-class ChatsDB(
-    context: Context,
-) {
-    private val db =
-        Room
-            .databaseBuilder(
-                context,
-                ChatsDatabase::class.java,
-                "chats-database",
-            ).build()
-
-    /** Get all chats from the database sorted by dateUsed in descending order. */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun getChats(): Flow<List<Chat>> = db.chatsDao().getChats()
-
-    fun loadDefaultChat(): Chat {
-        val defaultChat =
-            if (getChatsCount() == 0L) {
-                addChat("Untitled")
-                getRecentlyUsedChat()!!
-            } else {
-                // Given that chatsDB has at least one chat
-                // chatsDB.getRecentlyUsedChat() will never return null
-                getRecentlyUsedChat()!!
-            }
-        LOGD("Default chat is $defaultChat")
-        return defaultChat
-    }
-
-    /**
-     * Get the most recently used chat from the database. This function might return null, if there
-     * are no chats in the database.
-     */
-    fun getRecentlyUsedChat(): Chat? =
-        runBlocking(Dispatchers.IO) {
-            db.chatsDao().getRecentlyUsedChat()
-        }
-
-    /**
-     * Adds a new chat to the database initialized with given
-     * arguments and returns the new Chat object
-     */
-    fun addChat(
-        chatName: String,
-        chatTemplate: String = "",
-        systemPrompt: String = "You are a helpful assistant.",
-        llmModelId: Long = -1,
-        isTask: Boolean = false,
-    ): Chat =
-        runBlocking(Dispatchers.IO) {
-            val newChat =
-                Chat(
-                    name = chatName,
-                    systemPrompt = systemPrompt,
-                    dateCreated = Date(),
-                    dateUsed = Date(),
-                    llmModelId = llmModelId,
-                    contextSize = 2048,
-                    chatTemplate = chatTemplate,
-                    isTask = isTask,
-                )
-            val newChatId = db.chatsDao().insertChat(newChat)
-            newChat.copy(id = newChatId)
-        }
-
-    /** Update the chat in the database. */
-    fun updateChat(modifiedChat: Chat) =
-        runBlocking(Dispatchers.IO) {
-            db.chatsDao().updateChat(modifiedChat)
-        }
-
-    fun deleteChat(chat: Chat) =
-        runBlocking(Dispatchers.IO) {
-            db.chatsDao().deleteChat(chat.id)
-        }
-
-    fun getChatsCount(): Long =
-        runBlocking(Dispatchers.IO) {
-            db.chatsDao().getChatsCount()
-        }
 }

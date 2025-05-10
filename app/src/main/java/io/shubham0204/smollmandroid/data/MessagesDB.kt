@@ -16,20 +16,12 @@
 
 package io.shubham0204.smollmandroid.data
 
-import android.content.Context
 import androidx.room.Dao
-import androidx.room.Database
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.runBlocking
-import org.koin.core.annotation.Single
 
 @Entity(tableName = "ChatMessage")
 data class ChatMessage(
@@ -55,54 +47,4 @@ interface ChatMessageDao {
 
     @Query("DELETE FROM ChatMessage WHERE id = :messageId")
     suspend fun deleteMessage(messageId: Long)
-}
-
-@Database(entities = [ChatMessage::class], version = 1)
-abstract class ChatMessagesDatabase : RoomDatabase() {
-    abstract fun chatMessagesDao(): ChatMessageDao
-}
-
-@Single
-class MessagesDB(
-    context: Context,
-) {
-    private val db =
-        Room
-            .databaseBuilder(
-                context,
-                ChatMessagesDatabase::class.java,
-                "chat-messages-database",
-            ).build()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun getMessages(chatId: Long): Flow<List<ChatMessage>> = db.chatMessagesDao().getMessages(chatId)
-
-    fun getMessagesForModel(chatId: Long): List<ChatMessage> =
-        runBlocking(Dispatchers.IO) {
-            db.chatMessagesDao().getMessagesForModel(chatId)
-        }
-
-    fun addUserMessage(
-        chatId: Long,
-        message: String,
-    ) = runBlocking(Dispatchers.IO) {
-        db.chatMessagesDao().insertMessage(ChatMessage(chatId = chatId, message = message, isUserMessage = true))
-    }
-
-    fun addAssistantMessage(
-        chatId: Long,
-        message: String,
-    ) = runBlocking(Dispatchers.IO) {
-        db.chatMessagesDao().insertMessage(ChatMessage(chatId = chatId, message = message, isUserMessage = false))
-    }
-
-    fun deleteMessage(messageId: Long) =
-        runBlocking(Dispatchers.IO) {
-            db.chatMessagesDao().deleteMessage(messageId)
-        }
-
-    fun deleteMessages(chatId: Long) =
-        runBlocking(Dispatchers.IO) {
-            db.chatMessagesDao().deleteMessages(chatId)
-        }
 }

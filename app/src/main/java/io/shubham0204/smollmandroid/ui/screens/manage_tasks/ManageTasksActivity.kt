@@ -109,7 +109,7 @@ fun TasksActivityScreenUI() {
                         .fillMaxSize()
                         .padding(paddingValues),
             ) {
-                val tasks by viewModel.tasksDB.getTasks().collectAsState(emptyList())
+                val tasks by viewModel.appDB.getTasks().collectAsState(emptyList())
                 Text(
                     text = stringResource(R.string.tasks_manage_tasks_desc),
                     style = MaterialTheme.typography.labelSmall,
