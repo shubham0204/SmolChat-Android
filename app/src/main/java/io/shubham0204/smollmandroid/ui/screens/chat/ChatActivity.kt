@@ -233,10 +233,12 @@ fun ChatActivityScreenUI(
                 topBar = {
                     TopAppBar(
                         title = {
-                            Column(modifier = Modifier.fillMaxWidth()) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
                                 AppBarTitleText(
                                     currChat?.name ?: stringResource(R.string.chat_select_chat),
-                                    modifier = Modifier.fillMaxWidth(),
                                 )
                                 Text(
                                     if (currChat != null && currChat?.llmModelId != -1L) {
@@ -246,7 +248,7 @@ fun ChatActivityScreenUI(
                                     } else {
                                         ""
                                     },
-                                    fontSize = 12.sp,
+                                    style = MaterialTheme.typography.labelSmall,
                                 )
                             }
                         },
