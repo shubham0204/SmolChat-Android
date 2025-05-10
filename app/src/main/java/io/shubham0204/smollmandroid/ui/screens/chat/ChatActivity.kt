@@ -55,7 +55,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CircularProgressIndicator
@@ -253,7 +253,7 @@ fun ChatActivityScreenUI(
                         navigationIcon = {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(
-                                    Icons.Default.Menu,
+                                    Icons.Default.DragHandle,
                                     contentDescription = stringResource(R.string.chat_view_chats),
                                 )
                             }

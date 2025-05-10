@@ -32,7 +32,7 @@
     <string name="chat_drawer_new_chat">新建聊天</string>
     <string name="chat_drawer_new_task">新建任务</string>
     <string name="chat_drawer_manage_tasks">管理任务</string>
-    <string name="chat_drawer_previous_chat">之前的聊天</string>
+    <string name="chat_drawer_previous_chat">聊天</string>
     <string name="chat_options_edit_settings">编辑聊天设置</string>
     <string name="chat_options_change_model">更改模型</string>
     <string name="chat_options_ctx_length_usage">上下文长度使用情况</string>

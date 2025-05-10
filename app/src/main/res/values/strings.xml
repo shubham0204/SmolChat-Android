@@ -17,7 +17,7 @@
     <string name="chat_drawer_new_chat">New Chat</string>
     <string name="chat_drawer_new_task">New Task</string>
     <string name="chat_drawer_manage_tasks">Manage Tasks</string>
-    <string name="chat_drawer_previous_chat">Previous Chats</string>
+    <string name="chat_drawer_previous_chat">Chats</string>
     <string name="chat_options_edit_settings">Edit Chat Settings</string>
     <string name="chat_options_change_model">Change Model</string>
     <string name="chat_options_ctx_length_usage">Context Length Usage</string>

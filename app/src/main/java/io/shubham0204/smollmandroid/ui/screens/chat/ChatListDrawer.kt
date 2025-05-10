@@ -20,6 +20,7 @@ import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -30,11 +31,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -48,10 +51,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
@@ -69,30 +74,60 @@ fun DrawerUI(
             modifier =
                 Modifier
                     .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .windowInsetsPadding(WindowInsets.safeContent)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
                     .padding(8.dp)
                     .requiredWidth(300.dp)
                     .fillMaxHeight(),
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
                 Button(
                     onClick = {
                         val chatCount = viewModel.chatsDB.getChatsCount()
-                        val newChat = viewModel.chatsDB.addChat(chatName = "Untitled ${chatCount + 1}")
+                        val newChat =
+                            viewModel.chatsDB.addChat(chatName = "Untitled ${chatCount + 1}")
                         onItemClick(newChat)
                     },
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "New Chat")
-                    Text(stringResource(R.string.chat_drawer_new_chat), style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        stringResource(R.string.chat_drawer_new_chat),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
                 }
                 Button(
                     onClick = onCreateTaskClick,
                 ) {
                     Icon(Icons.Default.AddTask, contentDescription = "New Task")
-                    Text(stringResource(R.string.chat_drawer_new_task), style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        stringResource(R.string.chat_drawer_new_task),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
+            ChatsList(
+                viewModel,
+                onManageTasksClick,
+                onItemClick,
+            )
+        }
+        AppAlertDialog()
+    }
+}
+
+@Composable
+private fun ColumnScope.ChatsList(
+    viewModel: ChatScreenViewModel,
+    onManageTasksClick: () -> Unit,
+    onItemClick: (Chat) -> Unit,
+) {
+    val chats by viewModel.getChats().collectAsState(emptyList())
+    val currentChat by viewModel.currChatState.collectAsState(null)
+    LazyColumn(modifier = Modifier.weight(1f)) {
+        item {
             Row(
                 modifier =
                     Modifier
@@ -120,20 +155,14 @@ fun DrawerUI(
                 style = MaterialTheme.typography.labelSmall,
             )
             Spacer(modifier = Modifier.height(8.dp))
-            ChatsList(viewModel, onItemClick)
         }
-        AppAlertDialog()
-    }
-}
-
-@Composable
-private fun ColumnScope.ChatsList(
-    viewModel: ChatScreenViewModel,
-    onItemClick: (Chat) -> Unit,
-) {
-    val chats by viewModel.getChats().collectAsState(emptyList())
-    LazyColumn(modifier = Modifier.weight(1f)) {
-        items(chats) { chat -> ChatListItem(chat, onItemClick) }
+        items(chats) { chat ->
+            ChatListItem(
+                chat,
+                onItemClick,
+                currentChat?.id == chat.id,
+            )
+        }
     }
 }
 
@@ -141,28 +170,40 @@ private fun ColumnScope.ChatsList(
 private fun LazyItemScope.ChatListItem(
     chat: Chat,
     onItemClick: (Chat) -> Unit,
+    isCurrentlySelected: Boolean,
 ) {
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(4.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(8.dp))
                 .padding(8.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .clickable { onItemClick(chat) }
                 .animateItem(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                chat.name,
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Text(
-                text = DateUtils.getRelativeTimeSpanString(chat.dateUsed.time).toString(),
-                style = MaterialTheme.typography.labelMedium,
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    chat.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = DateUtils.getRelativeTimeSpanString(chat.dateUsed.time).toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+            if (isCurrentlySelected) {
+                Box(
+                    modifier =
+                        Modifier
+                            .padding(start = 4.dp)
+                            .background(MaterialTheme.colorScheme.tertiary, CircleShape)
+                            .size(10.dp),
+                ) { }
+            }
         }
     }
 }
