@@ -50,6 +50,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -89,6 +90,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -342,7 +344,12 @@ private fun ColumnScope.MessagesList(
                         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     val clip = ClipData.newPlainText("Copied message", chatMessage.message)
                     clipboard.setPrimaryClip(clip)
-                    Toast.makeText(context, context.getString(R.string.chat_message_copied), Toast.LENGTH_SHORT).show()
+                    Toast
+                        .makeText(
+                            context,
+                            context.getString(R.string.chat_message_copied),
+                            Toast.LENGTH_SHORT,
+                        ).show()
                 },
                 onShareClicked = {
                     context.startActivity(
@@ -524,8 +531,10 @@ private fun LazyItemScope.MessageListItem(
                         modifier =
                             Modifier
                                 .padding(8.dp)
-                                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(16.dp))
-                                .padding(8.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                    RoundedCornerShape(16.dp),
+                                ).padding(8.dp)
                                 .widthIn(max = 250.dp),
                         colors =
                             TextFieldDefaults.colors(
@@ -540,8 +549,10 @@ private fun LazyItemScope.MessageListItem(
                         modifier =
                             Modifier
                                 .padding(8.dp)
-                                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
-                                .padding(8.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primary,
+                                    RoundedCornerShape(16.dp),
+                                ).padding(8.dp)
                                 .widthIn(max = 250.dp),
                         textColor = android.graphics.Color.WHITE,
                         textSize = 16f,
@@ -651,7 +662,16 @@ private fun MessageInput(
                             )
                         },
                         keyboardOptions =
-                            KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+                            KeyboardOptions.Default.copy(
+                                capitalization = KeyboardCapitalization.Sentences,
+                                imeAction = ImeAction.Go,
+                            ),
+                        keyboardActions =
+                            KeyboardActions(onGo = {
+                                keyboardController?.hide()
+                                viewModel.sendUserQuery(questionText)
+                                questionText = ""
+                            }),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     if (isGeneratingResponse) {
@@ -664,7 +684,11 @@ private fun MessageInput(
                     } else {
                         IconButton(
                             enabled = questionText.isNotEmpty(),
-                            modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                            modifier =
+                                Modifier.background(
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                    CircleShape,
+                                ),
                             onClick = {
                                 keyboardController?.hide()
                                 viewModel.sendUserQuery(questionText)
@@ -702,8 +726,10 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
-                        .padding(8.dp),
+                        .background(
+                            MaterialTheme.colorScheme.surfaceContainer,
+                            RoundedCornerShape(8.dp),
+                        ).padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {

@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
@@ -42,8 +43,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -62,6 +66,7 @@ fun EditTaskDialog(viewModel: TasksViewModel) {
         }
         var isModelListDialogVisible by remember { mutableStateOf(false) }
         val modelsList = viewModel.modelsRepository.getAvailableModelsList()
+        val focusManager = LocalFocusManager.current
         LaunchedEffect(selectedTask) {
             taskName = task.name
             systemPrompt = task.systemPrompt
@@ -96,6 +101,13 @@ fun EditTaskDialog(viewModel: TasksViewModel) {
                             keyboardOptions =
                                 KeyboardOptions.Default.copy(
                                     capitalization = KeyboardCapitalization.Words,
+                                    imeAction = ImeAction.Next,
+                                ),
+                            keyboardActions =
+                                KeyboardActions(
+                                    onNext = {
+                                        focusManager.moveFocus(FocusDirection.Down)
+                                    },
                                 ),
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -108,6 +120,13 @@ fun EditTaskDialog(viewModel: TasksViewModel) {
                             keyboardOptions =
                                 KeyboardOptions.Default.copy(
                                     capitalization = KeyboardCapitalization.Sentences,
+                                    imeAction = ImeAction.Next,
+                                ),
+                            keyboardActions =
+                                KeyboardActions(
+                                    onNext = {
+                                        focusManager.moveFocus(FocusDirection.Down)
+                                    },
                                 ),
                         )
 
@@ -123,9 +142,11 @@ fun EditTaskDialog(viewModel: TasksViewModel) {
                             text =
                                 if (selectedModel == null) {
                                     stringResource(R.string.task_create_task_select_model)
-                                } else selectedModel!!
-                                .name,
-                                )
+                                } else {
+                                    selectedModel!!
+                                        .name
+                                },
+                        )
 
                         if (isModelListDialogVisible) {
                             SelectModelsList(
