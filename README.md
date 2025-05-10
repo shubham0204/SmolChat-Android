@@ -3,38 +3,38 @@
 <table>
 <tr>
 <td>
-<img src="resources/app_screenshots/1.jpg" alt="app_img_01">
+<img src="resources/app_screenshots/phone/1.jpg" alt="app_img_01">
 </td>
 <td>
-<img src="resources/app_screenshots/2.jpg" alt="app_img_02">
+<img src="resources/app_screenshots/phone/2.jpg" alt="app_img_02">
 </td>
 <td>
-<img src="resources/app_screenshots/3.jpg" alt="app_img_03">
+<img src="resources/app_screenshots/phone/3.jpg" alt="app_img_03">
 </td>
 <td>
-<img src="resources/app_screenshots/4.jpg" alt="app_img_04">
-</td>
-</tr>
-<tr>
-<td>
-<img src="resources/app_screenshots/5.jpg" alt="app_img_05">
-</td>
-<td>
-<img src="resources/app_screenshots/6.jpg" alt="app_img_06">
-</td>
-<td>
-<img src="resources/app_screenshots/7.jpg" alt="app_img_07">
-</td>
-<td>
-<img src="resources/app_screenshots/8.jpg" alt="app_img_08">
+<img src="resources/app_screenshots/phone/4.jpg" alt="app_img_04">
 </td>
 </tr>
 <tr>
 <td>
-<img src="resources/app_screenshots/9.jpg" alt="app_img_09">
+<img src="resources/app_screenshots/phone/5.jpg" alt="app_img_05">
 </td>
 <td>
-<img src="resources/app_screenshots/10.jpg" alt="app_img_10">
+<img src="resources/app_screenshots/phone/6.jpg" alt="app_img_06">
+</td>
+<td>
+<img src="resources/app_screenshots/phone/7.jpg" alt="app_img_07">
+</td>
+<td>
+<img src="resources/app_screenshots/phone/8.jpg" alt="app_img_08">
+</td>
+</tr>
+<tr>
+<td>
+<img src="resources/app_screenshots/phone/9.jpg" alt="app_img_09">
+</td>
+<td>
+<img src="resources/app_screenshots/phone/10.jpg" alt="app_img_10">
 </td>
 </tr>
 </table>
