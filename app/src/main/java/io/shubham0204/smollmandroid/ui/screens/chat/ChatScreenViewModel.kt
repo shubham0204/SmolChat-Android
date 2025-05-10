@@ -39,6 +39,7 @@ import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.ChatMessage
+import io.shubham0204.smollmandroid.data.Folder
 import io.shubham0204.smollmandroid.llm.ModelsRepository
 import io.shubham0204.smollmandroid.llm.SmolLMManager
 import io.shubham0204.smollmandroid.prism4j.PrismGrammarLocator
@@ -78,6 +79,9 @@ class ChatScreenViewModel(
 
     private val _partialResponse = MutableStateFlow("")
     val partialResponse: StateFlow<String> = _partialResponse
+
+    private val _showChangeFolderDialogState = MutableStateFlow(false)
+    val showChangeFolderDialogState: StateFlow<Boolean> = _showChangeFolderDialogState
 
     private val _showSelectModelListDialogState = MutableStateFlow(false)
     val showSelectModelListDialogState: StateFlow<Boolean> = _showSelectModelListDialogState
@@ -148,6 +152,10 @@ class ChatScreenViewModel(
 
     fun getChatMessages(chatId: Long): Flow<List<ChatMessage>> = appDB.getMessages(chatId)
 
+    fun getFolders(): Flow<List<Folder>> = appDB.getFolders()
+
+    fun getChatsForFolder(folderId: Long): Flow<List<Chat>> = appDB.getChatsForFolder(folderId)
+
     fun updateChatLLMParams(
         modelId: Long,
         chatTemplate: String,
@@ -155,6 +163,13 @@ class ChatScreenViewModel(
         _currChatState.value =
             _currChatState.value?.copy(llmModelId = modelId, chatTemplate = chatTemplate)
         appDB.updateChat(_currChatState.value!!)
+    }
+
+    fun updateChatFolder(folderId: Long) {
+        // TODO: Modifying currChatState triggers a model reload which is not
+        //       needed when folder is changed.
+        // _currChatState.value = _currChatState.value?.copy(folderId = folderId)
+        appDB.updateChat(_currChatState.value!!.copy(folderId = folderId))
     }
 
     fun updateChat(chat: Chat) {
@@ -333,6 +348,14 @@ class ChatScreenViewModel(
                 onNegativeButtonClick = null,
             )
         }
+    }
+
+    fun showChangeFolderDialog() {
+        _showChangeFolderDialogState.value = true
+    }
+
+    fun hideChangeFolderDialog() {
+        _showChangeFolderDialogState.value = false
     }
 
     fun showSelectModelListDialog() {

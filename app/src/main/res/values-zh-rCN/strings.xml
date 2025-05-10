@@ -100,4 +100,20 @@
     <string name="dialog_pos_clear">清除</string>
     <string name="task_popup_add_shortcut">添加快捷方式</string>
     <string name="task_popup_remove_shortcut">删除快捷方式</string>
+    <string name="chat_options_change_folder">更改文件夹</string>
+    <string name="chat_drawer_folders">文件夹</string>
+    <string name="dialog_delete_folder_text">您确定要删除文件夹 \'%1$s\' 吗？删除该文件夹也会删除其中的所有聊天记录。</string>
+    <string name="dialog_select_folder_title">选择一个文件夹来存储聊天记录</string>
+    <string name="dialog_folder_opts_edit">编辑文件夹名称</string>
+    <string name="dialog_folder_opts_delete_folder">删除文件夹</string>
+    <string name="dialog_folder_opts_delete_folder_chats">删除文件夹及其聊天记录</string>
+    <string name="dialog_create_folder_title">创建文件夹</string>
+    <string name="dialog_create_folder_button_text">创建</string>
+    <string name="dialog_create_folder_placeholder">文件夹名称</string>
+    <string name="dialog_delete_folder_with_chats_text">您确定要删除文件夹 \'%1$s\' 吗？删除该文件夹也会删除其中的所有聊天记录。</string>
+    <string name="dialog_delete_folder_title">删除文件夹</string>
+    <string name="dialog_delete_folder_with_chats_title">删除文件夹及其聊天记录</string>
+    <string name="dialog_edit_folder_name_title">编辑文件夹名称</string>
+    <string name="dialog_edit_folder_button_text">编辑</string>
+    <string name="edit_chat_message_done">完成</string>
 </resources>

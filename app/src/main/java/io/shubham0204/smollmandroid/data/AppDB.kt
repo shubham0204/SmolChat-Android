@@ -12,7 +12,7 @@ import org.koin.core.annotation.Single
 import java.util.Date
 
 @Database(
-    entities = [Chat::class, ChatMessage::class, LLMModel::class, Task::class],
+    entities = [Chat::class, ChatMessage::class, LLMModel::class, Task::class, Folder::class],
     version = 1,
 )
 @TypeConverters(Converters::class)
@@ -24,6 +24,8 @@ abstract class AppRoomDatabase : RoomDatabase() {
     abstract fun llmModelDao(): LLMModelDao
 
     abstract fun taskDao(): TaskDao
+
+    abstract fun folderDao(): FolderDao
 }
 
 @Single
@@ -105,6 +107,8 @@ class AppDB(
         runBlocking(Dispatchers.IO) {
             db.chatsDao().getChatsCount()
         }
+
+    fun getChatsForFolder(folderId: Long): Flow<List<Chat>> = db.chatsDao().getChatsForFolder(folderId)
 
     // Chat Messages
 
@@ -206,5 +210,38 @@ class AppDB(
     fun updateTask(task: Task) =
         runBlocking(Dispatchers.IO) {
             db.taskDao().updateTask(task)
+        }
+
+    // Folders
+
+    fun getFolders(): Flow<List<Folder>> = db.folderDao().getFolders()
+
+    fun addFolder(folderName: String) =
+        runBlocking(Dispatchers.IO) {
+            db.folderDao().insertFolder(Folder(name = folderName))
+        }
+
+    fun updateFolder(folder: Folder) =
+        runBlocking(Dispatchers.IO) {
+            db.folderDao().updateFolder(folder)
+        }
+
+    /**
+     * Deletes the folder from the Folder table only
+     */
+    fun deleteFolder(folderId: Long) =
+        runBlocking(Dispatchers.IO) {
+            db.folderDao().deleteFolder(folderId)
+            db.chatsDao().updateFolderIds(folderId, -1L)
+        }
+
+    /**
+     * Deletes the folder from the Folder table
+     * and corresponding chats from the Chat table
+     */
+    fun deleteFolderWithChats(folderId: Long) =
+        runBlocking(Dispatchers.IO) {
+            db.folderDao().deleteFolder(folderId)
+            db.chatsDao().deleteChatsInFolder(folderId)
         }
 }

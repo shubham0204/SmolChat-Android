@@ -85,4 +85,20 @@
     <string name="dialog_pos_clear">Clear</string>
     <string name="task_popup_add_shortcut">Add Shortcut</string>
     <string name="task_popup_remove_shortcut">Remove Shortcut</string>
+    <string name="chat_options_change_folder">Change Folder</string>
+    <string name="chat_drawer_folders">Folders</string>
+    <string name="dialog_delete_folder_text">Are you sure you want to delete the folder \'%1$s\'? Chats within the folder will not be deleted.</string>
+    <string name="dialog_delete_folder_with_chats_text">Are you sure you want to delete the folder \'%1$s\'? Deleting the folder will also delete all the chats in it.</string>
+    <string name="dialog_delete_folder_title">Delete Folder</string>
+    <string name="dialog_select_folder_title">Select a Folder to store the chat</string>
+    <string name="dialog_delete_folder_with_chats_title">Delete Folder With Chats</string>
+    <string name="dialog_folder_opts_edit">Edit Folder Name</string>
+    <string name="dialog_folder_opts_delete_folder">Delete Folder</string>
+    <string name="dialog_folder_opts_delete_folder_chats">Delete Folder With Chats</string>
+    <string name="dialog_create_folder_title">Create Folder</string>
+    <string name="dialog_create_folder_button_text">Create</string>
+    <string name="dialog_create_folder_placeholder">Folder Name</string>
+    <string name="dialog_edit_folder_name_title">Edit Folder Name</string>
+    <string name="dialog_edit_folder_button_text">Edit</string>
+    <string name="edit_chat_message_done">Done</string>
 </resources>

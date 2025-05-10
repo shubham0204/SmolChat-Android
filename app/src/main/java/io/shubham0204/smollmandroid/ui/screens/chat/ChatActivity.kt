@@ -105,6 +105,7 @@ import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
+import io.shubham0204.smollmandroid.ui.components.TextFieldDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoadingState
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.TasksList
@@ -291,6 +292,9 @@ fun ChatActivityScreenUI(
             }
             SelectModelsList(viewModel)
             TasksListBottomSheet(viewModel)
+            ChangeFolderDialog(currChat!!, viewModel)
+            TextFieldDialog()
+            FolderOptionsDialog()
         }
     }
 }
@@ -443,6 +447,7 @@ private fun LazyItemScope.MessageListItem(
     allowEditing: Boolean,
 ) {
     var isEditing by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     if (!isUserMessage) {
         Row(
             modifier =
@@ -578,7 +583,7 @@ private fun LazyItemScope.MessageListItem(
                         Spacer(modifier = Modifier.width(8.dp))
                         if (isEditing) {
                             Text(
-                                text = "Done",
+                                text = stringResource(R.string.edit_chat_message_done),
                                 modifier =
                                     Modifier.clickable {
                                         isEditing = false
@@ -588,7 +593,7 @@ private fun LazyItemScope.MessageListItem(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Cancel",
+                                text = context.getString(R.string.dialog_neg_cancel),
                                 modifier =
                                     Modifier.clickable {
                                         isEditing = false
@@ -598,7 +603,7 @@ private fun LazyItemScope.MessageListItem(
                             )
                         } else {
                             Text(
-                                text = "Edit",
+                                text = context.getString(R.string.dialog_edit_folder_button_text),
                                 modifier = Modifier.clickable { isEditing = true },
                                 fontSize = 6.sp,
                             )
@@ -806,6 +811,25 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
                         context.getString(R.string.chat_model_deleted, model.name),
                         Toast.LENGTH_LONG,
                     ).show()
+            },
+        )
+    }
+}
+
+@Composable
+private fun ChangeFolderDialog(
+    currentChat: Chat,
+    viewModel: ChatScreenViewModel,
+) {
+    val showChangeFolderDialogState by viewModel.showChangeFolderDialogState.collectAsStateWithLifecycle()
+    if (showChangeFolderDialogState) {
+        val folders by viewModel.appDB.getFolders().collectAsState(emptyList())
+        ChangeFolderDialogUI(
+            onDismissRequest = { viewModel.hideChangeFolderDialog() },
+            currentChat,
+            folders,
+            onUpdateFolderId = { folderId ->
+                viewModel.updateChatFolder(folderId)
             },
         )
     }

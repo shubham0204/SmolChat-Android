@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ShortText
 import androidx.compose.material.icons.filled.Assistant
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -51,6 +52,14 @@ fun ChatMoreOptionsPopup(
             text = { Text(stringResource(R.string.chat_options_edit_settings)) },
             onClick = {
                 onEditChatSettingsClick()
+                viewModel.hideMoreOptionsPopup()
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.Default.Folder, contentDescription = "Change Folder") },
+            text = { Text(stringResource(R.string.chat_options_change_folder)) },
+            onClick = {
+                viewModel.showChangeFolderDialog()
                 viewModel.hideMoreOptionsPopup()
             },
         )
