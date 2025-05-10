@@ -53,34 +53,47 @@ class SmolLM {
             Log.d(logTag, "- isAtLeastArmV82: $isAtLeastArmV82")
             Log.d(logTag, "- isAtLeastArmV84: $isAtLeastArmV84")
 
-            if (supportsArm64V8a()) {
-                if (isAtLeastArmV84 && hasSve && hasI8mm && hasFp16 && hasDotProd) {
-                    Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod_i8mm_sve.so")
-                    System.loadLibrary("smollm_v8_4_fp16_dotprod_i8mm_sve")
-                } else if (isAtLeastArmV84 && hasSve && hasFp16 && hasDotProd) {
-                    Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod_sve.so")
-                    System.loadLibrary("smollm_v8_4_fp16_dotprod_sve")
-                } else if (isAtLeastArmV84 && hasI8mm && hasFp16 && hasDotProd) {
-                    Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod_i8mm.so")
-                    System.loadLibrary("smollm_v8_4_fp16_dotprod_i8mm")
-                } else if (isAtLeastArmV84 && hasFp16 && hasDotProd) {
-                    Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod.so")
-                    System.loadLibrary("smollm_v8_4_fp16_dotprod")
-                } else if (isAtLeastArmV82 && hasFp16 && hasDotProd) {
-                    Log.d(logTag, "Loading libsmollm_v8_2_fp16_dotprod.so")
-                    System.loadLibrary("smollm_v8_2_fp16_dotprod")
-                } else if (isAtLeastArmV82 && hasFp16) {
-                    Log.d(logTag, "Loading libsmollm_v8_2_fp16.so")
-                    System.loadLibrary("smollm_v8_2_fp16")
+            // Check if the app is running in an emulated device
+            // Note, this is not the OFFICIAL way to check if the app is running
+            // on an emulator
+            val isEmulated = (Build.HARDWARE.contains("goldfish") || Build.HARDWARE.contains("ranchu"))
+            Log.d(logTag, "isEmulated: $isEmulated")
+
+            if (!isEmulated) {
+                if (supportsArm64V8a()) {
+                    if (isAtLeastArmV84 && hasSve && hasI8mm && hasFp16 && hasDotProd) {
+                        Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod_i8mm_sve.so")
+                        System.loadLibrary("smollm_v8_4_fp16_dotprod_i8mm_sve")
+                    } else if (isAtLeastArmV84 && hasSve && hasFp16 && hasDotProd) {
+                        Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod_sve.so")
+                        System.loadLibrary("smollm_v8_4_fp16_dotprod_sve")
+                    } else if (isAtLeastArmV84 && hasI8mm && hasFp16 && hasDotProd) {
+                        Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod_i8mm.so")
+                        System.loadLibrary("smollm_v8_4_fp16_dotprod_i8mm")
+                    } else if (isAtLeastArmV84 && hasFp16 && hasDotProd) {
+                        Log.d(logTag, "Loading libsmollm_v8_4_fp16_dotprod.so")
+                        System.loadLibrary("smollm_v8_4_fp16_dotprod")
+                    } else if (isAtLeastArmV82 && hasFp16 && hasDotProd) {
+                        Log.d(logTag, "Loading libsmollm_v8_2_fp16_dotprod.so")
+                        System.loadLibrary("smollm_v8_2_fp16_dotprod")
+                    } else if (isAtLeastArmV82 && hasFp16) {
+                        Log.d(logTag, "Loading libsmollm_v8_2_fp16.so")
+                        System.loadLibrary("smollm_v8_2_fp16")
+                    } else {
+                        Log.d(logTag, "Loading libsmollm_v8.so")
+                        System.loadLibrary("smollm_v8")
+                    }
+                } else if (Build.SUPPORTED_32_BIT_ABIS[0]?.equals("armeabi-v7a") == true) {
+                    // armv7a (32bit) device
+                    Log.d(logTag, "Loading libsmollm_v7a.so")
+                    System.loadLibrary("smollm_v7a")
                 } else {
-                    Log.d(logTag, "Loading libsmollm_v8.so")
-                    System.loadLibrary("smollm_v8")
+                    Log.d(logTag, "Loading default libsmollm.so")
+                    System.loadLibrary("smollm")
                 }
-            } else if (Build.SUPPORTED_32_BIT_ABIS[0]?.equals("armeabi-v7a") == true) {
-                // armv7a (32bit) device
-                Log.d(logTag, "Loading libsmollm_v7a.so")
-                System.loadLibrary("smollm_v7a")
             } else {
+                // load the default native library with no ARM
+                // specific instructions
                 Log.d(logTag, "Loading default libsmollm.so")
                 System.loadLibrary("smollm")
             }
