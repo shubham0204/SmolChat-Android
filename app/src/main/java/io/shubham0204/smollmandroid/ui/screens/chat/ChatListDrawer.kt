@@ -51,6 +51,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +62,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
+import io.shubham0204.smollmandroid.data.Folder
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 
 @Composable
@@ -125,6 +128,7 @@ private fun ColumnScope.ChatsList(
     onItemClick: (Chat) -> Unit,
 ) {
     val chats by viewModel.getChats().collectAsState(emptyList())
+    val folders by viewModel.getFolders().collectAsState(emptyList())
     val currentChat by viewModel.currChatState.collectAsState(null)
     LazyColumn(modifier = Modifier.weight(1f)) {
         item {
@@ -155,6 +159,13 @@ private fun ColumnScope.ChatsList(
                 style = MaterialTheme.typography.labelSmall,
             )
             Spacer(modifier = Modifier.height(8.dp))
+        }
+        items(folders) { folder ->
+            FolderListItem(
+                folder = folder,
+                chatsInFolder = viewModel.getChatsForFolder(folder.id),
+                onItemClick,
+            )
         }
         items(chats) { chat ->
             ChatListItem(
@@ -203,6 +214,30 @@ private fun LazyItemScope.ChatListItem(
                             .background(MaterialTheme.colorScheme.tertiary, CircleShape)
                             .size(10.dp),
                 ) { }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FolderListItem(
+    folder: Folder,
+    chatsInFolder: List<Chat>,
+    onChatItemClick: (Chat) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Text(
+        folder.name,
+        modifier = Modifier.clickable { expanded = !expanded },
+    )
+    if (expanded) {
+        LazyColumn {
+            items(chatsInFolder) {
+                ChatListItem(
+                    chat = it,
+                    onItemClick = onChatItemClick,
+                    isCurrentlySelected = false,
+                )
             }
         }
     }

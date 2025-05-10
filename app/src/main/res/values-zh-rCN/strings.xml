@@ -100,4 +100,5 @@
     <string name="dialog_pos_clear">清除</string>
     <string name="task_popup_add_shortcut">添加快捷方式</string>
     <string name="task_popup_remove_shortcut">删除快捷方式</string>
+    <string name="chat_options_change_folder">更改文件夹</string>
 </resources>

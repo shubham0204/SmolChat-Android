@@ -291,6 +291,7 @@ fun ChatActivityScreenUI(
             }
             SelectModelsList(viewModel)
             TasksListBottomSheet(viewModel)
+            ChangeFolderDialog(currChat!!, viewModel)
         }
     }
 }
@@ -806,6 +807,25 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
                         context.getString(R.string.chat_model_deleted, model.name),
                         Toast.LENGTH_LONG,
                     ).show()
+            },
+        )
+    }
+}
+
+@Composable
+private fun ChangeFolderDialog(
+    currentChat: Chat,
+    viewModel: ChatScreenViewModel,
+) {
+    val showChangeFolderDialogState by viewModel.showChangeFolderDialogState.collectAsStateWithLifecycle()
+    if (showChangeFolderDialogState) {
+        val folders by viewModel.appDB.getFolders().collectAsState(emptyList())
+        ChangeFolderDialogUI(
+            onDismissRequest = { viewModel.hideChangeFolderDialog() },
+            currentChat,
+            folders,
+            onUpdateFolderId = { folderId ->
+                viewModel.updateChatFolder(folderId)
             },
         )
     }
