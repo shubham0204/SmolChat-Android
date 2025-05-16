@@ -2,8 +2,6 @@
 <resources>
 
     <style name="Theme.SmolLMAndroid" parent="android:Theme.Material.Light.NoActionBar" >
-        <item name="android:fontFamily">@font/inter_font_family</item>
-        <item name="fontFamily">@font/inter_font_family</item>
     </style>
 
 </resources>

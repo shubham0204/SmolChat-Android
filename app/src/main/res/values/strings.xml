@@ -46,7 +46,7 @@
     <string name="chat_model_list_desc">Select a downloaded model from below to use as a \'default\' model for this chat.</string>
     <string name="chat_model_list_sort_date">Sort by Date Added</string>
     <string name="chat_model_list_sort_name">Sort by Name</string>
-    <string name="chat_model_list_add_model">Add model</string>
+    <string name="chat_model_list_add_model">New Model</string>
     <string name="task_create_task_title">Create Task</string>
     <string name="task_create_task_name">Task Name</string>
     <string name="task_create_task_sys_prompt">System Prompt</string>
@@ -59,8 +59,8 @@
     <string name="tasks_manage_tasks_title">Manage Tasks</string>
     <string name="tasks_manage_tasks_desc">Tasks are chat templates with a system prompt and model defined. Use them to perform quick actions with the selected SLM model.</string>
     <string name="dialog_delete_task_title">Delete Task</string>
-    <string name="download_model_title">Download Models</string>
-    <string name="download_model_popular_models">Popular Models</string>
+    <string name="add_new_model_title">Add New Model</string>
+    <string name="download_model_step_des">Download a model to your device. Models are files with a .gguf extension. Choose any model from the list below to start downloading it on your device: </string>
     <string name="download_model_browse_hf">Browse from HuggingFace</string>
     <string name="download_model_download">Download Model</string>
     <string name="download_model_desc_download_location">Models are downloaded in the \'Downloads\' directory of your device</string>
@@ -102,4 +102,13 @@
     <string name="dialog_edit_folder_button_text">Edit</string>
     <string name="edit_chat_message_done">Done</string>
     <string name="label_device_ram">Device RAM: %.2f GB used of %.2f GB total</string>
+    <string name="download_model_step_title">Step 1: Download the model</string>
+    <string name="import_model_step_title">Step 2: Import the model</string>
+    <string name="import_model_step_des">Select the .gguf model you downloaded in step 1. The app will copy the model to its internal storage.</string>
+    <string name="button_text_back">Back</string>
+    <string name="button_text_next">Next</string>
+    <string name="download_model_next_step_des">Once the models have been downloaded, go to the next section on \'Importing Models\'</string>
+    <string name="download_model_step_hf_browse">Browse the model from HuggingFace and download the .gguf model file.</string>
+    <string name="dialog_invalid_file_title">Invalid File</string>
+    <string name="dialog_invalid_file_text">The selected file is not a valid GGUF file.</string>
 </resources>

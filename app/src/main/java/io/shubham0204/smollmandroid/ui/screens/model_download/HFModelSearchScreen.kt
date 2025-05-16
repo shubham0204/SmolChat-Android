@@ -75,6 +75,7 @@ fun HFModelDownloadScreen(
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Navigate Back",
+                                tint = MaterialTheme.colorScheme.secondary,
                             )
                         }
                     },
@@ -85,7 +86,7 @@ fun HFModelDownloadScreen(
                 modifier =
                     Modifier
                         .padding(innerPadding)
-                        .background(MaterialTheme.colorScheme.background),
+                        .background(MaterialTheme.colorScheme.surface),
             ) {
                 var query by remember { mutableStateOf("") }
                 TextField(
@@ -130,7 +131,7 @@ private fun ModelList(
     onModelClick: (String) -> Unit,
 ) {
     val models = viewModel.getModels(query).collectAsLazyPagingItems()
-    LazyColumn {
+    LazyColumn(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
         items(count = models.itemCount) { index ->
             models[index]?.let { model ->
                 ModelListItem(model, onModelClick = onModelClick)
@@ -151,7 +152,7 @@ private fun ModelListItem(
             Modifier
                 .clickable { onModelClick(model.id) }
                 .padding(8.dp)
-            .fillMaxWidth(),
+                .fillMaxWidth(),
     ) {
         Text(
             text = modelAuthor,
@@ -168,9 +169,11 @@ private fun ModelListItem(
                 Text(
                     modifier =
                         Modifier
-                            .padding(2.dp)
-                            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(2.dp))
-                            .padding(2.dp),
+                            .padding(horizontal = 2.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceContainer,
+                                RoundedCornerShape(4.dp),
+                            ).padding(horizontal = 2.dp),
                     text = it,
                     fontSize = 8.sp,
                 )

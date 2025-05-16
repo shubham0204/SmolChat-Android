@@ -61,7 +61,7 @@
     <string name="chat_model_list_desc">从下方选择一个已下载的模型，以用作此聊天的“默认”模型。</string>
     <string name="chat_model_list_sort_date">按添加日期排序</string>
     <string name="chat_model_list_sort_name">按名称排序</string>
-    <string name="chat_model_list_add_model">添加模型</string>
+    <string name="chat_model_list_add_model">新模型</string>
     <string name="task_create_task_title">创建任务</string>
     <string name="task_create_task_name">任务名称</string>
     <string name="task_create_task_sys_prompt">系统提示</string>
@@ -74,8 +74,8 @@
     <string name="tasks_manage_tasks_title">管理任务</string>
     <string name="tasks_manage_tasks_desc">任务是定义了系统提示和模型的聊天模板。使用它们可以通过选定的 SLM 模型执行快速操作。</string>
     <string name="dialog_delete_task_title">删除任务</string>
-    <string name="download_model_title">下载模型</string>
-    <string name="download_model_popular_models">热门模型</string>
+    <string name="add_new_model_title">添加新模型</string>
+    <string name="download_model_step_des">将模型下载到您的设备。模型是扩展名为 .gguf 的文件。从以下列表中选择任意模型，即可开始将其下载到您的设备：</string>
     <string name="download_model_browse_hf">从 HuggingFace 浏览</string>
     <string name="download_model_download">下载模型</string>
     <string name="download_model_desc_download_location">模型下载到您设备的“下载”目录中</string>
@@ -117,4 +117,12 @@
     <string name="dialog_edit_folder_button_text">编辑</string>
     <string name="edit_chat_message_done">完成</string>
     <string name="label_device_ram">设备内存：%.2f GB 已用，总计 %.2f GB</string>
+    <string name="download_model_step_title">步骤 1：下载模型</string>
+    <string name="import_model_step_title">步骤 2：导入模型</string>
+    <string name="button_text_back">上一步</string>
+    <string name="button_text_next">下一步</string>
+    <string name="download_model_next_step_des">模型下载完成后，请前往下一部分“导入模型”</string>
+    <string name="download_model_step_hf_browse">在 HuggingFace 上浏览模型并下载 .gguf 模型文件。</string>
+    <string name="dialog_invalid_file_title">文件无效</string>
+    <string name="dialog_invalid_file_text">选择的文件不是有效的 GGUF 文件。</string>
 </resources>

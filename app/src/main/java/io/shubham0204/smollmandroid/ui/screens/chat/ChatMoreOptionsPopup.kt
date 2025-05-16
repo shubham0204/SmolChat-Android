@@ -55,34 +55,79 @@ fun ChatMoreOptionsPopup(
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { viewModel.hideMoreOptionsPopup() },
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Settings, contentDescription = "Edit Chat Name") },
-            text = { Text(stringResource(R.string.chat_options_edit_settings), style = MaterialTheme.typography.labelMedium) },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "Edit Chat Name",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            text = {
+                Text(
+                    stringResource(R.string.chat_options_edit_settings),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
             onClick = {
                 onEditChatSettingsClick()
                 viewModel.hideMoreOptionsPopup()
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Folder, contentDescription = "Change Folder") },
-            text = { Text(stringResource(R.string.chat_options_change_folder), style = MaterialTheme.typography.labelMedium) },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Folder,
+                    contentDescription = "Change Folder",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            text = {
+                Text(
+                    stringResource(R.string.chat_options_change_folder),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
             onClick = {
                 viewModel.showChangeFolderDialog()
                 viewModel.hideMoreOptionsPopup()
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Assistant, contentDescription = "Change Model") },
-            text = { Text(stringResource(R.string.chat_options_change_model), style = MaterialTheme.typography.labelMedium) },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Assistant,
+                    contentDescription = "Change Model",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            text = {
+                Text(
+                    stringResource(R.string.chat_options_change_model),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
             onClick = {
                 viewModel.showSelectModelListDialog()
                 viewModel.hideMoreOptionsPopup()
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete Chat") },
-            text = { Text(stringResource(R.string.dialog_title_delete_chat), style = MaterialTheme.typography.labelMedium) },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Delete Chat",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            text = {
+                Text(
+                    stringResource(R.string.dialog_title_delete_chat),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
             onClick = {
                 viewModel.currChatState.value?.let { chat ->
                     createAlertDialog(
@@ -106,8 +151,19 @@ fun ChatMoreOptionsPopup(
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Clear, contentDescription = "Clear Chat Messages") },
-            text = { Text(stringResource(R.string.chat_options_clear_messages), style = MaterialTheme.typography.labelMedium) },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Clear,
+                    contentDescription = "Clear Chat Messages",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            text = {
+                Text(
+                    stringResource(R.string.chat_options_clear_messages),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
             onClick = {
                 viewModel.currChatState.value?.let { chat ->
                     createAlertDialog(
@@ -134,15 +190,32 @@ fun ChatMoreOptionsPopup(
         HorizontalDivider(modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(4.dp))
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.AutoMirrored.Filled.ShortText, contentDescription = "Context Usage") },
-            text = { Text(stringResource(R.string.chat_options_ctx_length_usage), style = MaterialTheme.typography.labelMedium) },
+            leadingIcon = {
+                Icon(
+                    Icons.AutoMirrored.Filled.ShortText,
+                    contentDescription = "Context Usage",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            text = {
+                Text(
+                    stringResource(R.string.chat_options_ctx_length_usage),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
             onClick = {
                 viewModel.showContextLengthUsageDialog()
                 viewModel.hideMoreOptionsPopup()
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Memory, contentDescription = "RAM Usage") },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Memory,
+                    contentDescription = "RAM Usage",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
             text = {
                 Text(
                     if (showRAMUsageLabel) "Hide RAM usage" else "Show RAM usage",

@@ -38,6 +38,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Title
@@ -54,7 +55,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +63,7 @@ import androidx.compose.ui.window.Dialog
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
+import io.shubham0204.smollmandroid.ui.components.noRippleClickable
 import io.shubham0204.smollmandroid.ui.screens.model_download.DownloadModelActivity
 import java.io.File
 
@@ -87,8 +88,10 @@ fun SelectModelsList(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
-                        .padding(16.dp),
+                        .background(
+                            MaterialTheme.colorScheme.surfaceContainer,
+                            RoundedCornerShape(8.dp),
+                        ).padding(16.dp),
             ) {
                 Text(
                     text = stringResource(R.string.chat_model_list_screen_title),
@@ -134,7 +137,8 @@ fun SelectModelsList(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null,
                                 ) {
-                                    sortOrder = if (sortOrder == SortOrder.NAME) SortOrder.DATE_ADDED else SortOrder.NAME
+                                    sortOrder =
+                                        if (sortOrder == SortOrder.NAME) SortOrder.DATE_ADDED else SortOrder.NAME
                                 },
                     ) {
                         when (targetSortOrder) {
@@ -142,6 +146,7 @@ fun SelectModelsList(
                                 Icon(
                                     imageVector = Icons.Default.Title,
                                     contentDescription = "Sort by Model Name",
+                                    tint = MaterialTheme.colorScheme.secondary,
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
@@ -154,6 +159,7 @@ fun SelectModelsList(
                                 Icon(
                                     imageVector = Icons.Default.CalendarToday,
                                     contentDescription = "Sort by Date Added",
+                                    tint = MaterialTheme.colorScheme.secondary,
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
@@ -197,6 +203,7 @@ fun SelectModelsList(
                         }
                     },
                 ) {
+                    Icon(Icons.Default.Add, contentDescription = "New Model")
                     Text(stringResource(R.string.chat_model_list_add_model))
                 }
             }
@@ -216,10 +223,11 @@ private fun ModelListItem(
         modifier =
             Modifier
                 .padding(4.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                .padding(4.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .clickable { onModelListItemClick(model) }
+                .background(
+                    MaterialTheme.colorScheme.surfaceContainerHighest,
+                    RoundedCornerShape(8.dp),
+                ).padding(4.dp)
+                .noRippleClickable { onModelListItemClick(model) }
                 .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -243,7 +251,10 @@ private fun ModelListItem(
                 onClick = {
                     createAlertDialog(
                         dialogTitle = context.getString(R.string.dialog_title_delete_chat),
-                        dialogText = context.getString(R.string.dialog_text_delete_chat).format(model.name),
+                        dialogText =
+                            context
+                                .getString(R.string.dialog_text_delete_chat)
+                                .format(model.name),
                         dialogPositiveButtonText = context.getString(R.string.dialog_pos_delete),
                         dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
                         onPositiveButtonClick = { onModelDeleteClick(model) },
@@ -254,6 +265,7 @@ private fun ModelListItem(
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = "Delete Model",
+                    tint = MaterialTheme.colorScheme.secondary,
                 )
             }
         }
