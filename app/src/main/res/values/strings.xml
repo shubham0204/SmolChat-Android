@@ -101,4 +101,5 @@
     <string name="dialog_edit_folder_name_title">Edit Folder Name</string>
     <string name="dialog_edit_folder_button_text">Edit</string>
     <string name="edit_chat_message_done">Done</string>
+    <string name="label_device_ram">Device RAM: %.2f GB used of %.2f GB total</string>
 </resources>

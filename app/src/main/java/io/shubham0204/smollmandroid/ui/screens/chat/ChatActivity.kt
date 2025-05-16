@@ -110,6 +110,7 @@ import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoa
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.TasksList
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
@@ -305,6 +306,7 @@ private fun ColumnScope.ScreenUI(
     currChat: Chat,
 ) {
     val isGeneratingResponse by viewModel.isGeneratingResponse.collectAsStateWithLifecycle()
+    RAMUsageLabel(viewModel)
     MessagesList(
         viewModel,
         isGeneratingResponse,
@@ -314,6 +316,30 @@ private fun ColumnScope.ScreenUI(
         viewModel,
         isGeneratingResponse,
     )
+}
+
+@Composable
+private fun RAMUsageLabel(viewModel: ChatScreenViewModel) {
+    val showRAMUsageLabel by viewModel.showRAMUsageLabel.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    var labelText by remember { mutableStateOf("") }
+    LaunchedEffect(showRAMUsageLabel) {
+        if (showRAMUsageLabel) {
+            while (true) {
+                val (used, total) = viewModel.getCurrentMemoryUsage()
+                labelText = context.getString(R.string.label_device_ram).format(used, total)
+                delay(3000L)
+            }
+        }
+    }
+    if (showRAMUsageLabel) {
+        Text(
+            labelText,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+        )
+    }
 }
 
 @Composable

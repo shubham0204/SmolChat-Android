@@ -17,21 +17,29 @@
 package io.shubham0204.smollmandroid.ui.screens.chat
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShortText
 import androidx.compose.material.icons.filled.Assistant
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
@@ -42,6 +50,7 @@ fun ChatMoreOptionsPopup(
     onEditChatSettingsClick: () -> Unit,
 ) {
     val expanded by viewModel.showMoreOptionsPopupState.collectAsStateWithLifecycle()
+    val showRAMUsageLabel by viewModel.showRAMUsageLabel.collectAsStateWithLifecycle()
     val context = LocalContext.current
     DropdownMenu(
         expanded = expanded,
@@ -49,7 +58,7 @@ fun ChatMoreOptionsPopup(
     ) {
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Settings, contentDescription = "Edit Chat Name") },
-            text = { Text(stringResource(R.string.chat_options_edit_settings)) },
+            text = { Text(stringResource(R.string.chat_options_edit_settings), style = MaterialTheme.typography.labelMedium) },
             onClick = {
                 onEditChatSettingsClick()
                 viewModel.hideMoreOptionsPopup()
@@ -57,7 +66,7 @@ fun ChatMoreOptionsPopup(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Folder, contentDescription = "Change Folder") },
-            text = { Text(stringResource(R.string.chat_options_change_folder)) },
+            text = { Text(stringResource(R.string.chat_options_change_folder), style = MaterialTheme.typography.labelMedium) },
             onClick = {
                 viewModel.showChangeFolderDialog()
                 viewModel.hideMoreOptionsPopup()
@@ -65,23 +74,15 @@ fun ChatMoreOptionsPopup(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Assistant, contentDescription = "Change Model") },
-            text = { Text(stringResource(R.string.chat_options_change_model)) },
+            text = { Text(stringResource(R.string.chat_options_change_model), style = MaterialTheme.typography.labelMedium) },
             onClick = {
                 viewModel.showSelectModelListDialog()
                 viewModel.hideMoreOptionsPopup()
             },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.AutoMirrored.Filled.ShortText, contentDescription = "Context Usage") },
-            text = { Text(stringResource(R.string.chat_options_ctx_length_usage)) },
-            onClick = {
-                viewModel.showContextLengthUsageDialog()
-                viewModel.hideMoreOptionsPopup()
-            },
-        )
-        DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete Chat") },
-            text = { Text(stringResource(R.string.dialog_title_delete_chat)) },
+            text = { Text(stringResource(R.string.dialog_title_delete_chat), style = MaterialTheme.typography.labelMedium) },
             onClick = {
                 viewModel.currChatState.value?.let { chat ->
                     createAlertDialog(
@@ -106,7 +107,7 @@ fun ChatMoreOptionsPopup(
         )
         DropdownMenuItem(
             leadingIcon = { Icon(Icons.Default.Clear, contentDescription = "Clear Chat Messages") },
-            text = { Text(stringResource(R.string.chat_options_clear_messages)) },
+            text = { Text(stringResource(R.string.chat_options_clear_messages), style = MaterialTheme.typography.labelMedium) },
             onClick = {
                 viewModel.currChatState.value?.let { chat ->
                     createAlertDialog(
@@ -126,6 +127,30 @@ fun ChatMoreOptionsPopup(
                         onNegativeButtonClick = {},
                     )
                 }
+                viewModel.hideMoreOptionsPopup()
+            },
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth())
+        Spacer(modifier = Modifier.height(4.dp))
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.AutoMirrored.Filled.ShortText, contentDescription = "Context Usage") },
+            text = { Text(stringResource(R.string.chat_options_ctx_length_usage), style = MaterialTheme.typography.labelMedium) },
+            onClick = {
+                viewModel.showContextLengthUsageDialog()
+                viewModel.hideMoreOptionsPopup()
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.Default.Memory, contentDescription = "RAM Usage") },
+            text = {
+                Text(
+                    if (showRAMUsageLabel) "Hide RAM usage" else "Show RAM usage",
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
+            onClick = {
+                viewModel.toggleRAMUsageLabelVisibility()
                 viewModel.hideMoreOptionsPopup()
             },
         )
