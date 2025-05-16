@@ -105,7 +105,7 @@ fun TasksActivityScreenUI() {
             Column(
                 modifier =
                     Modifier
-                        .background(MaterialTheme.colorScheme.background)
+                        .background(MaterialTheme.colorScheme.surface)
                         .fillMaxSize()
                         .padding(paddingValues),
             ) {

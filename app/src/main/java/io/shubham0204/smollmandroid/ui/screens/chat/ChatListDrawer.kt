@@ -87,7 +87,7 @@ fun DrawerUI(
         Column(
             modifier =
                 Modifier
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .background(MaterialTheme.colorScheme.surface)
                     .windowInsetsPadding(WindowInsets.safeDrawing)
                     .padding(8.dp)
                     .requiredWidth(300.dp)
@@ -153,7 +153,7 @@ private fun ColumnScope.ChatsList(
             Icon(
                 Icons.Default.Quickreply,
                 contentDescription = "Manage Tasks",
-                tint = MaterialTheme.colorScheme.surfaceTint,
+                tint = MaterialTheme.colorScheme.secondary,
             )
             Text(
                 stringResource(R.string.chat_drawer_manage_tasks),
@@ -187,7 +187,7 @@ private fun ColumnScope.ChatsList(
                 Icon(
                     Icons.Default.Add,
                     contentDescription = "Add Folder",
-                    tint = MaterialTheme.colorScheme.surfaceTint,
+                    tint = MaterialTheme.colorScheme.secondary,
                 )
             }
         }
@@ -289,7 +289,7 @@ private fun FolderListItem(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight
             },
             contentDescription = "",
-            tint = MaterialTheme.colorScheme.surfaceTint,
+            tint = MaterialTheme.colorScheme.secondary,
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
@@ -345,7 +345,7 @@ private fun FolderListItem(
             Icon(
                 Icons.Default.MoreVert,
                 contentDescription = "Folder Options",
-                tint = MaterialTheme.colorScheme.surfaceTint,
+                tint = MaterialTheme.colorScheme.secondary,
             )
         }
     }

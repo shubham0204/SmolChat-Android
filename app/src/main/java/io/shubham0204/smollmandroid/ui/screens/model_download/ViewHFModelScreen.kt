@@ -90,6 +90,7 @@ fun ViewHFModelScreen(
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Navigate Back",
+                                    tint = MaterialTheme.colorScheme.secondary,
                                 )
                             }
                         },
@@ -100,7 +101,10 @@ fun ViewHFModelScreen(
                                     context.startActivity(this)
                                 }
                             }) {
-                                Icon(imageVector = Icons.Default.ArrowOutward, contentDescription = "Open in Browser")
+                                Icon(
+                                    imageVector = Icons.Default.ArrowOutward,
+                                    contentDescription = "Open in Browser",
+                                )
                             }
                             IconButton(onClick = {
                                 Intent(Intent.ACTION_SEND).apply {
@@ -109,7 +113,10 @@ fun ViewHFModelScreen(
                                     context.startActivity(this)
                                 }
                             }) {
-                                Icon(imageVector = Icons.Default.Share, contentDescription = "Share")
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = "Share",
+                                )
                             }
                         },
                     )
@@ -119,19 +126,28 @@ fun ViewHFModelScreen(
                     modifier =
                         Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background)
+                            .background(MaterialTheme.colorScheme.surface)
                             .padding(innerPadding),
                 ) {
                     LaunchedEffect(0) {
                         viewModel.fetchModelInfoAndTree(modelId)
                     }
-                    val modelInfoAndTree by viewModel.modelInfoAndTree.collectAsStateWithLifecycle(LocalLifecycleOwner.current)
+                    val modelInfoAndTree by viewModel.modelInfoAndTree.collectAsStateWithLifecycle(
+                        LocalLifecycleOwner.current,
+                    )
                     modelInfoAndTree?.let { modelInfoAndTree ->
                         val modelInfo = modelInfoAndTree.first
                         val modelFiles = modelInfoAndTree.second
                         ModelInfoCard(modelInfo)
-                        Row(modifier = Modifier.padding(8.dp)) {
-                            Icon(imageVector = Icons.Default.Folder, contentDescription = "Files")
+                        Row(
+                            modifier = Modifier.padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Folder,
+                                contentDescription = "Files",
+                                tint = MaterialTheme.colorScheme.secondary,
+                            )
                             Spacer(modifier = Modifier.width(4.dp))
                             LargeLabelText(text = "Files")
                         }
@@ -262,13 +278,16 @@ private fun ModelInfoIconBubble(
         modifier =
             Modifier
                 .padding(4.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(4.dp))
-                .padding(4.dp),
+                .background(
+                    MaterialTheme.colorScheme.surfaceContainerHighest,
+                    RoundedCornerShape(4.dp),
+                ).padding(4.dp),
     ) {
         Icon(
             modifier = Modifier.size(16.dp),
             imageVector = icon,
             contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.secondary,
         )
         Spacer(modifier = Modifier.width(2.dp))
         Text(

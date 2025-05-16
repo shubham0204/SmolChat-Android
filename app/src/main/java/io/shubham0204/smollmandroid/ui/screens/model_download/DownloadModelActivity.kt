@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,15 +42,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -58,11 +62,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -110,7 +114,6 @@ class DownloadModelActivity : ComponentActivity() {
                 }
                 composable("download-model") {
                     DownloadModelScreen(
-                        viewModel,
                         onHFModelSelectClick = { navController.navigate("hf-model-select") },
                     )
                 }
@@ -130,108 +133,56 @@ class DownloadModelActivity : ComponentActivity() {
         }
     }
 
+    private enum class AddNewModelStep {
+        ImportModel,
+        DownloadModel,
+    }
+
     @Composable
-    private fun DownloadModelScreen(
-        viewModel: DownloadModelsViewModel,
-        onHFModelSelectClick: () -> Unit,
-    ) {
-        val launcher =
-            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
-                activityResult.data?.let {
-                    it.data?.let { uri ->
-                        if (checkGGUFFile(uri)) {
-                            viewModel.copyModelFile(uri, onComplete = { openChatActivity() })
-                        } else {
-                            createAlertDialog(
-                                dialogTitle = "Invalid File",
-                                dialogText = "The selected file is not a valid GGUF file.",
-                                dialogPositiveButtonText = "OK",
-                                onPositiveButtonClick = {},
-                                dialogNegativeButtonText = null,
-                                onNegativeButtonClick = null,
-                            )
-                        }
-                    }
-                }
-            }
+    private fun DownloadModelScreen(onHFModelSelectClick: () -> Unit) {
+        var addNewModelStep by remember { mutableStateOf(AddNewModelStep.DownloadModel) }
         SmolLMAndroidTheme {
-            Surface {
+            Surface(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(12.dp)
+                        .windowInsetsPadding(WindowInsets.safeContent),
+            ) {
                 Column(
                     modifier =
                         Modifier
-                            .background(MaterialTheme.colorScheme.background)
-                            .fillMaxSize()
-                            .padding(16.dp)
-                            .windowInsetsPadding(WindowInsets.safeContent)
-                            .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                            .background(MaterialTheme.colorScheme.surface),
                 ) {
-                    Text(
-                        stringResource(R.string.download_model_title),
-                        style = MaterialTheme.typography.headlineMedium,
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        stringResource(R.string.download_model_popular_models),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    ModelsList(viewModel)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    ModelURLInput(viewModel)
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row {
-                        OutlinedButton(
-                            modifier = Modifier.weight(1f),
-                            onClick = onHFModelSelectClick,
-                        ) {
-                            Text(stringResource(R.string.download_model_browse_hf))
-                        }
-                        OutlinedButton(
-                            modifier = Modifier.weight(1f),
-                            enabled =
-                                viewModel.selectedModelState.value != null ||
-                                    viewModel.modelUrlState.value.isNotBlank(),
-                            onClick = { viewModel.downloadModel() },
-                        ) {
-                            Text(stringResource(R.string.download_model_download))
-                        }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Add New Model",
+                            tint = MaterialTheme.colorScheme.secondary,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            stringResource(R.string.add_new_model_title),
+                            style = MaterialTheme.typography.headlineMedium,
+                        )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                stringResource(R.string.download_model_desc_download_location),
-                                style = MaterialTheme.typography.headlineSmall,
-                            )
-                            Text(
-                                stringResource(R.string.download_model_select_gguf),
-                                style = MaterialTheme.typography.titleSmall,
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = {
-                                    val intent =
-                                        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                                            setType("application/octet-stream")
-                                            putExtra(
-                                                DocumentsContract.EXTRA_INITIAL_URI,
-                                                Environment
-                                                    .getExternalStoragePublicDirectory(
-                                                        Environment.DIRECTORY_DOWNLOADS,
-                                                    ).toUri(),
-                                            )
-                                        }
-                                    launcher.launch(intent)
+                    when (addNewModelStep) {
+                        AddNewModelStep.ImportModel -> {
+                            SelectModelScreen(
+                                onPrevSectionClick = {
+                                    addNewModelStep = AddNewModelStep.DownloadModel
                                 },
-                            ) {
-                                Text(stringResource(R.string.download_models_select_gguf_button))
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
+                            )
+                        }
+
+                        AddNewModelStep.DownloadModel -> {
+                            DownloadModelScreen(
+                                onHFModelSelectClick = onHFModelSelectClick,
+                                onNextSectionClick = {
+                                    addNewModelStep = AddNewModelStep.ImportModel
+                                },
+                            )
                         }
                     }
                 }
@@ -252,27 +203,32 @@ class DownloadModelActivity : ComponentActivity() {
                         .fillMaxWidth()
                         .background(
                             if (model == selectedModel) {
-                                MaterialTheme.colorScheme.secondary
+                                MaterialTheme.colorScheme.surfaceContainer
                             } else {
-                                MaterialTheme.colorScheme.background
+                                MaterialTheme.colorScheme.surface
                             },
                             RoundedCornerShape(
                                 8.dp,
                             ),
                         ).padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     if (model == selectedModel) {
-                        Icon(Icons.Default.Done, contentDescription = null, tint = Color.White)
+                        Icon(
+                            Icons.Default.Done,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
                         Spacer(modifier = Modifier.width(4.dp))
                     }
                     Text(
                         color =
                             if (model == selectedModel) {
-                                MaterialTheme.colorScheme.onSecondary
+                                MaterialTheme.colorScheme.onSurface
                             } else {
                                 MaterialTheme
-                                    .colorScheme.onBackground
+                                    .colorScheme.onSurface
                             },
                         text = model.name,
                         style = MaterialTheme.typography.bodySmall,
@@ -297,6 +253,134 @@ class DownloadModelActivity : ComponentActivity() {
                     keyboardType = androidx.compose.ui.text.input.KeyboardType.Uri,
                 ),
         )
+    }
+
+    @Composable
+    private fun DownloadModelScreen(
+        onHFModelSelectClick: () -> Unit,
+        onNextSectionClick: () -> Unit,
+    ) {
+        Column(modifier = Modifier.fillMaxHeight()) {
+            Text(
+                text = stringResource(R.string.download_model_step_title),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            Text(
+                stringResource(R.string.download_model_step_des),
+                style = MaterialTheme.typography.labelSmall,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            ModelsList(viewModel)
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedButton(
+                enabled =
+                    viewModel.selectedModelState.value != null ||
+                        viewModel.modelUrlState.value.isNotBlank(),
+                onClick = { viewModel.downloadModel() },
+                shape = RoundedCornerShape(4.dp),
+            ) {
+                Icon(Icons.Default.Download, contentDescription = "Download Selected Model")
+                Text(stringResource(R.string.download_model_download))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "OR",
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.download_model_step_hf_browse),
+                style = MaterialTheme.typography.labelMedium,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = onHFModelSelectClick,
+                shape = RoundedCornerShape(4.dp),
+            ) {
+                Icon(Icons.Default.Language, contentDescription = "Download Selected Model")
+                Text(stringResource(R.string.download_model_browse_hf))
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Bottom) {
+                Text(
+                    text = stringResource(R.string.download_model_next_step_des),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = onNextSectionClick,
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                    Text(stringResource(R.string.button_text_next))
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun SelectModelScreen(onPrevSectionClick: () -> Unit) {
+        val launcher =
+            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
+                activityResult.data?.let {
+                    it.data?.let { uri ->
+                        if (checkGGUFFile(uri)) {
+                            viewModel.copyModelFile(uri, onComplete = { openChatActivity() })
+                        } else {
+                            createAlertDialog(
+                                dialogTitle = getString(R.string.dialog_invalid_file_title),
+                                dialogText = getString(R.string.dialog_invalid_file_text),
+                                dialogPositiveButtonText = "OK",
+                                onPositiveButtonClick = {},
+                                dialogNegativeButtonText = null,
+                                onNegativeButtonClick = null,
+                            )
+                        }
+                    }
+                }
+            }
+        Column {
+            Text(
+                text = stringResource(R.string.import_model_step_title),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            Text(
+                text = stringResource(R.string.import_model_step_des),
+                style = MaterialTheme.typography.labelSmall,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    val intent =
+                        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            setType("application/octet-stream")
+                            putExtra(
+                                DocumentsContract.EXTRA_INITIAL_URI,
+                                Environment
+                                    .getExternalStoragePublicDirectory(
+                                        Environment.DIRECTORY_DOWNLOADS,
+                                    ).toUri(),
+                            )
+                        }
+                    launcher.launch(intent)
+                },
+                shape = RoundedCornerShape(4.dp),
+            ) {
+                Text(stringResource(R.string.download_models_select_gguf_button))
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            ) {
+                OutlinedButton(
+                    onClick = onPrevSectionClick,
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    Text(stringResource(R.string.button_text_back))
+                }
+            }
+        }
     }
 
     // check if the first four bytes of the file

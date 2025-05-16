@@ -18,30 +18,39 @@ package io.shubham0204.smollmandroid.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
-import androidx.compose.ui.text.googlefonts.GoogleFont
 import io.shubham0204.smollmandroid.R
-
-val provider =
-    GoogleFont.Provider(
-        providerAuthority = "com.google.android.gms.fonts",
-        providerPackage = "com.google.android.gms",
-        certificates = R.array.com_google_android_gms_fonts_certs,
-    )
 
 val bodyFontFamily =
     FontFamily(
-        Font(
-            googleFont = GoogleFont("Inter"),
-            fontProvider = provider,
+        androidx.compose.ui.text.font.Font(
+            resId = R.font.sf_pro_text_black,
+            weight = FontWeight.Black,
         ),
-    )
-
-val displayFontFamily =
-    FontFamily(
-        Font(
-            googleFont = GoogleFont("Inter"),
-            fontProvider = provider,
+        androidx.compose.ui.text.font.Font(
+            resId = R.font.sf_pro_text_bold,
+            weight = FontWeight.Bold,
+        ),
+        androidx.compose.ui.text.font.Font(
+            resId = R.font.sf_pro_text_light,
+            weight = FontWeight.Light,
+        ),
+        androidx.compose.ui.text.font.Font(
+            resId = R.font.sf_pro_text_regular,
+            weight = FontWeight.Normal,
+        ),
+        androidx.compose.ui.text.font.Font(
+            resId = R.font.sf_pro_text_medium,
+            weight = FontWeight.Medium,
+        ),
+        androidx.compose.ui.text.font.Font(
+            resId = R.font.sf_pro_text_semibold,
+            weight = FontWeight.SemiBold,
+        ),
+        androidx.compose.ui.text.font.Font(
+            resId = R.font.sf_pro_text_thin,
+            weight = FontWeight.Thin,
         ),
     )
 
@@ -50,15 +59,15 @@ val baseline = Typography()
 
 val AppTypography =
     Typography(
-        displayLarge = baseline.displayLarge.copy(fontFamily = displayFontFamily),
-        displayMedium = baseline.displayMedium.copy(fontFamily = displayFontFamily),
-        displaySmall = baseline.displaySmall.copy(fontFamily = displayFontFamily),
-        headlineLarge = baseline.headlineLarge.copy(fontFamily = displayFontFamily),
-        headlineMedium = baseline.headlineMedium.copy(fontFamily = displayFontFamily),
-        headlineSmall = baseline.headlineSmall.copy(fontFamily = displayFontFamily),
-        titleLarge = baseline.titleLarge.copy(fontFamily = displayFontFamily),
-        titleMedium = baseline.titleMedium.copy(fontFamily = displayFontFamily),
-        titleSmall = baseline.titleSmall.copy(fontFamily = displayFontFamily),
+        displayLarge = baseline.displayLarge.copy(fontFamily = bodyFontFamily),
+        displayMedium = baseline.displayMedium.copy(fontFamily = bodyFontFamily),
+        displaySmall = baseline.displaySmall.copy(fontFamily = bodyFontFamily),
+        headlineLarge = baseline.headlineLarge.copy(fontFamily = bodyFontFamily),
+        headlineMedium = baseline.headlineMedium.copy(fontFamily = bodyFontFamily),
+        headlineSmall = baseline.headlineSmall.copy(fontFamily = bodyFontFamily),
+        titleLarge = baseline.titleLarge.copy(fontFamily = bodyFontFamily),
+        titleMedium = baseline.titleMedium.copy(fontFamily = bodyFontFamily),
+        titleSmall = baseline.titleSmall.copy(fontFamily = bodyFontFamily),
         bodyLarge = baseline.bodyLarge.copy(fontFamily = bodyFontFamily),
         bodyMedium = baseline.bodyMedium.copy(fontFamily = bodyFontFamily),
         bodySmall = baseline.bodySmall.copy(fontFamily = bodyFontFamily),

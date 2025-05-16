@@ -27,6 +27,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -53,10 +54,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
@@ -85,6 +87,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -106,6 +109,7 @@ import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
 import io.shubham0204.smollmandroid.ui.components.TextFieldDialog
+import io.shubham0204.smollmandroid.ui.components.noRippleClickable
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoadingState
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.TasksList
@@ -234,6 +238,7 @@ fun ChatActivityScreenUI(
                 modifier = Modifier.fillMaxSize(),
                 topBar = {
                     TopAppBar(
+                        modifier = Modifier.shadow(2.dp),
                         title = {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
@@ -259,6 +264,7 @@ fun ChatActivityScreenUI(
                                 Icon(
                                     Icons.Default.DragHandle,
                                     contentDescription = stringResource(R.string.chat_view_chats),
+                                    tint = MaterialTheme.colorScheme.secondary,
                                 )
                             }
                         },
@@ -271,6 +277,7 @@ fun ChatActivityScreenUI(
                                         Icon(
                                             Icons.Default.MoreVert,
                                             contentDescription = "Options",
+                                            tint = MaterialTheme.colorScheme.secondary,
                                         )
                                     }
                                     ChatMoreOptionsPopup(viewModel, onEditChatParamsClick)
@@ -284,7 +291,7 @@ fun ChatActivityScreenUI(
                     modifier =
                         Modifier
                             .padding(innerPadding)
-                            .background(MaterialTheme.colorScheme.background),
+                            .background(MaterialTheme.colorScheme.surface),
                 ) {
                     if (currChat != null) {
                         ScreenUI(viewModel, currChat!!)
@@ -307,6 +314,7 @@ private fun ColumnScope.ScreenUI(
 ) {
     val isGeneratingResponse by viewModel.isGeneratingResponse.collectAsStateWithLifecycle()
     RAMUsageLabel(viewModel)
+    Spacer(modifier = Modifier.height(4.dp))
     MessagesList(
         viewModel,
         isGeneratingResponse,
@@ -333,6 +341,7 @@ private fun RAMUsageLabel(viewModel: ChatScreenViewModel) {
         }
     }
     if (showRAMUsageLabel) {
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             labelText,
             style = MaterialTheme.typography.labelSmall,
@@ -496,7 +505,7 @@ private fun LazyItemScope.MessageListItem(
                     modifier =
                         Modifier
                             .padding(4.dp)
-                            .background(MaterialTheme.colorScheme.background)
+                            .background(MaterialTheme.colorScheme.surface)
                             .padding(4.dp)
                             .fillMaxSize(),
                     textColor = MaterialTheme.colorScheme.onBackground.toArgb(),
@@ -565,7 +574,7 @@ private fun LazyItemScope.MessageListItem(
                             Modifier
                                 .padding(8.dp)
                                 .background(
-                                    MaterialTheme.colorScheme.primaryContainer,
+                                    MaterialTheme.colorScheme.surfaceContainerHighest,
                                     RoundedCornerShape(16.dp),
                                 ).padding(8.dp)
                                 .widthIn(max = 250.dp),
@@ -581,13 +590,13 @@ private fun LazyItemScope.MessageListItem(
                     ChatMessageText(
                         modifier =
                             Modifier
-                                .padding(8.dp)
+                                .padding(4.dp)
                                 .background(
-                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.surfaceContainerHighest,
                                     RoundedCornerShape(16.dp),
                                 ).padding(8.dp)
                                 .widthIn(max = 250.dp),
-                        textColor = android.graphics.Color.WHITE,
+                        textColor = MaterialTheme.colorScheme.onSurface.toArgb(),
                         textSize = 16f,
                         message = messageStr,
                     )
@@ -596,13 +605,14 @@ private fun LazyItemScope.MessageListItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = stringResource(R.string.chat_message_copy),
-                        modifier = Modifier.clickable { onCopyClicked() },
+                        modifier = Modifier.noRippleClickable { onCopyClicked() },
                         fontSize = 6.sp,
+                        lineHeight = 6.sp,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.chat_message_share),
-                        modifier = Modifier.clickable { onShareClicked() },
+                        modifier = Modifier.noRippleClickable { onShareClicked() },
                         fontSize = 6.sp,
                     )
                     if (allowEditing) {
@@ -657,23 +667,28 @@ private fun MessageInput(
     } else {
         var questionText by remember { mutableStateOf(viewModel.questionTextDefaultVal ?: "") }
         val keyboardController = LocalSoftwareKeyboardController.current
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
-            when (modelLoadingState) {
-                ChatScreenViewModel.ModelLoadingState.IN_PROGRESS -> {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = stringResource(R.string.chat_loading_model),
-                    )
-                }
-
-                ChatScreenViewModel.ModelLoadingState.FAILURE -> {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = stringResource(R.string.chat_model_cannot_be_loaded),
-                    )
-                }
-
-                ChatScreenViewModel.ModelLoadingState.SUCCESS -> {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(8.dp),
+        ) {
+            AnimatedVisibility(modelLoadingState == ModelLoadingState.IN_PROGRESS) {
+                Text(
+                    modifier = Modifier.padding(8.dp),
+                    text = stringResource(R.string.chat_loading_model),
+                )
+            }
+            AnimatedVisibility(modelLoadingState == ModelLoadingState.FAILURE) {
+                Text(
+                    modifier = Modifier.padding(8.dp),
+                    text = stringResource(R.string.chat_model_cannot_be_loaded),
+                )
+            }
+            AnimatedVisibility(modelLoadingState == ModelLoadingState.SUCCESS) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     TextField(
                         modifier =
                             Modifier
@@ -729,15 +744,13 @@ private fun MessageInput(
                             },
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = "Send text",
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
                         }
                     }
                 }
-
-                else -> {}
             }
         }
     }

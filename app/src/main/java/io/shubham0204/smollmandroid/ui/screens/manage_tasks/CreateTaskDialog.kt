@@ -82,7 +82,7 @@ fun CreateTaskDialog(viewModel: TasksViewModel) {
                         Modifier
                             .padding(8.dp)
                             .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
                             .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
