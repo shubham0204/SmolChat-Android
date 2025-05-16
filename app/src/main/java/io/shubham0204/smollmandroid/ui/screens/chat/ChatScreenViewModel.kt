@@ -17,6 +17,8 @@
 package io.shubham0204.smollmandroid.ui.screens.chat
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
+import android.app.ActivityManager.MemoryInfo
 import android.content.Context
 import android.graphics.Color
 import android.text.util.Linkify
@@ -48,7 +50,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.android.annotation.KoinViewModel
+import java.lang.Math.pow
 import java.util.Date
+import kotlin.math.pow
 
 private const val LOGTAG = "[SmolLMAndroid-Kt]"
 private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
@@ -92,6 +96,9 @@ class ChatScreenViewModel(
     private val _showTaskListBottomListState = MutableStateFlow(false)
     val showTaskListBottomListState: StateFlow<Boolean> = _showTaskListBottomListState
 
+    private val _showRAMUsageLabel = MutableStateFlow(false)
+    val showRAMUsageLabel: StateFlow<Boolean> = _showRAMUsageLabel
+
     // Used to pre-set a value in the query text-field of the chat screen
     // It is set when a query comes from a 'share-text' intent in ChatActivity
     var questionTextDefaultVal: String? = null
@@ -103,8 +110,11 @@ class ChatScreenViewModel(
     var responseGenerationTimeSecs: Int? = null
     val markwon: Markwon
 
+    private var activityManager: ActivityManager
+
     init {
         _currChatState.value = appDB.loadDefaultChat()
+        activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val prism4j = Prism4j(PrismGrammarLocator())
         markwon =
             Markwon
@@ -331,6 +341,19 @@ class ChatScreenViewModel(
             false
         }
 
+    /**
+     * Get the current memory usage of the device.
+     * This method returns the memory consumed (in GBs) and the total
+     * memory available on the device (in GBs)
+     */
+    fun getCurrentMemoryUsage(): Pair<Float, Float> {
+        val memoryInfo = MemoryInfo()
+        activityManager.getMemoryInfo(memoryInfo)
+        val totalMemory = (memoryInfo.totalMem) / 1024.0.pow(3.0)
+        val usedMemory = (memoryInfo.availMem) / 1024.0.pow(3.0)
+        return Pair(usedMemory.toFloat(), totalMemory.toFloat())
+    }
+
     @SuppressLint("StringFormatMatches")
     fun showContextLengthUsageDialog() {
         _currChatState.value?.let { chat ->
@@ -380,5 +403,9 @@ class ChatScreenViewModel(
 
     fun hideTaskListBottomList() {
         _showTaskListBottomListState.value = false
+    }
+
+    fun toggleRAMUsageLabelVisibility() {
+        _showRAMUsageLabel.value = !_showRAMUsageLabel.value
     }
 }
