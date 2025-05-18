@@ -1,10 +1,12 @@
-- Add CPU extensions for `armv7` architecture (32-bit Android devices) to improve inference latency
-- Add 'Copy' and 'Share' actions for messages posted by the user (#68)
+- Allow grouping of chats into folders
+- Add an option to show device RAM usage on the chat screen
+- The app can now run on emulated Android devices
 - Sync with upstream llama.cpp
 
-### Minor UI changes
+### UI/UX changes
 
-- Show model size in GBs upto 2 decimal places in HuggingFace model explorer
-- Check if the selected file is a GGUF
-- Show model name in model delete dialog
-- Fix rendering the model's thinking response
+- Improved wizard for adding new models (easy to follow for beginners and non-technical persons)
+- Improved top app bar in the chat screen
+- Improved chat list drawer with a 'marker' to indicate the currently selected chat
+- New app icon
+- New color scheme for the app, new font (San Francisco)
