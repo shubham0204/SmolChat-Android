@@ -42,8 +42,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -152,7 +154,8 @@ class DownloadModelActivity : ComponentActivity() {
                 Column(
                     modifier =
                         Modifier
-                            .background(MaterialTheme.colorScheme.surface),
+                            .background(MaterialTheme.colorScheme.surface)
+                            .verticalScroll(rememberScrollState()),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -303,7 +306,7 @@ class DownloadModelActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalDivider(modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Bottom) {
+            Column(verticalArrangement = Arrangement.Bottom) {
                 Text(
                     text = stringResource(R.string.download_model_next_step_des),
                 )
@@ -369,7 +372,7 @@ class DownloadModelActivity : ComponentActivity() {
             ) {
                 Text(stringResource(R.string.download_models_select_gguf_button))
             }
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             ) {
