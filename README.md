@@ -1,45 +1,39 @@
+<img src="resources/app_icon/icon.png" alt="app icon" width="256"/>
+
 # SmolChat - On-Device Inference of SLMs in Android
 
 <table>
 <tr>
 <td>
-<img src="resources/app_screenshots/phone/1.jpg" alt="app_img_01">
+<img src="resources/app_screenshots/phone/1.png" alt="app_img_01">
 </td>
 <td>
-<img src="resources/app_screenshots/phone/2.jpg" alt="app_img_02">
+<img src="resources/app_screenshots/phone/2.png" alt="app_img_02">
 </td>
 <td>
-<img src="resources/app_screenshots/phone/3.jpg" alt="app_img_03">
-</td>
-<td>
-<img src="resources/app_screenshots/phone/4.jpg" alt="app_img_04">
+<img src="resources/app_screenshots/phone/3.png" alt="app_img_03">
 </td>
 </tr>
 <tr>
 <td>
-<img src="resources/app_screenshots/phone/5.jpg" alt="app_img_05">
+<img src="resources/app_screenshots/phone/4.png" alt="app_img_04">
 </td>
 <td>
-<img src="resources/app_screenshots/phone/6.jpg" alt="app_img_06">
+<img src="resources/app_screenshots/phone/5.png" alt="app_img_05">
 </td>
 <td>
-<img src="resources/app_screenshots/phone/7.jpg" alt="app_img_07">
-</td>
-<td>
-<img src="resources/app_screenshots/phone/8.jpg" alt="app_img_08">
-</td>
-</tr>
-<tr>
-<td>
-<img src="resources/app_screenshots/phone/9.jpg" alt="app_img_09">
-</td>
-<td>
-<img src="resources/app_screenshots/phone/10.jpg" alt="app_img_10">
+<img src="resources/app_screenshots/phone/6.png" alt="app_img_06">
 </td>
 </tr>
 </table>
 
 ## Installation
+
+### Google Play
+
+![](https://raw.githubusercontent.com/pioug/google-play-badges/06ccd9252af1501613da2ca28eaffe31307a4e6d/svg/English.svg)
+
+**[Get it on Google Play](https://play.google.com/store/apps/details?id=io.shubham0204.smollmandroid)**
 
 ### GitHub
 
