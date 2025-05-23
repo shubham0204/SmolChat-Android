@@ -33,35 +33,32 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +75,7 @@ import androidx.navigation.compose.rememberNavController
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.llm.exampleModelsList
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
+import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.AppProgressDialog
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatActivity
@@ -115,8 +113,9 @@ class DownloadModelActivity : ComponentActivity() {
                     )
                 }
                 composable("download-model") {
-                    DownloadModelScreen(
+                    AddNewModelScreen(
                         onHFModelSelectClick = { navController.navigate("hf-model-select") },
+                        onBackClick = { finish() },
                     )
                 }
             }
@@ -140,42 +139,44 @@ class DownloadModelActivity : ComponentActivity() {
         DownloadModel,
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    private fun DownloadModelScreen(onHFModelSelectClick: () -> Unit) {
+    private fun AddNewModelScreen(
+        onHFModelSelectClick: () -> Unit,
+        onBackClick: () -> Unit,
+    ) {
         var addNewModelStep by remember { mutableStateOf(AddNewModelStep.DownloadModel) }
         SmolLMAndroidTheme {
-            Surface(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(12.dp)
-                        .windowInsetsPadding(WindowInsets.safeContent),
-            ) {
-                Column(
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = {
+                    TopAppBar(
+                        title = { AppBarTitleText(stringResource(R.string.add_new_model_title)) },
+                        navigationIcon = {
+                            IconButton(onClick = onBackClick) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Navigate Back",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                )
+                            }
+                        },
+                    )
+                },
+            ) { innerPadding ->
+                Surface(
                     modifier =
                         Modifier
-                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(innerPadding)
                             .verticalScroll(rememberScrollState()),
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = "Add New Model",
-                            tint = MaterialTheme.colorScheme.secondary,
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            stringResource(R.string.add_new_model_title),
-                            style = MaterialTheme.typography.headlineMedium,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
                     when (addNewModelStep) {
                         AddNewModelStep.ImportModel -> {
                             SelectModelScreen(
                                 onPrevSectionClick = {
                                     addNewModelStep = AddNewModelStep.DownloadModel
                                 },
+                                modifier = Modifier.fillMaxSize().padding(8.dp),
                             )
                         }
 
@@ -185,6 +186,7 @@ class DownloadModelActivity : ComponentActivity() {
                                 onNextSectionClick = {
                                     addNewModelStep = AddNewModelStep.ImportModel
                                 },
+                                modifier = Modifier.fillMaxSize().padding(8.dp),
                             )
                         }
                     }
@@ -242,28 +244,12 @@ class DownloadModelActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun ModelURLInput(viewModel: DownloadModelsViewModel) {
-        var modelUrl by remember { viewModel.modelUrlState }
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = modelUrl,
-            onValueChange = { modelUrl = it },
-            placeholder = {
-                Text(text = stringResource(R.string.download_model_gguf_url))
-            },
-            keyboardOptions =
-                KeyboardOptions.Default.copy(
-                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Uri,
-                ),
-        )
-    }
-
-    @Composable
     private fun DownloadModelScreen(
         onHFModelSelectClick: () -> Unit,
         onNextSectionClick: () -> Unit,
+        modifier: Modifier = Modifier,
     ) {
-        Column(modifier = Modifier.fillMaxHeight()) {
+        Column(modifier = modifier) {
             Text(
                 text = stringResource(R.string.download_model_step_title),
                 style = MaterialTheme.typography.headlineSmall,
@@ -323,7 +309,10 @@ class DownloadModelActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun SelectModelScreen(onPrevSectionClick: () -> Unit) {
+    private fun SelectModelScreen(
+        onPrevSectionClick: () -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
         val launcher =
             rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
                 activityResult.data?.let {
@@ -343,7 +332,7 @@ class DownloadModelActivity : ComponentActivity() {
                     }
                 }
             }
-        Column {
+        Column(modifier = modifier) {
             Text(
                 text = stringResource(R.string.import_model_step_title),
                 style = MaterialTheme.typography.headlineSmall,
