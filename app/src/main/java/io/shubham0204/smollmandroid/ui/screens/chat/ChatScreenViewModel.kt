@@ -50,12 +50,33 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.android.annotation.KoinViewModel
-import java.lang.Math.pow
 import java.util.Date
 import kotlin.math.pow
 
 private const val LOGTAG = "[SmolLMAndroid-Kt]"
 private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
+
+sealed class ChatScreenUIEvent {
+    data object Idle : ChatScreenUIEvent()
+
+    sealed class DialogEvents {
+        data class ToggleChangeFolderDialog(
+            val visible: Boolean,
+        ) : ChatScreenUIEvent()
+
+        data class ToggleSelectModelListDialog(
+            val visible: Boolean,
+        ) : ChatScreenUIEvent()
+
+        data class ToggleMoreOptionsPopup(
+            val visible: Boolean,
+        ) : ChatScreenUIEvent()
+
+        data class ToggleTaskListBottomList(
+            val visible: Boolean,
+        ) : ChatScreenUIEvent()
+    }
+}
 
 @KoinViewModel
 class ChatScreenViewModel(
@@ -83,6 +104,9 @@ class ChatScreenViewModel(
 
     private val _partialResponse = MutableStateFlow("")
     val partialResponse: StateFlow<String> = _partialResponse
+
+    private val _uiEvent = MutableStateFlow(ChatScreenUIEvent.Idle)
+    val uiEvent: StateFlow<ChatScreenUIEvent> = _uiEvent
 
     private val _showChangeFolderDialogState = MutableStateFlow(false)
     val showChangeFolderDialogState: StateFlow<Boolean> = _showChangeFolderDialogState
@@ -314,7 +338,13 @@ class ChatScreenViewModel(
                             dialogTitle = context.getString(R.string.dialog_err_title),
                             dialogText = context.getString(R.string.dialog_err_text, e.message),
                             dialogPositiveButtonText = context.getString(R.string.dialog_err_change_model),
-                            onPositiveButtonClick = { showSelectModelListDialog() },
+                            onPositiveButtonClick = {
+                                onEvent(
+                                    ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(
+                                        visible = true,
+                                    ),
+                                )
+                            },
                             dialogNegativeButtonText = context.getString(R.string.dialog_err_close),
                             onNegativeButtonClick = {},
                         )
@@ -373,36 +403,26 @@ class ChatScreenViewModel(
         }
     }
 
-    fun showChangeFolderDialog() {
-        _showChangeFolderDialogState.value = true
-    }
+    fun onEvent(event: ChatScreenUIEvent) {
+        when (event) {
+            is ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog -> {
+                _showSelectModelListDialogState.value = event.visible
+            }
 
-    fun hideChangeFolderDialog() {
-        _showChangeFolderDialogState.value = false
-    }
+            is ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup -> {
+                _showMoreOptionsPopupState.value = event.visible
+            }
 
-    fun showSelectModelListDialog() {
-        _showSelectModelListDialogState.value = true
-    }
+            is ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList -> {
+                _showTaskListBottomListState.value = event.visible
+            }
 
-    fun hideSelectModelListDialog() {
-        _showSelectModelListDialogState.value = false
-    }
+            is ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog -> {
+                _showChangeFolderDialogState.value = event.visible
+            }
 
-    fun showMoreOptionsPopup() {
-        _showMoreOptionsPopupState.value = true
-    }
-
-    fun hideMoreOptionsPopup() {
-        _showMoreOptionsPopupState.value = false
-    }
-
-    fun showTaskListBottomList() {
-        _showTaskListBottomListState.value = true
-    }
-
-    fun hideTaskListBottomList() {
-        _showTaskListBottomListState.value = false
+            else -> {}
+        }
     }
 
     fun toggleRAMUsageLabelVisibility() {

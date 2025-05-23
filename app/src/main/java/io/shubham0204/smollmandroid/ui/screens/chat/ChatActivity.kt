@@ -226,7 +226,11 @@ fun ChatActivityScreenUI(
                     },
                     onCreateTaskClick = {
                         scope.launch { drawerState.close() }
-                        viewModel.showTaskListBottomList()
+                        viewModel.onEvent(
+                            ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(
+                                visible = true,
+                            ),
+                        )
                     },
                 )
                 BackHandler(drawerState.isOpen) {
@@ -272,7 +276,13 @@ fun ChatActivityScreenUI(
                             if (currChat != null) {
                                 Box {
                                     IconButton(
-                                        onClick = { viewModel.showMoreOptionsPopup() },
+                                        onClick = {
+                                            viewModel.onEvent(
+                                                ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(
+                                                    visible = true,
+                                                ),
+                                            )
+                                        },
                                     ) {
                                         Icon(
                                             Icons.Default.MoreVert,
@@ -766,7 +776,13 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
         // See https://developer.android.com/develop/ui/compose/components/bottom-sheets
         ModalBottomSheet(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            onDismissRequest = { viewModel.hideTaskListBottomList() },
+            onDismissRequest = {
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(
+                        visible = false,
+                    ),
+                )
+            },
         ) {
             Column(
                 modifier =
@@ -791,7 +807,11 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedButton(
                         onClick = {
-                            viewModel.showTaskListBottomList()
+                            viewModel.onEvent(
+                                ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(
+                                    visible = true,
+                                ),
+                            )
                             Intent(context, ManageTasksActivity::class.java).also {
                                 context.startActivity(it)
                             }
@@ -835,12 +855,18 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
         val modelsList by
             viewModel.modelsRepository.getAvailableModels().collectAsState(emptyList())
         SelectModelsList(
-            onDismissRequest = { viewModel.hideSelectModelListDialog() },
+            onDismissRequest = {
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(
+                        visible = false,
+                    ),
+                )
+            },
             modelsList,
             onModelListItemClick = { model ->
                 viewModel.updateChatLLMParams(model.id, model.chatTemplate)
                 viewModel.loadModel()
-                viewModel.hideSelectModelListDialog()
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = false))
             },
             onModelDeleteClick = { model ->
                 viewModel.deleteModel(model.id)
@@ -864,7 +890,13 @@ private fun ChangeFolderDialog(
     if (showChangeFolderDialogState) {
         val folders by viewModel.appDB.getFolders().collectAsState(emptyList())
         ChangeFolderDialogUI(
-            onDismissRequest = { viewModel.hideChangeFolderDialog() },
+            onDismissRequest = {
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(
+                        visible = false,
+                    ),
+                )
+            },
             currentChat,
             folders,
             onUpdateFolderId = { folderId ->
@@ -890,6 +922,6 @@ private fun createChatFromTask(
                 isTask = true,
             )
         viewModel.switchChat(newTask)
-        viewModel.hideTaskListBottomList()
+        viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = false))
     }
 }

@@ -54,7 +54,7 @@ fun ChatMoreOptionsPopup(
     val context = LocalContext.current
     DropdownMenu(
         expanded = expanded,
-        onDismissRequest = { viewModel.hideMoreOptionsPopup() },
+        onDismissRequest = { viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)) },
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         DropdownMenuItem(
@@ -73,7 +73,7 @@ fun ChatMoreOptionsPopup(
             },
             onClick = {
                 onEditChatSettingsClick()
-                viewModel.hideMoreOptionsPopup()
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         DropdownMenuItem(
@@ -91,8 +91,8 @@ fun ChatMoreOptionsPopup(
                 )
             },
             onClick = {
-                viewModel.showChangeFolderDialog()
-                viewModel.hideMoreOptionsPopup()
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(visible = true))
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         DropdownMenuItem(
@@ -110,8 +110,8 @@ fun ChatMoreOptionsPopup(
                 )
             },
             onClick = {
-                viewModel.showSelectModelListDialog()
-                viewModel.hideMoreOptionsPopup()
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = true))
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         DropdownMenuItem(
@@ -147,7 +147,7 @@ fun ChatMoreOptionsPopup(
                         onNegativeButtonClick = {},
                     )
                 }
-                viewModel.hideMoreOptionsPopup()
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         DropdownMenuItem(
@@ -183,7 +183,7 @@ fun ChatMoreOptionsPopup(
                         onNegativeButtonClick = {},
                     )
                 }
-                viewModel.hideMoreOptionsPopup()
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -205,7 +205,7 @@ fun ChatMoreOptionsPopup(
             },
             onClick = {
                 viewModel.showContextLengthUsageDialog()
-                viewModel.hideMoreOptionsPopup()
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         DropdownMenuItem(
@@ -224,7 +224,7 @@ fun ChatMoreOptionsPopup(
             },
             onClick = {
                 viewModel.toggleRAMUsageLabelVisibility()
-                viewModel.hideMoreOptionsPopup()
+                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
     }
