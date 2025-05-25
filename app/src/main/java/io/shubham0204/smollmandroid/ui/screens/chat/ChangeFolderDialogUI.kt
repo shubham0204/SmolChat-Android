@@ -28,19 +28,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.Folder
 
 @Composable
 fun ChangeFolderDialogUI(
     onDismissRequest: () -> Unit,
-    chat: Chat,
+    initialChatFolderId: Long,
     folders: List<Folder>,
     onUpdateFolderId: (Long) -> Unit,
 ) {
     val modifiedFolders = ArrayList(folders)
     modifiedFolders.add(0, Folder(id = -1L, name = "No Folder"))
-    var selectedFolderId by remember { mutableLongStateOf(chat.folderId) }
+    var selectedFolderId by remember { mutableLongStateOf(initialChatFolderId) }
     Surface {
         Dialog(onDismissRequest) {
             Column(

@@ -310,7 +310,7 @@ fun ChatActivityScreenUI(
             }
             SelectModelsList(viewModel)
             TasksListBottomSheet(viewModel)
-            ChangeFolderDialog(currChat!!, viewModel)
+            ChangeFolderDialog(viewModel)
             TextFieldDialog()
             FolderOptionsDialog()
         }
@@ -882,12 +882,10 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
 }
 
 @Composable
-private fun ChangeFolderDialog(
-    currentChat: Chat,
-    viewModel: ChatScreenViewModel,
-) {
+private fun ChangeFolderDialog(viewModel: ChatScreenViewModel) {
     val showChangeFolderDialogState by viewModel.showChangeFolderDialogState.collectAsStateWithLifecycle()
-    if (showChangeFolderDialogState) {
+    val currentChat by viewModel.currChatState.collectAsStateWithLifecycle()
+    if (showChangeFolderDialogState && currentChat != null) {
         val folders by viewModel.appDB.getFolders().collectAsState(emptyList())
         ChangeFolderDialogUI(
             onDismissRequest = {
@@ -897,7 +895,7 @@ private fun ChangeFolderDialog(
                     ),
                 )
             },
-            currentChat,
+            currentChat!!.folderId,
             folders,
             onUpdateFolderId = { folderId ->
                 viewModel.updateChatFolder(folderId)
