@@ -43,19 +43,6 @@ class SmolLMManager(
     private var isInstanceLoaded = false
     var isInferenceOn = false
 
-    data class SmolLMInitParams(
-        val chat: Chat,
-        val modelPath: String,
-        val minP: Float,
-        val temperature: Float,
-        val storeChats: Boolean,
-        val contextSize: Long,
-        val chatTemplate: String,
-        val nThreads: Int,
-        val useMmap: Boolean,
-        val useMlock: Boolean,
-    )
-
     data class SmolLMResponse(
         val response: String,
         val generationSpeed: Float,
@@ -63,36 +50,28 @@ class SmolLMManager(
         val contextLengthUsed: Int,
     )
 
-    fun create(
-        initParams: SmolLMInitParams,
+    fun load(
+        chat: Chat,
+        modelPath: String,
+        params: SmolLM.InferenceParams = SmolLM.InferenceParams(),
         onError: (Exception) -> Unit,
         onSuccess: () -> Unit,
     ) {
         try {
+            this.chat = chat
             modelInitJob =
                 CoroutineScope(Dispatchers.Default).launch {
-                    chat = initParams.chat
                     if (isInstanceLoaded) {
                         close()
                     }
-                    instance.create(
-                        initParams.modelPath,
-                        initParams.minP,
-                        initParams.temperature,
-                        initParams.storeChats,
-                        initParams.contextSize,
-                        initParams.chatTemplate,
-                        initParams.nThreads,
-                        initParams.useMmap,
-                        initParams.useMlock,
-                    )
+                    instance.load(modelPath, params)
                     LOGD("Model loaded")
-                    if (initParams.chat.systemPrompt.isNotEmpty()) {
-                        instance.addSystemPrompt(initParams.chat.systemPrompt)
+                    if (chat.systemPrompt.isNotEmpty()) {
+                        instance.addSystemPrompt(chat.systemPrompt)
                         LOGD("System prompt added")
                     }
-                    if (!initParams.chat.isTask) {
-                        appDB.getMessagesForModel(initParams.chat.id).forEach { message ->
+                    if (!chat.isTask) {
+                        appDB.getMessagesForModel(chat.id).forEach { message ->
                             if (message.isUserMessage) {
                                 instance.addUserMessage(message.message)
                                 LOGD("User message added: ${message.message}")
@@ -128,7 +107,7 @@ class SmolLMManager(
                     var response = ""
                     val duration =
                         measureTime {
-                            instance.getResponse(query).collect { piece ->
+                            instance.getResponseAsFlow(query).collect { piece ->
                                 response += piece
                                 withContext(Dispatchers.Main) {
                                     onPartialResponseGenerated(response)

@@ -30,6 +30,7 @@ import io.shubham0204.hf_model_hub_api.HFModelInfo
 import io.shubham0204.hf_model_hub_api.HFModelSearch
 import io.shubham0204.hf_model_hub_api.HFModelTree
 import io.shubham0204.smollm.GGUFReader
+import io.shubham0204.smollm.SmolLM
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.HFModelsAPI
@@ -123,9 +124,8 @@ class DownloadModelsViewModel(
                 }
                 val ggufReader = GGUFReader()
                 ggufReader.load(File(context.filesDir, fileName).absolutePath)
-                val contextSize = ggufReader.getContextSize() ?: -1
-                // TODO: Add a default chat template when the model does not contain one
-                val chatTemplate = ggufReader.getChatTemplate() ?: ""
+                val contextSize = ggufReader.getContextSize() ?: SmolLM.DefaultInferenceParams.contextSize
+                val chatTemplate = ggufReader.getChatTemplate() ?: SmolLM.DefaultInferenceParams.chatTemplate
                 appDB.addModel(
                     fileName,
                     "",

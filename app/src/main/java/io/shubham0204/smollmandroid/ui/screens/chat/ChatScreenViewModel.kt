@@ -37,6 +37,7 @@ import io.noties.markwon.linkify.LinkifyPlugin
 import io.noties.markwon.syntax.Prism4jThemeDarkula
 import io.noties.markwon.syntax.SyntaxHighlightPlugin
 import io.noties.prism4j.Prism4j
+import io.shubham0204.smollm.SmolLM
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.Chat
@@ -318,10 +319,10 @@ class ChatScreenViewModel(
                 _showSelectModelListDialogState.value = true
             } else {
                 _modelLoadState.value = ModelLoadingState.IN_PROGRESS
-                smolLMManager.create(
-                    SmolLMManager.SmolLMInitParams(
-                        chat,
-                        model.path,
+                smolLMManager.load(
+                    chat,
+                    model.path,
+                    SmolLM.InferenceParams(
                         chat.minP,
                         chat.temperature,
                         !chat.isTask,

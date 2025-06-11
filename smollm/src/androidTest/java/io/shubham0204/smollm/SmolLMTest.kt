@@ -31,30 +31,42 @@ class SmolLMTest {
     private val temperature = 1.0f
     private val systemPrompt = "You are a helpful assistant"
     private val query = "How are you?"
-    private val chatTemplate = "{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}"
+    private val chatTemplate =
+        "{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}"
     private val smolLM = SmolLM()
 
     @Before
     fun setup() =
         runTest {
-            val isModelLoaded = smolLM.create(modelPath, minP, temperature, storeChats = true, contextSize = 0, chatTemplate, nThreads = 4, useMmap = true, useMlock = false)
+            smolLM.load(
+                modelPath,
+                SmolLM.InferenceParams(
+                    minP,
+                    temperature,
+                    storeChats = true,
+                    contextSize = 0,
+                    chatTemplate,
+                    numThreads = 4,
+                    useMmap = true,
+                    useMlock = false,
+                ),
+            )
             smolLM.addSystemPrompt(systemPrompt)
-            assert(isModelLoaded)
         }
 
     @Test
-    fun getResponse_works() =
+    fun getResponse_AsFlow_works() =
         runTest {
-            val responseFlow = smolLM.getResponse(query)
+            val responseFlow = smolLM.getResponseAsFlow(query)
             val responseTokens = responseFlow.toList()
             assert(responseTokens.isNotEmpty())
         }
 
     @Test
-    fun getResponseGenerationSpeed_works() =
+    fun getResponseAsFlowGenerationSpeed_works() =
         runTest {
             val speedBeforePrediction = smolLM.getResponseGenerationSpeed().toInt()
-            smolLM.getResponse(query).toList()
+            smolLM.getResponseAsFlow(query).toList()
             val speedAfterPrediction = smolLM.getResponseGenerationSpeed().toInt()
             assert(speedBeforePrediction == 0)
             assert(speedAfterPrediction > 0)
