@@ -32,6 +32,9 @@ android {
             cmake {
                 arguments += "-DCMAKE_BUILD_TYPE=Release"
                 cppFlags += listOf()
+                // allow compiling 16 KB page-aligned shared libraries
+                // https://developer.android.com/guide/practices/page-sizes#compile-r27
+                arguments += listOf("-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
             }
         }
     }
