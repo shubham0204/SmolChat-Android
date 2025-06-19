@@ -37,11 +37,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,6 +55,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Calendar
+import compose.icons.feathericons.Delete
+import compose.icons.feathericons.Plus
+import compose.icons.feathericons.Type
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
@@ -144,7 +144,7 @@ fun SelectModelsList(
                         when (targetSortOrder) {
                             SortOrder.DATE_ADDED -> {
                                 Icon(
-                                    imageVector = Icons.Default.Title,
+                                    imageVector = FeatherIcons.Type,
                                     contentDescription = "Sort by Model Name",
                                     tint = MaterialTheme.colorScheme.secondary,
                                 )
@@ -157,7 +157,7 @@ fun SelectModelsList(
 
                             SortOrder.NAME -> {
                                 Icon(
-                                    imageVector = Icons.Default.CalendarToday,
+                                    imageVector = FeatherIcons.Calendar,
                                     contentDescription = "Sort by Date Added",
                                     tint = MaterialTheme.colorScheme.secondary,
                                 )
@@ -203,7 +203,7 @@ fun SelectModelsList(
                         }
                     },
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "New Model")
+                    Icon(FeatherIcons.Plus, contentDescription = "New Model")
                     Text(stringResource(R.string.chat_model_list_add_model))
                 }
             }
@@ -263,7 +263,7 @@ private fun ModelListItem(
                 },
             ) {
                 Icon(
-                    Icons.Default.Delete,
+                    FeatherIcons.Delete,
                     contentDescription = "Delete Model",
                     tint = MaterialTheme.colorScheme.secondary,
                 )

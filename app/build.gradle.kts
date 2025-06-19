@@ -116,6 +116,10 @@ dependencies {
     ksp("androidx.room:room-compiler:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
 
+    // compose-icons: Feather icons pack
+    // https://github.com/DevSrSouza/compose-icons
+    implementation(libs.composeIcons.feather)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

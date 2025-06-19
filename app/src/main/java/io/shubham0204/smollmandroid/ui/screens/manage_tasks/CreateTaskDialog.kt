@@ -27,8 +27,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -53,6 +51,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Plus
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.ui.screens.chat.SelectModelsList
@@ -167,7 +167,7 @@ fun CreateTaskDialog(viewModel: TasksViewModel) {
                             showCreateTaskDialog = false
                         },
                     ) {
-                        Icon(Icons.Default.Done, contentDescription = "Add")
+                        Icon(FeatherIcons.Plus, contentDescription = "Add")
                         Text(stringResource(R.string.task_create_task_add))
                     }
                 }

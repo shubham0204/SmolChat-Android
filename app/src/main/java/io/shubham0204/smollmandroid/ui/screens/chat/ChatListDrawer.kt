@@ -42,13 +42,6 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddTask
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Quickreply
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,6 +61,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.ChevronDown
+import compose.icons.feathericons.ChevronRight
+import compose.icons.feathericons.FolderPlus
+import compose.icons.feathericons.List
+import compose.icons.feathericons.MoreVertical
+import compose.icons.feathericons.Plus
+import compose.icons.feathericons.PlusSquare
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.Folder
@@ -105,7 +106,7 @@ fun DrawerUI(
                         onItemClick(newChat)
                     },
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "New Chat")
+                    Icon(FeatherIcons.Plus, contentDescription = "New Chat")
                     Text(
                         stringResource(R.string.chat_drawer_new_chat),
                         style = MaterialTheme.typography.labelMedium,
@@ -114,7 +115,7 @@ fun DrawerUI(
                 Button(
                     onClick = onCreateTaskClick,
                 ) {
-                    Icon(Icons.Default.AddTask, contentDescription = "New Task")
+                    Icon(FeatherIcons.PlusSquare, contentDescription = "New Task")
                     Text(
                         stringResource(R.string.chat_drawer_new_task),
                         style = MaterialTheme.typography.labelMedium,
@@ -151,7 +152,7 @@ private fun ColumnScope.ChatsList(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                Icons.Default.Quickreply,
+                FeatherIcons.List,
                 contentDescription = "Manage Tasks",
                 tint = MaterialTheme.colorScheme.secondary,
             )
@@ -185,7 +186,7 @@ private fun ColumnScope.ChatsList(
                 },
             ) {
                 Icon(
-                    Icons.Default.Add,
+                    FeatherIcons.FolderPlus,
                     contentDescription = "Add Folder",
                     tint = MaterialTheme.colorScheme.secondary,
                 )
@@ -284,9 +285,9 @@ private fun FolderListItem(
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             if (expanded) {
-                Icons.Default.KeyboardArrowDown
+                FeatherIcons.ChevronDown
             } else {
-                Icons.AutoMirrored.Filled.KeyboardArrowRight
+                FeatherIcons.ChevronRight
             },
             contentDescription = "",
             tint = MaterialTheme.colorScheme.secondary,
@@ -343,7 +344,7 @@ private fun FolderListItem(
             )
         }) {
             Icon(
-                Icons.Default.MoreVert,
+                FeatherIcons.MoreVertical,
                 contentDescription = "Folder Options",
                 tint = MaterialTheme.colorScheme.secondary,
             )

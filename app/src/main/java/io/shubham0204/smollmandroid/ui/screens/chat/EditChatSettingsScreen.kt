@@ -28,9 +28,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -56,6 +53,9 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.Check
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
@@ -91,7 +91,7 @@ fun EditChatSettingsScreen(
                         navigationIcon = {
                             IconButton(onClick = { onBackClicked() }) {
                                 Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    FeatherIcons.ArrowLeft,
                                     contentDescription = "Navigate Back",
                                 )
                             }
@@ -124,7 +124,7 @@ fun EditChatSettingsScreen(
                                 },
                             ) {
                                 Icon(
-                                    Icons.Default.Done,
+                                    FeatherIcons.Check,
                                     contentDescription = "Save settings",
                                 )
                             }

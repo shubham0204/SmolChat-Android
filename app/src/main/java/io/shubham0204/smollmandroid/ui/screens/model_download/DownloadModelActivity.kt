@@ -41,13 +41,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -72,11 +65,18 @@ import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.ArrowRight
+import compose.icons.feathericons.Check
+import compose.icons.feathericons.Download
+import compose.icons.feathericons.Globe
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.llm.exampleModelsList
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.AppProgressDialog
+import io.shubham0204.smollmandroid.ui.components.AppSpacer4W
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatActivity
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
@@ -155,7 +155,7 @@ class DownloadModelActivity : ComponentActivity() {
                         navigationIcon = {
                             IconButton(onClick = onBackClick) {
                                 Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    FeatherIcons.ArrowLeft,
                                     contentDescription = "Navigate Back",
                                     tint = MaterialTheme.colorScheme.secondary,
                                 )
@@ -221,7 +221,7 @@ class DownloadModelActivity : ComponentActivity() {
                 ) {
                     if (model == selectedModel) {
                         Icon(
-                            Icons.Default.Done,
+                            FeatherIcons.Check,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
@@ -268,7 +268,8 @@ class DownloadModelActivity : ComponentActivity() {
                 onClick = { viewModel.downloadModel() },
                 shape = RoundedCornerShape(4.dp),
             ) {
-                Icon(Icons.Default.Download, contentDescription = "Download Selected Model")
+                Icon(FeatherIcons.Download, contentDescription = "Download Selected Model")
+                AppSpacer4W()
                 Text(stringResource(R.string.download_model_download))
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -286,7 +287,8 @@ class DownloadModelActivity : ComponentActivity() {
                 onClick = onHFModelSelectClick,
                 shape = RoundedCornerShape(4.dp),
             ) {
-                Icon(Icons.Default.Language, contentDescription = "Download Selected Model")
+                Icon(FeatherIcons.Globe, contentDescription = "Download Selected Model")
+                AppSpacer4W()
                 Text(stringResource(R.string.download_model_browse_hf))
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -301,7 +303,7 @@ class DownloadModelActivity : ComponentActivity() {
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     onClick = onNextSectionClick,
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                    Icon(FeatherIcons.ArrowRight, contentDescription = null)
                     Text(stringResource(R.string.button_text_next))
                 }
             }
@@ -368,7 +370,7 @@ class DownloadModelActivity : ComponentActivity() {
                 OutlinedButton(
                     onClick = onPrevSectionClick,
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    Icon(FeatherIcons.ArrowLeft, contentDescription = null)
                     Text(stringResource(R.string.button_text_back))
                 }
             }

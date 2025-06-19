@@ -53,13 +53,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -103,6 +96,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Menu
+import compose.icons.feathericons.MoreVertical
+import compose.icons.feathericons.Send
+import compose.icons.feathericons.StopCircle
+import compose.icons.feathericons.User
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.Task
@@ -266,7 +265,7 @@ fun ChatActivityScreenUI(
                         navigationIcon = {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(
-                                    Icons.Default.DragHandle,
+                                    FeatherIcons.Menu,
                                     contentDescription = stringResource(R.string.chat_view_chats),
                                     tint = MaterialTheme.colorScheme.secondary,
                                 )
@@ -285,7 +284,7 @@ fun ChatActivityScreenUI(
                                         },
                                     ) {
                                         Icon(
-                                            Icons.Default.MoreVert,
+                                            FeatherIcons.MoreVertical,
                                             contentDescription = "Options",
                                             tint = MaterialTheme.colorScheme.secondary,
                                         )
@@ -460,7 +459,7 @@ private fun ColumnScope.MessagesList(
                     ) {
                         Icon(
                             modifier = Modifier.padding(8.dp),
-                            imageVector = Icons.Default.Android,
+                            imageVector = FeatherIcons.User,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                         )
@@ -504,7 +503,7 @@ private fun LazyItemScope.MessageListItem(
                 Spacer(modifier = Modifier.height(8.dp))
                 Icon(
                     modifier = Modifier.padding(4.dp),
-                    imageVector = Icons.Default.Android,
+                    imageVector = FeatherIcons.User,
                     contentDescription = null,
                 )
             }
@@ -736,7 +735,7 @@ private fun MessageInput(
                         Box(contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()
                             IconButton(onClick = { viewModel.stopGeneration() }) {
-                                Icon(Icons.Default.Stop, contentDescription = "Stop")
+                                Icon(FeatherIcons.StopCircle, contentDescription = "Stop")
                             }
                         }
                     } else {
@@ -754,7 +753,7 @@ private fun MessageInput(
                             },
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                imageVector = FeatherIcons.Send,
                                 contentDescription = "Send text",
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )

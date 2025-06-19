@@ -31,14 +31,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.ArrowOutward
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,6 +53,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.Clock
+import compose.icons.feathericons.Download
+import compose.icons.feathericons.Folder
+import compose.icons.feathericons.Globe
+import compose.icons.feathericons.Share
+import compose.icons.feathericons.ThumbsUp
 import io.shubham0204.hf_model_hub_api.HFModelInfo
 import io.shubham0204.hf_model_hub_api.HFModelTree
 import io.shubham0204.smollmandroid.R
@@ -88,7 +88,7 @@ fun ViewHFModelScreen(
                         navigationIcon = {
                             IconButton(onClick = { onBackClicked() }) {
                                 Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    FeatherIcons.ArrowLeft,
                                     contentDescription = "Navigate Back",
                                     tint = MaterialTheme.colorScheme.secondary,
                                 )
@@ -102,7 +102,7 @@ fun ViewHFModelScreen(
                                 }
                             }) {
                                 Icon(
-                                    imageVector = Icons.Default.ArrowOutward,
+                                    imageVector = FeatherIcons.Globe,
                                     contentDescription = "Open in Browser",
                                 )
                             }
@@ -114,7 +114,7 @@ fun ViewHFModelScreen(
                                 }
                             }) {
                                 Icon(
-                                    imageVector = Icons.Default.Share,
+                                    imageVector = FeatherIcons.Share,
                                     contentDescription = "Share",
                                 )
                             }
@@ -144,7 +144,7 @@ fun ViewHFModelScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Folder,
+                                imageVector = FeatherIcons.Folder,
                                 contentDescription = "Files",
                                 tint = MaterialTheme.colorScheme.secondary,
                             )
@@ -240,18 +240,18 @@ private fun ModelInfoCard(modelInfo: HFModelInfo.ModelInfo) {
             )
             Row {
                 ModelInfoIconBubble(
-                    icon = Icons.Default.Download,
+                    icon = FeatherIcons.Download,
                     contentDescription = "Number of downloads",
                     text = modelInfo.numDownloads.toString(),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 ModelInfoIconBubble(
-                    icon = Icons.Default.ThumbUp,
+                    icon = FeatherIcons.ThumbsUp,
                     contentDescription = "Number of likes",
                     text = modelInfo.numLikes.toString(),
                 )
                 ModelInfoIconBubble(
-                    icon = Icons.Default.AccessTime,
+                    icon = FeatherIcons.Clock,
                     contentDescription = "Last updated",
                     text =
                         DateUtils

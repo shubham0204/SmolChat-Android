@@ -20,14 +20,6 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ShortText
-import androidx.compose.material.icons.filled.Assistant
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Memory
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -41,6 +33,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Cpu
+import compose.icons.feathericons.Delete
+import compose.icons.feathericons.Edit2
+import compose.icons.feathericons.Folder
+import compose.icons.feathericons.Layout
+import compose.icons.feathericons.Package
+import compose.icons.feathericons.XCircle
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 
@@ -60,7 +60,7 @@ fun ChatMoreOptionsPopup(
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                    Icons.Default.Settings,
+                    FeatherIcons.Edit2,
                     contentDescription = "Edit Chat Name",
                     tint = MaterialTheme.colorScheme.secondary,
                 )
@@ -79,7 +79,7 @@ fun ChatMoreOptionsPopup(
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                    Icons.Default.Folder,
+                    FeatherIcons.Folder,
                     contentDescription = "Change Folder",
                     tint = MaterialTheme.colorScheme.secondary,
                 )
@@ -98,7 +98,7 @@ fun ChatMoreOptionsPopup(
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                    Icons.Default.Assistant,
+                    FeatherIcons.Package,
                     contentDescription = "Change Model",
                     tint = MaterialTheme.colorScheme.secondary,
                 )
@@ -117,7 +117,7 @@ fun ChatMoreOptionsPopup(
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                    Icons.Default.Delete,
+                    FeatherIcons.Delete,
                     contentDescription = "Delete Chat",
                     tint = MaterialTheme.colorScheme.secondary,
                 )
@@ -153,7 +153,7 @@ fun ChatMoreOptionsPopup(
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                    Icons.Default.Clear,
+                    FeatherIcons.XCircle,
                     contentDescription = "Clear Chat Messages",
                     tint = MaterialTheme.colorScheme.secondary,
                 )
@@ -192,7 +192,7 @@ fun ChatMoreOptionsPopup(
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                    Icons.AutoMirrored.Filled.ShortText,
+                    FeatherIcons.Layout,
                     contentDescription = "Context Usage",
                     tint = MaterialTheme.colorScheme.secondary,
                 )
@@ -211,7 +211,7 @@ fun ChatMoreOptionsPopup(
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                    Icons.Default.Memory,
+                    FeatherIcons.Cpu,
                     contentDescription = "RAM Usage",
                     tint = MaterialTheme.colorScheme.secondary,
                 )

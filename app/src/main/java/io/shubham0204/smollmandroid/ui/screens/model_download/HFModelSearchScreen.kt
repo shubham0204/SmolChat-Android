@@ -27,9 +27,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -52,6 +49,9 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.Search
 import io.shubham0204.hf_model_hub_api.HFModelSearch
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
@@ -73,7 +73,7 @@ fun HFModelDownloadScreen(
                     navigationIcon = {
                         IconButton(onClick = { onBackClicked() }) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
+                                FeatherIcons.ArrowLeft,
                                 contentDescription = "Navigate Back",
                                 tint = MaterialTheme.colorScheme.secondary,
                             )
@@ -106,7 +106,7 @@ fun HFModelDownloadScreen(
                         ),
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Default.Search,
+                            imageVector = FeatherIcons.Search,
                             contentDescription =
                                 "Search for models",
                         )

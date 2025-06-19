@@ -16,17 +16,16 @@
 
 package io.shubham0204.smollmandroid.ui.screens.manage_tasks
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Delete
+import compose.icons.feathericons.Edit
+import compose.icons.feathericons.Plus
 import io.shubham0204.smollmandroid.R
 
 @Composable
@@ -43,24 +42,24 @@ fun TaskOptionsPopup(
         onDismissRequest = { onDismiss() },
     ) {
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Edit Task") },
+            leadingIcon = { Icon(FeatherIcons.Edit, contentDescription = "Edit Task") },
             text = { Text(stringResource(R.string.task_popup_edit_task)) },
             onClick = { onEditTaskClick() },
         )
         DropdownMenuItem(
-            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete Task") },
+            leadingIcon = { Icon(FeatherIcons.Delete, contentDescription = "Delete Task") },
             text = { Text(stringResource(R.string.task_popup_delete_task)) },
             onClick = { onDeleteTaskClick() },
         )
         if (isTaskShortcut) {
             DropdownMenuItem(
-                leadingIcon = { Icon(Icons.Default.Remove, contentDescription = "Remove Task Shortcut") },
+                leadingIcon = { Icon(FeatherIcons.Delete, contentDescription = "Remove Task Shortcut") },
                 text = { Text(stringResource(R.string.task_popup_remove_shortcut)) },
                 onClick = { onRemoveTaskShortcut() },
             )
         } else {
             DropdownMenuItem(
-                leadingIcon = { Icon(Icons.Default.Add, contentDescription = "Add Task Shortcut") },
+                leadingIcon = { Icon(FeatherIcons.Plus, contentDescription = "Add Task Shortcut") },
                 text = { Text(stringResource(R.string.task_popup_add_shortcut)) },
                 onClick = { onAddTaskShortcut() },
             )

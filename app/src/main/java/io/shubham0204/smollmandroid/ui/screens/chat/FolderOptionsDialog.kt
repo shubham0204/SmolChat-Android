@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,6 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Delete
+import compose.icons.feathericons.Edit
 import io.shubham0204.smollmandroid.R
 
 private lateinit var onEditFolderNameClick: (() -> Unit)
@@ -47,8 +47,7 @@ fun FolderOptionsDialog() {
                             .background(
                                 MaterialTheme.colorScheme.surfaceContainer,
                                 RoundedCornerShape(8.dp),
-                            )
-                            .padding(16.dp),
+                            ).padding(16.dp),
                 ) {
                     Row(
                         modifier =
@@ -61,7 +60,7 @@ fun FolderOptionsDialog() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            Icons.Default.Edit,
+                            FeatherIcons.Edit,
                             contentDescription = "Edit Folder Name",
                             tint = MaterialTheme.colorScheme.surfaceTint,
                         )
@@ -84,7 +83,7 @@ fun FolderOptionsDialog() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            Icons.Default.Delete,
+                            FeatherIcons.Delete,
                             contentDescription = "Delete Folder",
                             tint = MaterialTheme.colorScheme.surfaceTint,
                         )
@@ -107,7 +106,7 @@ fun FolderOptionsDialog() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            Icons.Default.Delete,
+                            FeatherIcons.Delete,
                             contentDescription = "Delete Folder With Chats",
                             tint = MaterialTheme.colorScheme.surfaceTint,
                         )

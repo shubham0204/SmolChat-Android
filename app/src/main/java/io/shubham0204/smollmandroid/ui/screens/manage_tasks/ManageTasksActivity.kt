@@ -33,10 +33,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +53,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.Check
+import compose.icons.feathericons.MoreVertical
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
@@ -88,13 +88,13 @@ fun TasksActivityScreenUI() {
                         IconButton(
                             onClick = { viewModel.showCreateTaskDialogState.value = true },
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add New Task")
+                            Icon(FeatherIcons.Check, contentDescription = "Add New Task")
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = { (context as ManageTasksActivity).finish() }) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
+                                FeatherIcons.ArrowLeft,
                                 contentDescription = "Navigate Back",
                             )
                         }
@@ -234,7 +234,7 @@ private fun TaskItem(
                     onClick = { showTaskOptionsPopup = true },
                 ) {
                     Icon(
-                        Icons.Default.MoreVert,
+                        FeatherIcons.MoreVertical,
                         contentDescription = "More Options",
                     )
                 }
