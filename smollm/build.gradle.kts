@@ -30,11 +30,16 @@ android {
         consumerProguardFiles("consumer-rules.pro")
         externalNativeBuild {
             cmake {
-                arguments += "-DCMAKE_BUILD_TYPE=Release"
                 cppFlags += listOf()
                 // allow compiling 16 KB page-aligned shared libraries
                 // https://developer.android.com/guide/practices/page-sizes#compile-r27
                 arguments += listOf("-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
+                arguments += "-DCMAKE_BUILD_TYPE=Release"
+
+                // (debugging) uncomment the following line to enable debug builds
+                // and attach hardware-assisted address sanitizer
+                // arguments += "-DCMAKE_BUILD_TYPE=Debug"
+                // arguments += listOf("-DANDROID_SANITIZE=hwaddress")
             }
         }
     }

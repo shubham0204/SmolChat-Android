@@ -225,6 +225,7 @@ LLMInference::~LLMInference() {
         free(const_cast<char*>(message.content));
     }
     free(const_cast<char*>(_chatTemplate));
-    llama_model_free(_model);
+    llama_sampler_free(_sampler);
     llama_free(_ctx);
+    llama_model_free(_model);
 }

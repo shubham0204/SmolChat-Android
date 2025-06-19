@@ -311,8 +311,6 @@ class ChatScreenViewModel(
      * read the system prompt and user messages from the database and add them to the model.
      */
     fun loadModel(onComplete: (ModelLoadingState) -> Unit = {}) {
-        // clear resources occupied by the previous model
-        smolLMManager.close()
         _currChatState.value?.let { chat ->
             val model = modelsRepository.getModelFromId(chat.llmModelId)
             if (chat.llmModelId == -1L || model == null) {
