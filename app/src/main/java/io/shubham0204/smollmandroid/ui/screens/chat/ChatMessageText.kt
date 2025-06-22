@@ -20,26 +20,33 @@ import android.graphics.Color
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.text.util.Linkify
+import android.util.Log
 import android.widget.TextView
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatMessageText(
     message: Spanned,
     modifier: Modifier = Modifier,
     textSize: Float,
     textColor: Int,
+    onLongClick: () -> Unit,
 ) {
     AndroidView(
-        modifier = modifier,
+        modifier =
+            modifier.combinedClickable(
+                onClick = {},
+                onLongClick = onLongClick,
+            ),
         factory = {
             val textView = TextView(it)
             textView.textSize = textSize
             textView.setTextColor(textColor)
-            textView.movementMethod = LinkMovementMethod.getInstance()
-            textView.linksClickable = true
             textView.autoLinkMask = Linkify.WEB_URLS
             textView.highlightColor = Color.YELLOW
             textView

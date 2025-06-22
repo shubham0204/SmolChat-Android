@@ -31,8 +31,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -116,6 +118,7 @@ import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoa
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChangeFolderDialogUI
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMessageOptionsDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMoreOptionsPopup
+import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.createChatMessageOptionsDialog
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.TasksList
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
@@ -487,6 +490,7 @@ private fun ColumnScope.MessagesList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LazyItemScope.MessageListItem(
     messageStr: Spanned,
@@ -529,29 +533,19 @@ private fun LazyItemScope.MessageListItem(
                     textColor = MaterialTheme.colorScheme.onBackground.toArgb(),
                     textSize = 16f,
                     message = messageStr,
+                    onLongClick = {
+                        createChatMessageOptionsDialog(
+                            showEditOption = false,
+                            onEditClick = {
+                                /** Not applicable as showEditOption is set to false **/
+                            },
+                            onCopyClick = { onCopyClicked() },
+                            onShareClick = { onShareClicked() },
+                        )
+                    },
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = stringResource(R.string.chat_message_copy),
-                        modifier = Modifier.clickable { onCopyClicked() },
-                        fontSize = 6.sp,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.chat_message_share),
-                        modifier = Modifier.clickable { onShareClicked() },
-                        fontSize = 6.sp,
-                    )
                     responseGenerationSpeed?.let {
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Box(
-                            modifier =
-                                Modifier
-                                    .size(2.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.DarkGray),
-                        )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "%.2f tokens/s".format(it),
@@ -617,22 +611,18 @@ private fun LazyItemScope.MessageListItem(
                         textColor = MaterialTheme.colorScheme.onSurface.toArgb(),
                         textSize = 16f,
                         message = messageStr,
+                        onLongClick = {
+                            createChatMessageOptionsDialog(
+                                showEditOption = allowEditing,
+                                onEditClick = { isEditing = true },
+                                onCopyClick = { onCopyClicked() },
+                                onShareClick = { onShareClicked() },
+                            )
+                        },
                     )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.chat_message_copy),
-                        modifier = Modifier.noRippleClickable { onCopyClicked() },
-                        fontSize = 6.sp,
-                        lineHeight = 6.sp,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.chat_message_share),
-                        modifier = Modifier.noRippleClickable { onShareClicked() },
-                        fontSize = 6.sp,
-                    )
                     if (allowEditing) {
                         Spacer(modifier = Modifier.width(8.dp))
                         if (isEditing) {
@@ -653,12 +643,6 @@ private fun LazyItemScope.MessageListItem(
                                         isEditing = false
                                         message = messageStr.toString()
                                     },
-                                fontSize = 6.sp,
-                            )
-                        } else {
-                            Text(
-                                text = context.getString(R.string.dialog_edit_folder_button_text),
-                                modifier = Modifier.clickable { isEditing = true },
                                 fontSize = 6.sp,
                             )
                         }
