@@ -65,6 +65,15 @@ android {
             exclude(group = "org.jetbrains", module = "annotations")
         }
     }
+
+    // Disable inclusion of dependencies info block for FDroid
+    // https://gitlab.com/fdroid/fdroiddata/-/merge_requests/21563#note_2665473875
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
+    }
 }
 
 ksp {
