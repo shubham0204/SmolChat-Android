@@ -67,21 +67,6 @@ android {
     }
 }
 
-tasks.create<Delete>("deleteTarArchivesFromLlamaCpp") {
-    delete {
-        fileTree("${rootProject.projectDir}/llama.cpp") {
-            include("**/*.tar.gz")
-        }
-    }
-    doLast {
-        println("Deleted all .tar.gz files from llama.cpp submodule")
-    }
-}
-
-tasks.named("preBuild") {
-    dependsOn("deleteTarArchivesFromLlamaCpp")
-}
-
 ksp {
     arg("KOIN_CONFIG_CHECK", "true")
 }

@@ -23,6 +23,17 @@ dependencyResolutionManagement {
     }
 }
 
+gradle.projectsLoaded {
+    val llamaDir = File(rootDir, "llama.cpp")
+    listOf("tools", "docs", "examples", "media", "scripts")
+        .map { File(llamaDir, it) }
+        .filter { it.exists() }
+        .forEach {
+            println("Deleting llama.cpp/$it")
+            it.deleteRecursively()
+        }
+}
+
 rootProject.name = "SmolChat Android"
 include(":app")
 include(":smollm")
