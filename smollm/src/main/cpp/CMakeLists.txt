@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.22.1)
 project("smollm")
 
-set(LLAMA_DIR "../../../../llama.cpp")
+# Resolve LLAMA_DIR to an absolute path
+set(LLAMA_DIR_RELATIVE "../../../../llama.cpp")
+get_filename_component(LLAMA_DIR ${LLAMA_DIR_RELATIVE} ABSOLUTE)
+
 set(GGML_DIR ${LLAMA_DIR}/ggml)
 set(COMMON_DIR ${LLAMA_DIR}/common)
 set(VENDOR_DIR ${LLAMA_DIR}/vendor)
