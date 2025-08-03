@@ -1,4 +1,3 @@
-- fix bug in `ChatActivity` causing a `NullPointerException` when the app is launched (this is the bug causing most crashes according to Google Play)
-- make 'Download Models' screen scrollable to make sure it works correctly on small screen devices
-- add support for 16 KB page sizes
-- improve the `SmolLM` API and document its methods
+- Sync with llama.cpp upstream
+- The app now uses a new set of icons for a more aesthetic/refreshed look
+- Fixed a bug where the app's memory usage kept increasing after switching models i.e. the memory acquired by the previous model was not 'released' when selecting a different model
