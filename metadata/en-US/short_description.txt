@@ -1,1 +1,1 @@
-SmolChat is an app that allows users to run large-language models locally on their Android device using llama.cpp
+SmolChat lets users run LLMs locally on Android via llama.cpp
