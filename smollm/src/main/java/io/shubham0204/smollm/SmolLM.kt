@@ -145,9 +145,9 @@ class SmolLM {
      * Data class to hold the inference parameters for the LLM.
      *
      * @property minP The minimum probability for a token to be considered.
-     *                Also known as top-P sampling. (Default: 0.01f)
+     *                Also known as top-P sampling. (Default: 0.1f)
      * @property temperature The temperature for sampling. Higher values make the output more random.
-     *                       (Default: 1.0f)
+     *                       (Default: 0.8f)
      * @property storeChats Whether to store the chat history in memory. If true, the LLM will
      *                      remember previous interactions in the current session. (Default: true)
      * @property contextSize The context size (in tokens) for the LLM. This determines how much
@@ -165,8 +165,8 @@ class SmolLM {
      *                    being swapped out to disk, potentially improving performance. (Default: false)
      */
     data class InferenceParams(
-        val minP: Float = 0.01f,
-        val temperature: Float = 1.0f,
+        val minP: Float = 0.1f,
+        val temperature: Float = 0.8f,
         val storeChats: Boolean = true,
         val contextSize: Long? = null,
         val chatTemplate: String? = null,
