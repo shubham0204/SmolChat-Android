@@ -1,5 +1,6 @@
+#pragma once
 #include "llama.h"
-#include <jni.h>
+#include "common.h"
 #include <string>
 #include <vector>
 
@@ -9,7 +10,7 @@ class LLMInference {
     llama_model*   _model;
     llama_sampler* _sampler;
     llama_token    _currToken;
-    llama_batch    _batch;
+    llama_batch*   _batch;
 
     // container to store user/assistant messages in the chat
     std::vector<llama_chat_message> _messages;

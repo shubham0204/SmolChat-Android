@@ -100,11 +100,11 @@ function(build_library target_name)
     target_include_directories(
             ${target_name}
             PUBLIC
+            ${COMMON_DIR}
             ${GGML_DIR}/include
             ${GGML_DIR}/src
             ${GGML_DIR}/src/ggml-cpu
             ${LLAMA_DIR}/include
-            ${COMMON_DIR}
             ${VENDOR_DIR}
     )
 
