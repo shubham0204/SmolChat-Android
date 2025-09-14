@@ -24,12 +24,14 @@ import android.provider.DocumentsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +39,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -88,35 +91,38 @@ class DownloadModelActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
-            NavHost(
-                navController = navController,
-                startDestination = "download-model",
-                enterTransition = { fadeIn() },
-                exitTransition = { fadeOut() },
-            ) {
-                composable("view-model") {
-                    ViewHFModelScreen(
-                        viewModel,
-                        onBackClicked = { navController.navigateUp() },
-                    )
-                }
-                composable("hf-model-select") {
-                    HFModelDownloadScreen(
-                        viewModel,
-                        onBackClicked = { navController.navigateUp() },
-                        onModelClick = { modelId ->
-                            viewModel.viewModelId = modelId
-                            navController.navigate("view-model")
-                        },
-                    )
-                }
-                composable("download-model") {
-                    AddNewModelScreen(
-                        onHFModelSelectClick = { navController.navigate("hf-model-select") },
-                        onBackClick = { finish() },
-                    )
+            Box(modifier = Modifier.safeDrawingPadding()) {
+                NavHost(
+                    navController = navController,
+                    startDestination = "download-model",
+                    enterTransition = { fadeIn() },
+                    exitTransition = { fadeOut() },
+                ) {
+                    composable("view-model") {
+                        ViewHFModelScreen(
+                            viewModel,
+                            onBackClicked = { navController.navigateUp() },
+                        )
+                    }
+                    composable("hf-model-select") {
+                        HFModelDownloadScreen(
+                            viewModel,
+                            onBackClicked = { navController.navigateUp() },
+                            onModelClick = { modelId ->
+                                viewModel.viewModelId = modelId
+                                navController.navigate("view-model")
+                            },
+                        )
+                    }
+                    composable("download-model") {
+                        AddNewModelScreen(
+                            onHFModelSelectClick = { navController.navigate("hf-model-select") },
+                            onBackClick = { finish() },
+                        )
+                    }
                 }
             }
         }

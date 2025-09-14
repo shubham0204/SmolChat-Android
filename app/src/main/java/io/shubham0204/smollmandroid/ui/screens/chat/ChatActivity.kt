@@ -27,6 +27,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -42,6 +43,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -126,6 +128,7 @@ class ChatActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         /**
          * Check if the activity was launched by an intent to share text with the app
@@ -154,23 +157,25 @@ class ChatActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            NavHost(
-                navController = navController,
-                startDestination = "chat",
-                enterTransition = { fadeIn() },
-                exitTransition = { fadeOut() },
-            ) {
-                composable("edit-chat") {
-                    EditChatSettingsScreen(
-                        viewModel,
-                        onBackClicked = { navController.navigateUp() },
-                    )
-                }
-                composable("chat") {
-                    ChatActivityScreenUI(
-                        viewModel,
-                        onEditChatParamsClick = { navController.navigate("edit-chat") },
-                    )
+            Box(modifier = Modifier.safeDrawingPadding()) {
+                NavHost(
+                    navController = navController,
+                    startDestination = "chat",
+                    enterTransition = { fadeIn() },
+                    exitTransition = { fadeOut() },
+                ) {
+                    composable("edit-chat") {
+                        EditChatSettingsScreen(
+                            viewModel,
+                            onBackClicked = { navController.navigateUp() },
+                        )
+                    }
+                    composable("chat") {
+                        ChatActivityScreenUI(
+                            viewModel,
+                            onEditChatParamsClick = { navController.navigate("edit-chat") },
+                        )
+                    }
                 }
             }
         }
