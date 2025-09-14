@@ -40,6 +40,7 @@ import compose.icons.feathericons.Edit2
 import compose.icons.feathericons.Folder
 import compose.icons.feathericons.Layout
 import compose.icons.feathericons.Package
+import compose.icons.feathericons.Settings
 import compose.icons.feathericons.XCircle
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
@@ -60,8 +61,8 @@ fun ChatMoreOptionsPopup(
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                    FeatherIcons.Edit2,
-                    contentDescription = "Edit Chat Name",
+                    FeatherIcons.Settings,
+                    contentDescription = "Edit Chat Settings",
                     tint = MaterialTheme.colorScheme.secondary,
                 )
             },
@@ -114,6 +115,9 @@ fun ChatMoreOptionsPopup(
                 viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
+        Spacer(modifier = Modifier.height(4.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth())
+        Spacer(modifier = Modifier.height(4.dp))
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
