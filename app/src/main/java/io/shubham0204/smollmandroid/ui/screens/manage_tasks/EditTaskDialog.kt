@@ -54,7 +54,7 @@ import androidx.compose.ui.window.Dialog
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Check
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.ui.screens.chat.SelectModelsList
+import io.shubham0204.smollmandroid.ui.components.SelectModelsList
 
 @Composable
 fun EditTaskDialog(viewModel: TasksViewModel) {

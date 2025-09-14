@@ -55,7 +55,7 @@ import compose.icons.FeatherIcons
 import compose.icons.feathericons.Plus
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.LLMModel
-import io.shubham0204.smollmandroid.ui.screens.chat.SelectModelsList
+import io.shubham0204.smollmandroid.ui.components.SelectModelsList
 
 @Composable
 fun CreateTaskDialog(viewModel: TasksViewModel) {

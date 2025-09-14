@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.shubham0204.smollmandroid.ui.screens.chat
+package io.shubham0204.smollmandroid.ui.screens.chat.dialogs
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Spacer
@@ -36,7 +36,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Cpu
 import compose.icons.feathericons.Delete
-import compose.icons.feathericons.Edit2
 import compose.icons.feathericons.Folder
 import compose.icons.feathericons.Layout
 import compose.icons.feathericons.Package
@@ -44,6 +43,8 @@ import compose.icons.feathericons.Settings
 import compose.icons.feathericons.XCircle
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
+import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenUIEvent
+import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel
 
 @Composable
 fun ChatMoreOptionsPopup(

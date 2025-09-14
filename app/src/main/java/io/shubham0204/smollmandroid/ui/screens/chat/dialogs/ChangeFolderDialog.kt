@@ -1,4 +1,4 @@
-package io.shubham0204.smollmandroid.ui.screens.chat
+package io.shubham0204.smollmandroid.ui.screens.chat.dialogs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

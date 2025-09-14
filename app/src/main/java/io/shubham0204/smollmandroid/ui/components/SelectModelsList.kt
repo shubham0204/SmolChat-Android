@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.shubham0204.smollmandroid.ui.screens.chat
+package io.shubham0204.smollmandroid.ui.components
 
 import android.content.Intent
 import androidx.compose.animation.AnimatedContent
@@ -62,8 +62,6 @@ import compose.icons.feathericons.Plus
 import compose.icons.feathericons.Type
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.LLMModel
-import io.shubham0204.smollmandroid.ui.components.createAlertDialog
-import io.shubham0204.smollmandroid.ui.components.noRippleClickable
 import io.shubham0204.smollmandroid.ui.screens.model_download.DownloadModelActivity
 import java.io.File
 

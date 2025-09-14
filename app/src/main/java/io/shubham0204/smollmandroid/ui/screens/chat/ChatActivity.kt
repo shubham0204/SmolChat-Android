@@ -109,9 +109,13 @@ import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
+import io.shubham0204.smollmandroid.ui.components.SelectModelsList
 import io.shubham0204.smollmandroid.ui.components.TextFieldDialog
 import io.shubham0204.smollmandroid.ui.components.noRippleClickable
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoadingState
+import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChangeFolderDialogUI
+import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMessageOptionsDialog
+import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMoreOptionsPopup
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.TasksList
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
@@ -316,7 +320,7 @@ fun ChatActivityScreenUI(
             TasksListBottomSheet(viewModel)
             ChangeFolderDialog(viewModel)
             TextFieldDialog()
-            FolderOptionsDialog()
+            ChatMessageOptionsDialog()
         }
     }
 }
