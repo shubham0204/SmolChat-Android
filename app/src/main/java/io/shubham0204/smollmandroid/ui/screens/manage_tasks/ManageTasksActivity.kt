@@ -59,6 +59,7 @@ import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Check
 import compose.icons.feathericons.MoreVertical
+import compose.icons.feathericons.Plus
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
@@ -95,7 +96,7 @@ fun TasksActivityScreenUI() {
                         IconButton(
                             onClick = { viewModel.showCreateTaskDialogState.value = true },
                         ) {
-                            Icon(FeatherIcons.Check, contentDescription = "Add New Task")
+                            Icon(FeatherIcons.Plus, contentDescription = "Add New Task")
                         }
                     },
                     navigationIcon = {
