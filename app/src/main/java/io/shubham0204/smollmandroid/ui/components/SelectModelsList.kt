@@ -59,6 +59,7 @@ import compose.icons.FeatherIcons
 import compose.icons.feathericons.Calendar
 import compose.icons.feathericons.Delete
 import compose.icons.feathericons.Plus
+import compose.icons.feathericons.Trash
 import compose.icons.feathericons.Type
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.LLMModel
@@ -245,7 +246,6 @@ private fun ModelListItem(
         }
         if (showModelDeleteIcon) {
             IconButton(
-                modifier = Modifier.size(24.dp),
                 onClick = {
                     createAlertDialog(
                         dialogTitle = context.getString(R.string.dialog_title_delete_chat),
@@ -261,7 +261,7 @@ private fun ModelListItem(
                 },
             ) {
                 Icon(
-                    FeatherIcons.Delete,
+                    FeatherIcons.Trash,
                     contentDescription = "Delete Model",
                     tint = MaterialTheme.colorScheme.secondary,
                 )
