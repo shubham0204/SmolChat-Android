@@ -48,7 +48,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -120,7 +119,6 @@ class DownloadModelActivity : ComponentActivity() {
                     composable("download-model") {
                         AddNewModelScreen(
                             onHFModelSelectClick = { navController.navigate("hf-model-select") },
-                            onBackClick = { finish() },
                         )
                     }
                 }
@@ -147,10 +145,7 @@ class DownloadModelActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    private fun AddNewModelScreen(
-        onHFModelSelectClick: () -> Unit,
-        onBackClick: () -> Unit,
-    ) {
+    private fun AddNewModelScreen(onHFModelSelectClick: () -> Unit) {
         var addNewModelStep by remember { mutableStateOf(AddNewModelStep.DownloadModel) }
         SmolLMAndroidTheme {
             Scaffold(
@@ -158,15 +153,6 @@ class DownloadModelActivity : ComponentActivity() {
                 topBar = {
                     TopAppBar(
                         title = { AppBarTitleText(stringResource(R.string.add_new_model_title)) },
-                        navigationIcon = {
-                            IconButton(onClick = onBackClick) {
-                                Icon(
-                                    FeatherIcons.ArrowLeft,
-                                    contentDescription = "Navigate Back",
-                                    tint = MaterialTheme.colorScheme.secondary,
-                                )
-                            }
-                        },
                     )
                 },
             ) { innerPadding ->
