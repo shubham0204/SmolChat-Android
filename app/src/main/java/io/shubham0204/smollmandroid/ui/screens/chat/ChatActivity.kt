@@ -512,14 +512,7 @@ private fun LazyItemScope.MessageListItem(
                     .fillMaxWidth()
                     .animateItem(),
         ) {
-            Column {
-                Spacer(modifier = Modifier.height(8.dp))
-                Icon(
-                    modifier = Modifier.padding(4.dp),
-                    imageVector = FeatherIcons.User,
-                    contentDescription = null,
-                )
-            }
+            Spacer(modifier = Modifier.width(8.dp))
             Column {
                 ChatMessageText(
                     // to make pointerInput work in MarkdownText use disableLinkMovementMethod
