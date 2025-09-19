@@ -41,8 +41,8 @@ set(SMOLLM_SOURCES
         ${LLAMA_DIR}/src/llama-mmap.cpp
         ${LLAMA_DIR}/src/llama-hparams.cpp
         ${LLAMA_DIR}/src/llama-hparams.cpp
-        ${LLAMA_DIR}/src/llama-kv-cache-unified-iswa.cpp
-        ${LLAMA_DIR}/src/llama-kv-cache-unified.cpp
+        ${LLAMA_DIR}/src/llama-kv-cache-iswa.cpp
+        ${LLAMA_DIR}/src/llama-kv-cache.cpp
         ${LLAMA_DIR}/src/llama-batch.cpp
         ${LLAMA_DIR}/src/llama-arch.cpp
         ${LLAMA_DIR}/src/llama-adapter.cpp
