@@ -119,6 +119,7 @@
     <string name="label_device_ram">设备内存：%.2f GB 已用，总计 %.2f GB</string>
     <string name="download_model_step_title">步骤 1：下载模型</string>
     <string name="import_model_step_title">步骤 2：导入模型</string>
+    <string name="import_model_step_des">选择您在步骤1中下载的 **.gguf 模型**。应用会将该模型复制到其内部存储。</string>
     <string name="button_text_back">上一步</string>
     <string name="button_text_next">下一步</string>
     <string name="download_model_next_step_des">模型下载完成后，请前往下一部分“导入模型”</string>
