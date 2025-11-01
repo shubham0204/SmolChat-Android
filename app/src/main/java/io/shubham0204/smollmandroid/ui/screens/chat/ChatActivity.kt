@@ -113,7 +113,6 @@ import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
 import io.shubham0204.smollmandroid.ui.components.SelectModelsList
 import io.shubham0204.smollmandroid.ui.components.TextFieldDialog
-import io.shubham0204.smollmandroid.ui.components.noRippleClickable
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoadingState
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChangeFolderDialogUI
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMessageOptionsDialog

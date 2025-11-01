@@ -55,6 +55,7 @@ import compose.icons.feathericons.Search
 import io.shubham0204.hf_model_hub_api.HFModelSearch
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
+import io.shubham0204.smollmandroid.ui.components.AppProgressDialog
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,6 +120,7 @@ fun HFModelDownloadScreen(
                     singleLine = true,
                 )
                 ModelList(query, viewModel, onModelClick)
+                AppProgressDialog()
             }
         }
     }

@@ -22,7 +22,6 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.OpenableColumns
 import android.widget.Toast
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
@@ -34,7 +33,6 @@ import io.shubham0204.smollm.SmolLM
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.HFModelsAPI
-import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.ui.components.hideProgressDialog
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogText
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogTitle
@@ -42,8 +40,6 @@ import io.shubham0204.smollmandroid.ui.components.showProgressDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
@@ -57,26 +53,17 @@ class DownloadModelsViewModel(
     val appDB: AppDB,
     val hfModelsAPI: HFModelsAPI,
 ) : ViewModel() {
-    // default context size for the LLM
-    private val defaultContextSize = 2048
-
-    private val _modelInfoAndTree =
-        MutableStateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?>(null)
-    val modelInfoAndTree: StateFlow<Pair<HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>>?> =
-        _modelInfoAndTree
-
-    val selectedModelState = mutableStateOf<LLMModel?>(null)
-    val modelUrlState = mutableStateOf("")
-
-    var viewModelId: String? = null
-
     private val downloadManager =
         context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
-    fun downloadModel() {
+    fun downloadModelFromIndex(selectedPopularModelIndex: Int) {
         // Downloading files in Android with the DownloadManager API
         // Ref: https://youtu.be/4t8EevQSYK4?feature=shared
-        val modelUrl = modelUrlState.value.ifEmpty { selectedModelState.value?.url ?: return }
+        val modelUrl = getPopularModel(selectedPopularModelIndex)!!.url
+        downloadModelFromUrl(modelUrl)
+    }
+
+    fun downloadModelFromUrl(modelUrl: String) {
         val fileName = modelUrl.substring(modelUrl.lastIndexOf('/') + 1)
         val request =
             DownloadManager
@@ -148,8 +135,10 @@ class DownloadModelsViewModel(
         }
     }
 
-    fun fetchModelInfoAndTree(modelId: String) {
-        _modelInfoAndTree.value = null
+    fun fetchModelInfoAndTree(
+        modelId: String,
+        onResult: (HFModelInfo.ModelInfo, List<HFModelTree.HFModelFile>) -> Unit,
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
             val modelInfo = hfModelsAPI.getModelInfo(modelId)
             var modelTree = hfModelsAPI.getModelTree(modelId)
@@ -157,7 +146,9 @@ class DownloadModelsViewModel(
                 modelTree.filter { modelFile ->
                     modelFile.path.endsWith("gguf")
                 }
-            _modelInfoAndTree.value = Pair(modelInfo, modelTree)
+            withContext(Dispatchers.Main) {
+                onResult(modelInfo, modelTree)
+            }
         }
     }
 }

@@ -42,17 +42,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Clock
@@ -69,110 +66,130 @@ import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.LargeLabelText
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
+import java.time.LocalDateTime
 import java.time.ZoneId
+
+@Preview
+@Composable
+private fun ViewHFModelScreenPreview() {
+    ViewHFModelScreen(
+        modelId = "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+        modelInfo = HFModelInfo.ModelInfo(
+            _id = "",
+            id = "",
+            modelId = "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+            author = "",
+            private = false,
+            disabled = false,
+            tags = listOf("gguf", "vision"),
+            numDownloads = 1000,
+            numLikes = 340,
+            lastModified = LocalDateTime.now(),
+            createdAt = LocalDateTime.now()
+        ),
+        modelFileTree = listOf(
+            HFModelTree.HFModelFile(
+                type = "",
+                oid = "",
+                size = 1200,
+                path = "file"
+            )
+        ),
+        onDownloadModel = {},
+        onBackClicked = {}
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewHFModelScreen(
-    viewModel: DownloadModelsViewModel,
+    modelId: String,
+    modelInfo: HFModelInfo.ModelInfo,
+    modelFileTree: List<HFModelTree.HFModelFile>,
+    onDownloadModel: (String) -> Unit,
     onBackClicked: () -> Unit,
 ) {
     val context = LocalContext.current
-    viewModel.viewModelId?.let { modelId ->
-        SmolLMAndroidTheme {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                topBar = {
-                    TopAppBar(
-                        title = { AppBarTitleText(stringResource(R.string.download_model_hf_details_title)) },
-                        navigationIcon = {
-                            IconButton(onClick = { onBackClicked() }) {
-                                Icon(
-                                    FeatherIcons.ArrowLeft,
-                                    contentDescription = "Navigate Back",
-                                    tint = MaterialTheme.colorScheme.secondary,
-                                )
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = {
-                                Intent(Intent.ACTION_VIEW).apply {
-                                    data = "https://huggingface.co/$modelId".toUri()
-                                    context.startActivity(this)
-                                }
-                            }) {
-                                Icon(
-                                    imageVector = FeatherIcons.Globe,
-                                    contentDescription = "Open in Browser",
-                                )
-                            }
-                            IconButton(onClick = {
-                                Intent(Intent.ACTION_SEND).apply {
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_TEXT, "https://huggingface.co/$modelId")
-                                    context.startActivity(this)
-                                }
-                            }) {
-                                Icon(
-                                    imageVector = FeatherIcons.Share,
-                                    contentDescription = "Share",
-                                )
-                            }
-                        },
-                    )
-                },
-            ) { innerPadding ->
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(innerPadding),
-                ) {
-                    LaunchedEffect(0) {
-                        viewModel.fetchModelInfoAndTree(modelId)
-                    }
-                    val modelInfoAndTree by viewModel.modelInfoAndTree.collectAsStateWithLifecycle(
-                        LocalLifecycleOwner.current,
-                    )
-                    modelInfoAndTree?.let { modelInfoAndTree ->
-                        val modelInfo = modelInfoAndTree.first
-                        val modelFiles = modelInfoAndTree.second
-                        ModelInfoCard(modelInfo)
-                        Row(
-                            modifier = Modifier.padding(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
+    SmolLMAndroidTheme {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(
+                    title = { AppBarTitleText(stringResource(R.string.download_model_hf_details_title)) },
+                    navigationIcon = {
+                        IconButton(onClick = { onBackClicked() }) {
                             Icon(
-                                imageVector = FeatherIcons.Folder,
-                                contentDescription = "Files",
+                                FeatherIcons.ArrowLeft,
+                                contentDescription = "Navigate Back",
                                 tint = MaterialTheme.colorScheme.secondary,
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            LargeLabelText(text = "Files")
                         }
-                        GGUFModelsList(modelFiles, onModelClick = { modelFile ->
-                            createAlertDialog(
-                                dialogTitle = "Download Model",
-                                dialogText =
-                                    "The model will start downloading and will be stored in the Downloads " +
-                                        "folder. Select the model file from the file explorer to load it in the app.",
-                                dialogPositiveButtonText = "Download",
-                                onPositiveButtonClick = {
-                                    val downloadUrl =
-                                        "https://huggingface.co/${modelInfo.modelId}/resolve/main/${modelFile.path}"
-                                    viewModel.modelUrlState.value = downloadUrl
-                                    viewModel.downloadModel()
-                                    onBackClicked()
-                                },
-                                dialogNegativeButtonText = "Cancel",
-                                onNegativeButtonClick = {},
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            Intent(Intent.ACTION_VIEW).apply {
+                                data = "https://huggingface.co/$modelId".toUri()
+                                context.startActivity(this)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = FeatherIcons.Globe,
+                                contentDescription = "Open in Browser",
                             )
-                        })
-                    }
+                        }
+                        IconButton(onClick = {
+                            Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, "https://huggingface.co/$modelId")
+                                context.startActivity(this)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = FeatherIcons.Share,
+                                contentDescription = "Share",
+                            )
+                        }
+                    },
+                )
+            },
+        ) { innerPadding ->
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(innerPadding),
+            ) {
+                ModelInfoCard(modelInfo)
+                Row(
+                    modifier = Modifier.padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = FeatherIcons.Folder,
+                        contentDescription = "Files",
+                        tint = MaterialTheme.colorScheme.secondary,
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    LargeLabelText(text = "Files")
                 }
-                AppAlertDialog()
+                GGUFModelsList(modelFileTree, onModelClick = { modelFile ->
+                    createAlertDialog(
+                        dialogTitle = "Download Model",
+                        dialogText =
+                            "The model will start downloading and will be stored in the Downloads " +
+                                "folder. Select the model file from the file explorer to load it in the app.",
+                        dialogPositiveButtonText = "Download",
+                        onPositiveButtonClick = {
+                            onDownloadModel("https://huggingface.co/${modelInfo.modelId}/resolve/main/${modelFile.path}")
+                            onBackClicked()
+                        },
+                        dialogNegativeButtonText = "Cancel",
+                        onNegativeButtonClick = {},
+                    )
+                })
             }
+            AppAlertDialog()
         }
     }
 }
