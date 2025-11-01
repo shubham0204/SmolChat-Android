@@ -25,10 +25,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Folder
+
+@Preview
+@Composable
+private fun PreviewChangeFolderDialogUI() {
+    ChangeFolderDialogUI(
+        onDismissRequest = {},
+        initialChatFolderId = 0,
+        folders =
+            listOf(
+                Folder(id = 0, "History"),
+                Folder(id = 1, "Geography"),
+                Folder(id = 2, "Math"),
+                Folder(id = 3, "Science"),
+            ),
+        onUpdateFolderId = {},
+    )
+}
 
 @Composable
 fun ChangeFolderDialogUI(
