@@ -34,7 +34,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,6 +111,7 @@ import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
 import io.shubham0204.smollmandroid.ui.components.SelectModelsList
+import io.shubham0204.smollmandroid.ui.components.TasksList
 import io.shubham0204.smollmandroid.ui.components.TextFieldDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoadingState
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChangeFolderDialogUI
@@ -119,7 +119,6 @@ import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMessageOptionsDi
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMoreOptionsPopup
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.createChatMessageOptionsDialog
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
-import io.shubham0204.smollmandroid.ui.screens.manage_tasks.TasksList
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

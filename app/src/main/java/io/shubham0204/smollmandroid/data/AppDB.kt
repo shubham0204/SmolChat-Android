@@ -167,13 +167,9 @@ class AppDB(
         )
     }
 
-    fun getModel(id: Long): LLMModel? =
+    fun getModel(id: Long): LLMModel =
         runBlocking(Dispatchers.IO) {
-            try {
-                db.llmModelDao().getModel(id)
-            } catch (_: IllegalArgumentException) {
-                null
-            }
+            db.llmModelDao().getModel(id)
         }
 
     fun getModels(): Flow<List<LLMModel>> = runBlocking(Dispatchers.IO) { db.llmModelDao().getAllModels() }

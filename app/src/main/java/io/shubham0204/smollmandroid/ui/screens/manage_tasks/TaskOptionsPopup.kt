@@ -22,11 +22,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Delete
 import compose.icons.feathericons.Edit
 import compose.icons.feathericons.Plus
 import io.shubham0204.smollmandroid.R
+
+@Preview
+@Composable
+private fun PreviewTaskOptionsPopup() {
+    TaskOptionsPopup(
+        isTaskShortcut = true,
+        onDismiss = {},
+        onEditTaskClick = {},
+        onDeleteTaskClick = {},
+        onAddTaskShortcut = {},
+        onRemoveTaskShortcut = {},
+    )
+}
 
 @Composable
 fun TaskOptionsPopup(

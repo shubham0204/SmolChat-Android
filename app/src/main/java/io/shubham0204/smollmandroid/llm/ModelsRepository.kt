@@ -47,14 +47,14 @@ class ModelsRepository(
         }
     }
 
-    fun getModelFromId(id: Long): LLMModel? = appDB.getModel(id)
+    fun getModelFromId(id: Long): LLMModel = appDB.getModel(id)
 
     fun getAvailableModels(): Flow<List<LLMModel>> = appDB.getModels()
 
     fun getAvailableModelsList(): List<LLMModel> = appDB.getModelsList()
 
     fun deleteModel(id: Long) {
-        appDB.getModel(id)?.let {
+        appDB.getModel(id).also {
             File(it.path).delete()
             appDB.deleteModel(it.id)
         }

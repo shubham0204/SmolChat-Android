@@ -16,7 +16,6 @@
 
 package io.shubham0204.smollmandroid.ui.screens.manage_tasks
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.Task
@@ -28,10 +27,6 @@ class TasksViewModel(
     val modelsRepository: ModelsRepository,
     val appDB: AppDB,
 ) : ViewModel() {
-    val showCreateTaskDialogState = mutableStateOf(false)
-    val showEditTaskDialogState = mutableStateOf(false)
-    val selectedTaskState = mutableStateOf<Task?>(null)
-
     fun addTask(
         name: String,
         systemPrompt: String,
