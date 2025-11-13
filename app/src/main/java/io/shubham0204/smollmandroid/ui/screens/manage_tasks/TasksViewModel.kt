@@ -23,15 +23,8 @@ import io.shubham0204.smollmandroid.llm.ModelsRepository
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class TasksViewModel(
-    val modelsRepository: ModelsRepository,
-    val appDB: AppDB,
-) : ViewModel() {
-    fun addTask(
-        name: String,
-        systemPrompt: String,
-        modelId: Long,
-    ) {
+class TasksViewModel(val modelsRepository: ModelsRepository, val appDB: AppDB) : ViewModel() {
+    fun addTask(name: String, systemPrompt: String, modelId: Long) {
         appDB.addTask(name, systemPrompt, modelId)
     }
 

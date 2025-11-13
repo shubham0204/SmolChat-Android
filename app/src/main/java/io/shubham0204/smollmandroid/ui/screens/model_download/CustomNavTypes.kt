@@ -10,49 +10,35 @@ import kotlinx.serialization.json.Json
 
 object CustomNavTypes {
     val HFModelInfoNavType =
-        object : NavType<HFModelInfo.ModelInfo>(
-            isNullableAllowed = false,
-        ) {
-            override fun get(
-                bundle: Bundle,
-                key: String,
-            ): HFModelInfo.ModelInfo? {
+        object : NavType<HFModelInfo.ModelInfo>(isNullableAllowed = false) {
+            override fun get(bundle: Bundle, key: String): HFModelInfo.ModelInfo? {
                 return Json.decodeFromString(bundle.getString(key) ?: return null)
             }
 
-            override fun parseValue(value: String): HFModelInfo.ModelInfo = Json.decodeFromString(Uri.decode(value))
+            override fun parseValue(value: String): HFModelInfo.ModelInfo =
+                Json.decodeFromString(Uri.decode(value))
 
-            override fun serializeAsValue(value: HFModelInfo.ModelInfo): String = Uri.encode(Json.encodeToString(value))
+            override fun serializeAsValue(value: HFModelInfo.ModelInfo): String =
+                Uri.encode(Json.encodeToString(value))
 
-            override fun put(
-                bundle: Bundle,
-                key: String,
-                value: HFModelInfo.ModelInfo,
-            ) {
+            override fun put(bundle: Bundle, key: String, value: HFModelInfo.ModelInfo) {
                 bundle.putString(key, Json.encodeToString(value))
             }
         }
 
     val HFModelFileNavType =
-        object : NavType<List<HFModelTree.HFModelFile>>(
-            isNullableAllowed = false,
-        ) {
-            override fun get(
-                bundle: Bundle,
-                key: String,
-            ): List<HFModelTree.HFModelFile>? {
+        object : NavType<List<HFModelTree.HFModelFile>>(isNullableAllowed = false) {
+            override fun get(bundle: Bundle, key: String): List<HFModelTree.HFModelFile>? {
                 return Json.decodeFromString(bundle.getString(key) ?: return null)
             }
 
-            override fun parseValue(value: String): List<HFModelTree.HFModelFile> = Json.decodeFromString(Uri.decode(value))
+            override fun parseValue(value: String): List<HFModelTree.HFModelFile> =
+                Json.decodeFromString(Uri.decode(value))
 
-            override fun serializeAsValue(value: List<HFModelTree.HFModelFile>): String = Uri.encode(Json.encodeToString(value))
+            override fun serializeAsValue(value: List<HFModelTree.HFModelFile>): String =
+                Uri.encode(Json.encodeToString(value))
 
-            override fun put(
-                bundle: Bundle,
-                key: String,
-                value: List<HFModelTree.HFModelFile>,
-            ) {
+            override fun put(bundle: Bundle, key: String, value: List<HFModelTree.HFModelFile>) {
                 bundle.putString(key, Json.encodeToString(value))
             }
         }

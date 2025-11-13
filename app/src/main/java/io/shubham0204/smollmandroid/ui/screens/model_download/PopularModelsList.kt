@@ -25,17 +25,11 @@ import io.shubham0204.smollmandroid.data.LLMModel
 @Preview
 @Composable
 fun PreviewPopularModelsList() {
-    PopularModelsList(
-        selectedModelIndex = 0,
-        onModelSelected = {},
-    )
+    PopularModelsList(selectedModelIndex = 0, onModelSelected = {})
 }
 
 @Composable
-fun PopularModelsList(
-    selectedModelIndex: Int?,
-    onModelSelected: (Int) -> Unit,
-) {
+fun PopularModelsList(selectedModelIndex: Int?, onModelSelected: (Int) -> Unit) {
     Column(verticalArrangement = Arrangement.Center) {
         popularModelsList.forEachIndexed { idx, model ->
             Row(
@@ -48,10 +42,9 @@ fun PopularModelsList(
                         } else {
                             MaterialTheme.colorScheme.surface
                         },
-                        RoundedCornerShape(
-                            8.dp,
-                        ),
-                    ).padding(8.dp),
+                        RoundedCornerShape(8.dp),
+                    )
+                    .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {
@@ -68,8 +61,7 @@ fun PopularModelsList(
                         if (idx == selectedModelIndex) {
                             MaterialTheme.colorScheme.onSurface
                         } else {
-                            MaterialTheme
-                                .colorScheme.onSurface
+                            MaterialTheme.colorScheme.onSurface
                         },
                     text = model.name,
                     style = MaterialTheme.typography.bodySmall,

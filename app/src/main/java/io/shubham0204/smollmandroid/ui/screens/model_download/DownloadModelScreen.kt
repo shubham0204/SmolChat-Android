@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowRight
@@ -36,7 +35,7 @@ private fun PreviewDownloadModelScreen() {
     DownloadModelScreen(
         onDownloadModelClick = {},
         onNextSectionClick = {},
-        onHFModelSelectClick = {}
+        onHFModelSelectClick = {},
     )
 }
 
@@ -74,20 +73,14 @@ fun DownloadModelScreen(
             Text(stringResource(R.string.download_model_download))
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "OR",
-            style = MaterialTheme.typography.headlineSmall,
-        )
+        Text(text = "OR", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.download_model_step_hf_browse),
             style = MaterialTheme.typography.labelMedium,
         )
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedButton(
-            onClick = onHFModelSelectClick,
-            shape = RoundedCornerShape(4.dp),
-        ) {
+        OutlinedButton(onClick = onHFModelSelectClick, shape = RoundedCornerShape(4.dp)) {
             Icon(FeatherIcons.Globe, contentDescription = "Download Selected Model")
             AppSpacer4W()
             Text(stringResource(R.string.download_model_browse_hf))
@@ -96,9 +89,7 @@ fun DownloadModelScreen(
         HorizontalDivider(modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
         Column(verticalArrangement = Arrangement.Bottom) {
-            Text(
-                text = stringResource(R.string.download_model_next_step_des),
-            )
+            Text(text = stringResource(R.string.download_model_next_step_des))
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 modifier = Modifier.align(Alignment.CenterHorizontally),

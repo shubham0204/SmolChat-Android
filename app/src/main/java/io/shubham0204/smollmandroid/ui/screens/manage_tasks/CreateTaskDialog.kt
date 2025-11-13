@@ -62,11 +62,7 @@ import io.shubham0204.smollmandroid.ui.preview.dummyLLMModels
 @Composable
 @Preview
 private fun PreviewCreateTaskDialog() {
-    CreateTaskDialog(
-        onDismiss = {},
-        onAddTask = { _, _, _ -> },
-        dummyLLMModels,
-    )
+    CreateTaskDialog(onDismiss = {}, onAddTask = { _, _, _ -> }, dummyLLMModels)
 }
 
 @Composable
@@ -100,10 +96,9 @@ fun CreateTaskDialog(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 TextField(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
                     value = taskName,
                     onValueChange = { taskName = it },
                     label = { Text(stringResource(R.string.task_create_task_name)) },
@@ -112,12 +107,7 @@ fun CreateTaskDialog(
                             capitalization = KeyboardCapitalization.Words,
                             imeAction = ImeAction.Next,
                         ),
-                    keyboardActions =
-                        KeyboardActions(
-                            onNext = {
-                                focusRequestor.requestFocus()
-                            },
-                        ),
+                    keyboardActions = KeyboardActions(onNext = { focusRequestor.requestFocus() }),
                 )
 
                 TextField(
@@ -134,12 +124,7 @@ fun CreateTaskDialog(
                             capitalization = KeyboardCapitalization.Sentences,
                             imeAction = ImeAction.Done,
                         ),
-                    keyboardActions =
-                        KeyboardActions(
-                            onDone = {
-                                keyboardController?.hide()
-                            },
-                        ),
+                    keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
                 )
 
                 Text(
@@ -149,7 +134,10 @@ fun CreateTaskDialog(
                             .border(width = 1.dp, Color.DarkGray)
                             .clickable { isModelListDialogVisible = true }
                             .padding(8.dp),
-                    text = if (selectedModel == null) stringResource(R.string.task_create_task_select_model) else selectedModel!!.name,
+                    text =
+                        if (selectedModel == null)
+                            stringResource(R.string.task_create_task_select_model)
+                        else selectedModel!!.name,
                 )
 
                 if (isModelListDialogVisible) {
@@ -160,7 +148,8 @@ fun CreateTaskDialog(
                             isModelListDialogVisible = false
                             selectedModel = model
                         },
-                        onModelDeleteClick = { // Not applicable, as showModelDeleteIcon is set to false
+                        onModelDeleteClick = { // Not applicable, as showModelDeleteIcon is set to
+                            // false
                         },
                         showModelDeleteIcon = false,
                     )

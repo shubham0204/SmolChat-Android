@@ -21,16 +21,9 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.serialization.Serializable
 
-class HFModelTree(
-    private val client: HttpClient,
-) {
+class HFModelTree(private val client: HttpClient) {
     @Serializable
-    data class HFModelFile(
-        val type: String,
-        val oid: String,
-        val size: Long,
-        val path: String,
-    )
+    data class HFModelFile(val type: String, val oid: String, val size: Long, val path: String)
 
     suspend fun getModelFileTree(modelId: String): List<HFModelFile> {
         val response = client.get(urlString = HFEndpoints.getHFModelTreeEndpoint(modelId))

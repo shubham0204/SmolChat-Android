@@ -66,31 +66,31 @@ class DownloadModelsViewModel(
     fun downloadModelFromUrl(modelUrl: String) {
         val fileName = modelUrl.substring(modelUrl.lastIndexOf('/') + 1)
         val request =
-            DownloadManager
-                .Request(modelUrl.toUri())
+            DownloadManager.Request(modelUrl.toUri())
                 .setTitle(fileName)
                 .setDescription(
-                    "The GGUF model will be downloaded on your device for use with SmolChat.",
-                ).setMimeType("application/octet-stream")
+                    "The GGUF model will be downloaded on your device for use with SmolChat."
+                )
+                .setMimeType("application/octet-stream")
                 .setAllowedNetworkTypes(
-                    DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE,
-                ).setNotificationVisibility(
-                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED,
-                ).setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                    DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE
+                )
+                .setNotificationVisibility(
+                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+                )
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
         downloadManager.enqueue(request)
     }
 
-    fun getModels(query: String): Flow<PagingData<HFModelSearch.ModelSearchResult>> = hfModelsAPI.getModelsList(query)
+    fun getModels(query: String): Flow<PagingData<HFModelSearch.ModelSearchResult>> =
+        hfModelsAPI.getModelsList(query)
 
     /**
      * Given the model file URI, copy the model file to the app's internal directory. Once copied,
      * add a new LLMModel entity with modelName=fileName where fileName is the name of the model
      * file.
      */
-    fun copyModelFile(
-        uri: Uri,
-        onComplete: () -> Unit,
-    ) {
+    fun copyModelFile(uri: Uri, onComplete: () -> Unit) {
         var fileName = ""
         context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
             val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
@@ -100,7 +100,7 @@ class DownloadModelsViewModel(
         if (fileName.isNotEmpty()) {
             setProgressDialogTitle(context.getString(R.string.dialog_progress_copy_model_title))
             setProgressDialogText(
-                context.getString(R.string.dialog_progress_copy_model_text, fileName),
+                context.getString(R.string.dialog_progress_copy_model_text, fileName)
             )
             showProgressDialog()
             CoroutineScope(Dispatchers.IO).launch {
@@ -111,8 +111,10 @@ class DownloadModelsViewModel(
                 }
                 val ggufReader = GGUFReader()
                 ggufReader.load(File(context.filesDir, fileName).absolutePath)
-                val contextSize = ggufReader.getContextSize() ?: SmolLM.DefaultInferenceParams.contextSize
-                val chatTemplate = ggufReader.getChatTemplate() ?: SmolLM.DefaultInferenceParams.chatTemplate
+                val contextSize =
+                    ggufReader.getContextSize() ?: SmolLM.DefaultInferenceParams.contextSize
+                val chatTemplate =
+                    ggufReader.getChatTemplate() ?: SmolLM.DefaultInferenceParams.chatTemplate
                 appDB.addModel(
                     fileName,
                     "",
@@ -126,12 +128,12 @@ class DownloadModelsViewModel(
                 }
             }
         } else {
-            Toast
-                .makeText(
+            Toast.makeText(
                     context,
                     context.getString(R.string.toast_invalid_file),
                     Toast.LENGTH_SHORT,
-                ).show()
+            )
+                .show()
         }
     }
 
@@ -142,13 +144,8 @@ class DownloadModelsViewModel(
         CoroutineScope(Dispatchers.IO).launch {
             val modelInfo = hfModelsAPI.getModelInfo(modelId)
             var modelTree = hfModelsAPI.getModelTree(modelId)
-            modelTree =
-                modelTree.filter { modelFile ->
-                    modelFile.path.endsWith("gguf")
-                }
-            withContext(Dispatchers.Main) {
-                onResult(modelInfo, modelTree)
-            }
+            modelTree = modelTree.filter { modelFile -> modelFile.path.endsWith("gguf") }
+            withContext(Dispatchers.Main) { onResult(modelInfo, modelTree) }
         }
     }
 }

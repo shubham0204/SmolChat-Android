@@ -74,29 +74,24 @@ import java.time.ZoneId
 private fun ViewHFModelScreenPreview() {
     ViewHFModelScreen(
         modelId = "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
-        modelInfo = HFModelInfo.ModelInfo(
-            _id = "",
-            id = "",
-            modelId = "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
-            author = "",
-            private = false,
-            disabled = false,
-            tags = listOf("gguf", "vision"),
-            numDownloads = 1000,
-            numLikes = 340,
-            lastModified = LocalDateTime.now(),
-            createdAt = LocalDateTime.now()
-        ),
-        modelFileTree = listOf(
-            HFModelTree.HFModelFile(
-                type = "",
-                oid = "",
-                size = 1200,
-                path = "file"
-            )
-        ),
+        modelInfo =
+            HFModelInfo.ModelInfo(
+                _id = "",
+                id = "",
+                modelId = "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+                author = "",
+                private = false,
+                disabled = false,
+                tags = listOf("gguf", "vision"),
+                numDownloads = 1000,
+                numLikes = 340,
+                lastModified = LocalDateTime.now(),
+                createdAt = LocalDateTime.now(),
+            ),
+        modelFileTree =
+            listOf(HFModelTree.HFModelFile(type = "", oid = "", size = 1200, path = "file")),
         onDownloadModel = {},
-        onBackClicked = {}
+        onBackClicked = {},
     )
 }
 
@@ -115,7 +110,9 @@ fun ViewHFModelScreen(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
-                    title = { AppBarTitleText(stringResource(R.string.download_model_hf_details_title)) },
+                    title = {
+                        AppBarTitleText(stringResource(R.string.download_model_hf_details_title))
+                    },
                     navigationIcon = {
                         IconButton(onClick = { onBackClicked() }) {
                             Icon(
@@ -126,28 +123,29 @@ fun ViewHFModelScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = {
-                            Intent(Intent.ACTION_VIEW).apply {
-                                data = "https://huggingface.co/$modelId".toUri()
-                                context.startActivity(this)
+                        IconButton(
+                            onClick = {
+                                Intent(Intent.ACTION_VIEW).apply {
+                                    data = "https://huggingface.co/$modelId".toUri()
+                                    context.startActivity(this)
+                                }
                             }
-                        }) {
+                        ) {
                             Icon(
                                 imageVector = FeatherIcons.Globe,
                                 contentDescription = "Open in Browser",
                             )
                         }
-                        IconButton(onClick = {
-                            Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "https://huggingface.co/$modelId")
-                                context.startActivity(this)
+                        IconButton(
+                            onClick = {
+                                Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, "https://huggingface.co/$modelId")
+                                    context.startActivity(this)
+                                }
                             }
-                        }) {
-                            Icon(
-                                imageVector = FeatherIcons.Share,
-                                contentDescription = "Share",
-                            )
+                        ) {
+                            Icon(imageVector = FeatherIcons.Share, contentDescription = "Share")
                         }
                     },
                 )
@@ -158,7 +156,7 @@ fun ViewHFModelScreen(
                     Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.surface)
-                        .padding(innerPadding),
+                        .padding(innerPadding)
             ) {
                 ModelInfoCard(modelInfo)
                 Row(
@@ -173,21 +171,26 @@ fun ViewHFModelScreen(
                     Spacer(modifier = Modifier.width(4.dp))
                     LargeLabelText(text = "Files")
                 }
-                GGUFModelsList(modelFileTree, onModelClick = { modelFile ->
-                    createAlertDialog(
-                        dialogTitle = "Download Model",
-                        dialogText =
-                            "The model will start downloading and will be stored in the Downloads " +
-                                "folder. Select the model file from the file explorer to load it in the app.",
-                        dialogPositiveButtonText = "Download",
-                        onPositiveButtonClick = {
-                            onDownloadModel("https://huggingface.co/${modelInfo.modelId}/resolve/main/${modelFile.path}")
-                            onBackClicked()
-                        },
-                        dialogNegativeButtonText = "Cancel",
-                        onNegativeButtonClick = {},
-                    )
-                })
+                GGUFModelsList(
+                    modelFileTree,
+                    onModelClick = { modelFile ->
+                        createAlertDialog(
+                            dialogTitle = "Download Model",
+                            dialogText =
+                                "The model will start downloading and will be stored in the Downloads " +
+                                        "folder. Select the model file from the file explorer to load it in the app.",
+                            dialogPositiveButtonText = "Download",
+                            onPositiveButtonClick = {
+                                onDownloadModel(
+                                    "https://huggingface.co/${modelInfo.modelId}/resolve/main/${modelFile.path}"
+                                )
+                                onBackClicked()
+                            },
+                            dialogNegativeButtonText = "Cancel",
+                            onNegativeButtonClick = {},
+                        )
+                    },
+                )
             }
             AppAlertDialog()
         }
@@ -199,11 +202,7 @@ private fun GGUFModelsList(
     modelFiles: List<HFModelTree.HFModelFile>,
     onModelClick: (HFModelTree.HFModelFile) -> Unit,
 ) {
-    LazyColumn {
-        items(modelFiles) { modelFile ->
-            GGUFModelListItem(modelFile, onModelClick)
-        }
-    }
+    LazyColumn { items(modelFiles) { modelFile -> GGUFModelListItem(modelFile, onModelClick) } }
 }
 
 @Composable
@@ -213,16 +212,12 @@ private fun GGUFModelListItem(
 ) {
     val fileSizeGB = modelFile.size / 1e+9
     Column(
-        modifier =
-            Modifier
-                .clickable { onModelFileClick(modelFile) }
-                .padding(8.dp)
-                .fillMaxWidth(),
+        modifier = Modifier
+            .clickable { onModelFileClick(modelFile) }
+            .padding(8.dp)
+            .fillMaxWidth()
     ) {
-        Text(
-            text = modelFile.path,
-            style = MaterialTheme.typography.labelLarge,
-        )
+        Text(text = modelFile.path, style = MaterialTheme.typography.labelLarge)
         Text(
             text =
                 if (fileSizeGB < 1) {
@@ -239,7 +234,8 @@ private fun GGUFModelListItem(
 @Composable
 private fun ModelInfoCard(modelInfo: HFModelInfo.ModelInfo) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        colors =
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.padding(8.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -271,13 +267,13 @@ private fun ModelInfoCard(modelInfo: HFModelInfo.ModelInfo) {
                     icon = FeatherIcons.Clock,
                     contentDescription = "Last updated",
                     text =
-                        DateUtils
-                            .getRelativeTimeSpanString(
+                        DateUtils.getRelativeTimeSpanString(
                                 modelInfo.lastModified
                                     .atZone(ZoneId.systemDefault())
                                     .toInstant()
-                                    .toEpochMilli(),
-                            ).toString(),
+                                    .toEpochMilli()
+                        )
+                            .toString(),
                 )
             }
         }
@@ -285,11 +281,7 @@ private fun ModelInfoCard(modelInfo: HFModelInfo.ModelInfo) {
 }
 
 @Composable
-private fun ModelInfoIconBubble(
-    icon: ImageVector,
-    contentDescription: String,
-    text: String,
-) {
+private fun ModelInfoIconBubble(icon: ImageVector, contentDescription: String, text: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
@@ -298,7 +290,8 @@ private fun ModelInfoIconBubble(
                 .background(
                     MaterialTheme.colorScheme.surfaceContainerHighest,
                     RoundedCornerShape(4.dp),
-                ).padding(4.dp),
+                )
+                .padding(4.dp),
     ) {
         Icon(
             modifier = Modifier.size(16.dp),
@@ -307,9 +300,6 @@ private fun ModelInfoIconBubble(
             tint = MaterialTheme.colorScheme.secondary,
         )
         Spacer(modifier = Modifier.width(2.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-        )
+        Text(text = text, style = MaterialTheme.typography.labelSmall)
     }
 }

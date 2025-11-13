@@ -70,7 +70,9 @@ fun HFModelDownloadScreen(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
-                    title = { AppBarTitleText(stringResource(R.string.download_model_hf_screen_title)) },
+                    title = {
+                        AppBarTitleText(stringResource(R.string.download_model_hf_screen_title))
+                    },
                     navigationIcon = {
                         IconButton(onClick = { onBackClicked() }) {
                             Icon(
@@ -87,14 +89,13 @@ fun HFModelDownloadScreen(
                 modifier =
                     Modifier
                         .padding(innerPadding)
-                        .background(MaterialTheme.colorScheme.surface),
+                        .background(MaterialTheme.colorScheme.surface)
             ) {
                 var query by rememberSaveable { mutableStateOf("") }
                 TextField(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
                     value = query,
                     onValueChange = { query = it },
                     shape = RoundedCornerShape(16.dp),
@@ -108,15 +109,16 @@ fun HFModelDownloadScreen(
                     leadingIcon = {
                         Icon(
                             imageVector = FeatherIcons.Search,
-                            contentDescription =
-                                "Search for models",
+                            contentDescription = "Search for models",
                         )
                     },
                     placeholder = {
                         Text(text = stringResource(R.string.download_model_hf_search_label))
                     },
                     keyboardOptions =
-                        KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+                        KeyboardOptions.Default.copy(
+                            capitalization = KeyboardCapitalization.Sentences
+                        ),
                     singleLine = true,
                 )
                 ModelList(query, viewModel, onModelClick)
@@ -135,39 +137,23 @@ private fun ModelList(
     val models = viewModel.getModels(query).collectAsLazyPagingItems()
     LazyColumn(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
         items(count = models.itemCount) { index ->
-            models[index]?.let { model ->
-                ModelListItem(model, onModelClick = onModelClick)
-            }
+            models[index]?.let { model -> ModelListItem(model, onModelClick = onModelClick) }
         }
     }
 }
 
 @Composable
-private fun ModelListItem(
-    model: HFModelSearch.ModelSearchResult,
-    onModelClick: (String) -> Unit,
-) {
+private fun ModelListItem(model: HFModelSearch.ModelSearchResult, onModelClick: (String) -> Unit) {
     val modelAuthor = model.id.split("/")[0]
     val modelName = model.id.split("/")[1]
-    Column(
-        modifier =
-            Modifier
-                .clickable { onModelClick(model.id) }
-                .padding(8.dp)
-                .fillMaxWidth(),
-    ) {
-        Text(
-            text = modelAuthor,
-            style = MaterialTheme.typography.labelSmall,
-        )
-        Text(
-            text = modelName,
-            style = MaterialTheme.typography.labelSmall,
-        )
+    Column(modifier = Modifier
+        .clickable { onModelClick(model.id) }
+        .padding(8.dp)
+        .fillMaxWidth()) {
+        Text(text = modelAuthor, style = MaterialTheme.typography.labelSmall)
+        Text(text = modelName, style = MaterialTheme.typography.labelSmall)
         LazyRow {
-            items(
-                model.tags.filter { !listOf("GGUF", "conversational").contains(it) },
-            ) {
+            items(model.tags.filter { !listOf("GGUF", "conversational").contains(it) }) {
                 Text(
                     modifier =
                         Modifier
@@ -175,7 +161,8 @@ private fun ModelListItem(
                             .background(
                                 MaterialTheme.colorScheme.surfaceContainer,
                                 RoundedCornerShape(4.dp),
-                            ).padding(horizontal = 2.dp),
+                            )
+                            .padding(horizontal = 2.dp),
                     text = it,
                     fontSize = 8.sp,
                 )

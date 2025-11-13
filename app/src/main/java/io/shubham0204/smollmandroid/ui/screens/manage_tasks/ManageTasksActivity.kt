@@ -121,31 +121,28 @@ private fun TasksActivityScreenUI(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { AppBarTitleText(text = stringResource(R.string.tasks_manage_tasks_title)) },
+                    title = {
+                        AppBarTitleText(text = stringResource(R.string.tasks_manage_tasks_title))
+                    },
                     actions = {
-                        IconButton(
-                            onClick = { showCreateTaskDialog = true },
-                        ) {
+                        IconButton(onClick = { showCreateTaskDialog = true }) {
                             Icon(FeatherIcons.Plus, contentDescription = "Add New Task")
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = { (context as ManageTasksActivity).finish() }) {
-                            Icon(
-                                FeatherIcons.ArrowLeft,
-                                contentDescription = "Navigate Back",
-                            )
+                            Icon(FeatherIcons.ArrowLeft, contentDescription = "Navigate Back")
                         }
                     },
                 )
-            },
+            }
         ) { paddingValues ->
             Column(
                 modifier =
                     Modifier
                         .background(MaterialTheme.colorScheme.surface)
                         .fillMaxSize()
-                        .padding(paddingValues),
+                        .padding(paddingValues)
             ) {
                 Text(
                     text = stringResource(R.string.tasks_manage_tasks_desc),
@@ -156,9 +153,7 @@ private fun TasksActivityScreenUI(
                 TasksList(
                     tasks,
                     onTaskSelected = { /* Not applicable as enableTaskClick is set to `false` */ },
-                    onUpdateTaskClick = { task ->
-                        onUpdateTask(task)
-                    },
+                    onUpdateTaskClick = { task -> onUpdateTask(task) },
                     onEditTaskClick = { task ->
                         selectedTask = task
                         showEditTaskDialog = true
@@ -167,16 +162,18 @@ private fun TasksActivityScreenUI(
                         createAlertDialog(
                             dialogTitle = context.getString(R.string.dialog_delete_task_title),
                             dialogText = "Are you sure you want to delete task '${task.name}'?",
-                            dialogPositiveButtonText = context.getString(R.string.dialog_pos_delete),
-                            dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
+                            dialogPositiveButtonText =
+                                context.getString(R.string.dialog_pos_delete),
+                            dialogNegativeButtonText =
+                                context.getString(R.string.dialog_neg_cancel),
                             onPositiveButtonClick = {
                                 onDeleteTask(task.id)
-                                Toast
-                                    .makeText(
+                                Toast.makeText(
                                         context,
                                         "Task '${task.name}' deleted",
                                         Toast.LENGTH_LONG,
-                                    ).show()
+                                )
+                                    .show()
                             },
                             onNegativeButtonClick = {},
                         )

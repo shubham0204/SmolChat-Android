@@ -23,9 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
-class HFModelSearch(
-    private val client: HttpClient,
-) {
+class HFModelSearch(private val client: HttpClient) {
     @Serializable
     data class ModelSearchResult(
         val _id: String,
@@ -38,17 +36,13 @@ class HFModelSearch(
         val modelId: String,
     )
 
-    enum class ModelSortParam(
-        val value: String,
-    ) {
+    enum class ModelSortParam(val value: String) {
         NONE(""),
         DOWNLOADS("downloads"),
         AUTHOR("author"),
     }
 
-    enum class ModelSearchDirection(
-        val value: Int,
-    ) {
+    enum class ModelSearchDirection(val value: Int) {
         ASCENDING(1),
         DESCENDING(-1),
     }
@@ -67,19 +61,18 @@ class HFModelSearch(
     ): List<ModelSearchResult> {
         val response =
             if (pageURL == HFEndpoints.getHFModelsListEndpoint()) {
-                client
-                    .get(HFEndpoints.getHFModelsListEndpoint()) {
-                        url {
-                            parameters.append("search", query)
-                            // parameters.append("author", author)
-                            parameters.append("filter", filter)
-                            parameters.append("sort", sort.value)
-                            parameters.append("direction", direction.value.toString())
-                            parameters.append("limit", limit.toString())
-                            parameters.append("full", full.toString())
-                            parameters.append("config", config.toString())
-                        }
+                client.get(HFEndpoints.getHFModelsListEndpoint()) {
+                    url {
+                        parameters.append("search", query)
+                        // parameters.append("author", author)
+                        parameters.append("filter", filter)
+                        parameters.append("sort", sort.value)
+                        parameters.append("direction", direction.value.toString())
+                        parameters.append("limit", limit.toString())
+                        parameters.append("full", full.toString())
+                        parameters.append("config", config.toString())
                     }
+                }
             } else {
                 client.get(pageURL)
             }

@@ -45,7 +45,7 @@ fun AppAlertDialog() {
                     onClick = {
                         alertDialogShowStatus.value = false
                         positiveButtonOnClick()
-                    },
+                    }
                 ) {
                     Text(text = positiveButtonText)
                 }
@@ -55,7 +55,7 @@ fun AppAlertDialog() {
                     onClick = {
                         alertDialogShowStatus.value = false
                         negativeButtonOnClick()
-                    },
+                    }
                 ) {
                     Text(text = negativeButtonText)
                 }

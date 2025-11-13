@@ -25,10 +25,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
 
-/**
- * This class interacts with the JNI binding and provides a Kotlin API
- * to infer a GGUF LLM model
- */
+/** This class interacts with the JNI binding and provides a Kotlin API to infer a GGUF LLM model */
 class SmolLM {
     companion object {
         init {
@@ -44,9 +41,7 @@ class SmolLM {
             val isAtLeastArmV82 =
                 cpuFeatures.contains("asimd") &&
                     cpuFeatures.contains("crc32") &&
-                    cpuFeatures.contains(
-                        "aes",
-                    )
+                        cpuFeatures.contains("aes")
             val isAtLeastArmV84 = cpuFeatures.contains("dcpop") && cpuFeatures.contains("uscat")
 
             Log.d(logTag, "CPU features: $cpuFeatures")
@@ -105,9 +100,8 @@ class SmolLM {
         }
 
         /**
-         * Reads the /proc/cpuinfo file and returns the line
-         * starting with 'Features :' that containing the available
-         * CPU features
+         * Reads the /proc/cpuinfo file and returns the line starting with 'Features :' that
+         * containing the available CPU features
          */
         private fun getCPUFeatures(): String {
             val cpuInfo =
@@ -117,11 +111,7 @@ class SmolLM {
                     ""
                 }
             val cpuFeatures =
-                cpuInfo
-                    .substringAfter("Features")
-                    .substringAfter(":")
-                    .substringBefore("\n")
-                    .trim()
+                cpuInfo.substringAfter("Features").substringAfter(":").substringBefore("\n").trim()
             return cpuFeatures
         }
 
@@ -131,9 +121,9 @@ class SmolLM {
     private var nativePtr = 0L
 
     /**
-     * Provides default values for inference parameters.
-     * These values are used when the corresponding parameters are not provided
-     * by the user or are not available in the GGUF model file.
+     * Provides default values for inference parameters. These values are used when the
+     * corresponding parameters are not provided by the user or are not available in the GGUF model
+     * file.
      */
     object DefaultInferenceParams {
         val contextSize: Long = 1024L
@@ -144,25 +134,23 @@ class SmolLM {
     /**
      * Data class to hold the inference parameters for the LLM.
      *
-     * @property minP The minimum probability for a token to be considered.
-     *                Also known as top-P sampling. (Default: 0.1f)
-     * @property temperature The temperature for sampling. Higher values make the output more random.
-     *                       (Default: 0.8f)
+     * @property minP The minimum probability for a token to be considered. Also known as top-P
+     *   sampling. (Default: 0.1f)
+     * @property temperature The temperature for sampling. Higher values make the output more
+     *   random. (Default: 0.8f)
      * @property storeChats Whether to store the chat history in memory. If true, the LLM will
-     *                      remember previous interactions in the current session. (Default: true)
-     * @property contextSize The context size (in tokens) for the LLM. This determines how much
-     *                       of the previous conversation the LLM can "remember". If null, the
-     *                       value from the GGUF model file will be used, or a default value if
-     *                       not present in the model file. (Default: null)
-     * @property chatTemplate The chat template to use for formatting the conversation. This
-     *                        is a Jinja2 template string. If null, the value from the GGUF
-     *                        model file will be used, or a default value if not present in the
-     *                        model file. (Default: null)
+     *   remember previous interactions in the current session. (Default: true)
+     * @property contextSize The context size (in tokens) for the LLM. This determines how much of
+     *   the previous conversation the LLM can "remember". If null, the value from the GGUF model
+     *   file will be used, or a default value if not present in the model file. (Default: null)
+     * @property chatTemplate The chat template to use for formatting the conversation. This is a
+     *   Jinja2 template string. If null, the value from the GGUF model file will be used, or a
+     *   default value if not present in the model file. (Default: null)
      * @property numThreads The number of threads to use for inference. (Default: 4)
-     * @property useMmap Whether to use memory-mapped file I/O for loading the model.
-     *                   This can improve loading times and reduce memory usage. (Default: true)
-     * @property useMlock Whether to lock the model in memory. This can prevent the model from
-     *                    being swapped out to disk, potentially improving performance. (Default: false)
+     * @property useMmap Whether to use memory-mapped file I/O for loading the model. This can
+     *   improve loading times and reduce memory usage. (Default: true)
+     * @property useMlock Whether to lock the model in memory. This can prevent the model from being
+     *   swapped out to disk, potentially improving performance. (Default: false)
      */
     data class InferenceParams(
         val minP: Float = 0.1f,
@@ -176,47 +164,42 @@ class SmolLM {
     )
 
     /**
-     * Loads the GGUF model from the given path.
-     * This function will read the metadata from the GGUF model file,
-     * such as the context size and chat template, and use them if they are not
+     * Loads the GGUF model from the given path. This function will read the metadata from the GGUF
+     * model file, such as the context size and chat template, and use them if they are not
      * explicitly provided in the `params`.
      *
      * @param modelPath The path to the GGUF model file.
      * @param params The inference parameters to use. If not provided, default values will be used.
-     *               If `contextSize` or `chatTemplate` are not provided in `params`,
-     *               the values from the GGUF model file will be used. If those are also
-     *               not available in the model file, then default values from [DefaultInferenceParams]
-     *               will be used.
+     *   If `contextSize` or `chatTemplate` are not provided in `params`, the values from the GGUF
+     *   model file will be used. If those are also not available in the model file, then default
+     *   values from [DefaultInferenceParams] will be used.
      * @return `true` if the model was loaded successfully, `false` otherwise.
      * @throws FileNotFoundException if the model file is not found at the given path.
      */
-    suspend fun load(
-        modelPath: String,
-        params: InferenceParams = InferenceParams(),
-    ) = withContext(Dispatchers.IO) {
-        val ggufReader = GGUFReader()
-        ggufReader.load(modelPath)
-        val modelContextSize = ggufReader.getContextSize() ?: DefaultInferenceParams.contextSize
-        val modelChatTemplate =
-            ggufReader.getChatTemplate() ?: DefaultInferenceParams.chatTemplate
-        nativePtr =
-            loadModel(
-                modelPath,
-                params.minP,
-                params.temperature,
-                params.storeChats,
-                params.contextSize ?: modelContextSize,
-                params.chatTemplate ?: modelChatTemplate,
-                params.numThreads,
-                params.useMmap,
-                params.useMlock,
-            )
-    }
+    suspend fun load(modelPath: String, params: InferenceParams = InferenceParams()) =
+        withContext(Dispatchers.IO) {
+            val ggufReader = GGUFReader()
+            ggufReader.load(modelPath)
+            val modelContextSize = ggufReader.getContextSize() ?: DefaultInferenceParams.contextSize
+            val modelChatTemplate =
+                ggufReader.getChatTemplate() ?: DefaultInferenceParams.chatTemplate
+            nativePtr =
+                loadModel(
+                    modelPath,
+                    params.minP,
+                    params.temperature,
+                    params.storeChats,
+                    params.contextSize ?: modelContextSize,
+                    params.chatTemplate ?: modelChatTemplate,
+                    params.numThreads,
+                    params.useMmap,
+                    params.useMlock,
+                )
+        }
 
     /**
-     * Adds a user message to the chat history.
-     * This message will be considered as part of the conversation
-     * when generating the next response.
+     * Adds a user message to the chat history. This message will be considered as part of the
+     * conversation when generating the next response.
      *
      * @param message The user's message.
      * @throws IllegalStateException if the model is not loaded.
@@ -226,18 +209,15 @@ class SmolLM {
         addChatMessage(nativePtr, message, "user")
     }
 
-    /**
-     * Adds the system prompt for the LLM
-     */
+    /** Adds the system prompt for the LLM */
     fun addSystemPrompt(prompt: String) {
         verifyHandle()
         addChatMessage(nativePtr, prompt, "system")
     }
 
     /**
-     * Adds the assistant message for LLM inference
-     * An assistant message is the response given by the LLM
-     * for a previous query in the conversation
+     * Adds the assistant message for LLM inference An assistant message is the response given by
+     * the LLM for a previous query in the conversation
      */
     fun addAssistantMessage(message: String) {
         verifyHandle()
@@ -245,8 +225,8 @@ class SmolLM {
     }
 
     /**
-     * Returns the rate (in tokens per second) at which the
-     * LLM generated its last response via `getResponse()`
+     * Returns the rate (in tokens per second) at which the LLM generated its last response via
+     * `getResponse()`
      */
     fun getResponseGenerationSpeed(): Float {
         verifyHandle()
@@ -254,10 +234,8 @@ class SmolLM {
     }
 
     /**
-     * Returns the number of tokens consumed by the LLM's context
-     * window
-     * The context of the LLM is roughly the output of,
-     * tokenize(apply_chat_template(messages_in_conversation))
+     * Returns the number of tokens consumed by the LLM's context window The context of the LLM is
+     * roughly the output of, tokenize(apply_chat_template(messages_in_conversation))
      */
     fun getContextLengthUsed(): Int {
         verifyHandle()
@@ -265,31 +243,29 @@ class SmolLM {
     }
 
     /**
-     * Return the LLM response to the given query as an
-     * async Flow. This is useful for streaming the response
-     * as it is generated by the LLM.
+     * Return the LLM response to the given query as an async Flow. This is useful for streaming the
+     * response as it is generated by the LLM.
      *
      * @param query The query to ask the LLM.
-     * @return A Flow of Strings, where each String is a piece of the response.
-     *         The flow completes when the LLM has finished generating the response.
-     *         The special token "[EOG]" (End Of Generation) indicates the end of the response.
+     * @return A Flow of Strings, where each String is a piece of the response. The flow completes
+     *   when the LLM has finished generating the response. The special token "[EOG]" (End Of
+     *   Generation) indicates the end of the response.
      * @throws IllegalStateException if the model is not loaded.
      */
-    fun getResponseAsFlow(query: String): Flow<String> =
-        flow {
-            verifyHandle()
-            startCompletion(nativePtr, query)
-            var piece = completionLoop(nativePtr)
-            while (piece != "[EOG]") {
-                emit(piece)
-                piece = completionLoop(nativePtr)
-            }
-            stopCompletion(nativePtr)
+    fun getResponseAsFlow(query: String): Flow<String> = flow {
+        verifyHandle()
+        startCompletion(nativePtr, query)
+        var piece = completionLoop(nativePtr)
+        while (piece != "[EOG]") {
+            emit(piece)
+            piece = completionLoop(nativePtr)
         }
+        stopCompletion(nativePtr)
+    }
 
     /**
-     * Returns the LLM response to the given query as a String.
-     * This function is blocking and will return the complete response.
+     * Returns the LLM response to the given query as a String. This function is blocking and will
+     * return the complete response.
      *
      * @param query The user's query/prompt for the LLM.
      * @return The complete response from the LLM.
@@ -309,9 +285,8 @@ class SmolLM {
     }
 
     /**
-     * Unloads the LLM model and releases resources.
-     * This method should be called when the SmolLM instance is no longer needed
-     * to prevent memory leaks.
+     * Unloads the LLM model and releases resources. This method should be called when the SmolLM
+     * instance is no longer needed to prevent memory leaks.
      */
     fun close() {
         if (nativePtr != 0L) {
@@ -336,11 +311,7 @@ class SmolLM {
         useMlock: Boolean,
     ): Long
 
-    private external fun addChatMessage(
-        modelPtr: Long,
-        message: String,
-        role: String,
-    )
+    private external fun addChatMessage(modelPtr: Long, message: String, role: String)
 
     private external fun getResponseGenerationSpeed(modelPtr: Long): Float
 
@@ -348,10 +319,7 @@ class SmolLM {
 
     private external fun close(modelPtr: Long)
 
-    private external fun startCompletion(
-        modelPtr: Long,
-        prompt: String,
-    )
+    private external fun startCompletion(modelPtr: Long, prompt: String)
 
     private external fun completionLoop(modelPtr: Long): String
 

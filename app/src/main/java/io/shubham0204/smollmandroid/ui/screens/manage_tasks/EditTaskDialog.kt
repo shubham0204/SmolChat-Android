@@ -97,7 +97,8 @@ fun EditTaskDialog(
                         .background(
                             MaterialTheme.colorScheme.surfaceContainer,
                             RoundedCornerShape(8.dp),
-                        ).padding(16.dp),
+                        )
+                        .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
@@ -108,10 +109,9 @@ fun EditTaskDialog(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 TextField(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
                     value = taskName,
                     onValueChange = { taskName = it },
                     label = { Text(stringResource(R.string.task_create_task_name)) },
@@ -120,12 +120,7 @@ fun EditTaskDialog(
                             capitalization = KeyboardCapitalization.Words,
                             imeAction = ImeAction.Next,
                         ),
-                    keyboardActions =
-                        KeyboardActions(
-                            onNext = {
-                                focusRequestor.requestFocus()
-                            },
-                        ),
+                    keyboardActions = KeyboardActions(onNext = { focusRequestor.requestFocus() }),
                 )
 
                 TextField(
@@ -142,12 +137,7 @@ fun EditTaskDialog(
                             capitalization = KeyboardCapitalization.Sentences,
                             imeAction = ImeAction.Done,
                         ),
-                    keyboardActions =
-                        KeyboardActions(
-                            onDone = {
-                                keyboardController?.hide()
-                            },
-                        ),
+                    keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -170,7 +160,8 @@ fun EditTaskDialog(
                             isModelListDialogVisible = false
                             selectedModel = model
                         },
-                        onModelDeleteClick = { // Not applicable, as showModelDeleteIcon is set to false
+                        onModelDeleteClick = { // Not applicable, as showModelDeleteIcon is set to
+                            // false
                         },
                         showModelDeleteIcon = false,
                     )
@@ -187,7 +178,7 @@ fun EditTaskDialog(
                                 systemPrompt = systemPrompt,
                                 modelId = selectedModel.id,
                                 modelName = selectedModel.name,
-                            ),
+                            )
                         )
                         onDismiss()
                     },

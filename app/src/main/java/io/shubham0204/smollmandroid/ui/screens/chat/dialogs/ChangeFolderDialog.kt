@@ -67,7 +67,8 @@ fun ChangeFolderDialogUI(
                         .background(
                             MaterialTheme.colorScheme.surfaceContainer,
                             RoundedCornerShape(8.dp),
-                        ).padding(16.dp),
+                        )
+                        .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
@@ -94,7 +95,9 @@ fun ChangeFolderDialogUI(
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                OutlinedButton(onClick = onDismissRequest) { Text(stringResource(R.string.dialog_err_close)) }
+                OutlinedButton(onClick = onDismissRequest) {
+                    Text(stringResource(R.string.dialog_err_close))
+                }
             }
         }
     }

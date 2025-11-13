@@ -47,16 +47,17 @@ import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenUIEvent
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel
 
 @Composable
-fun ChatMoreOptionsPopup(
-    viewModel: ChatScreenViewModel,
-    onEditChatSettingsClick: () -> Unit,
-) {
+fun ChatMoreOptionsPopup(viewModel: ChatScreenViewModel, onEditChatSettingsClick: () -> Unit) {
     val expanded by viewModel.showMoreOptionsPopupState.collectAsStateWithLifecycle()
     val showRAMUsageLabel by viewModel.showRAMUsageLabel.collectAsStateWithLifecycle()
     val context = LocalContext.current
     DropdownMenu(
         expanded = expanded,
-        onDismissRequest = { viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)) },
+        onDismissRequest = {
+            viewModel.onEvent(
+                ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
+            )
+        },
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         DropdownMenuItem(
@@ -75,7 +76,9 @@ fun ChatMoreOptionsPopup(
             },
             onClick = {
                 onEditChatSettingsClick()
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
+                )
             },
         )
         DropdownMenuItem(
@@ -93,8 +96,12 @@ fun ChatMoreOptionsPopup(
                 )
             },
             onClick = {
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(visible = true))
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(visible = true)
+                )
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
+                )
             },
         )
         DropdownMenuItem(
@@ -112,8 +119,12 @@ fun ChatMoreOptionsPopup(
                 )
             },
             onClick = {
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = true))
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = true)
+                )
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
+                )
             },
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -142,17 +153,19 @@ fun ChatMoreOptionsPopup(
                         dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
                         onPositiveButtonClick = {
                             viewModel.deleteChat(chat)
-                            Toast
-                                .makeText(
+                            Toast.makeText(
                                     viewModel.context,
                                     "Chat '${chat.name}' deleted",
                                     Toast.LENGTH_LONG,
-                                ).show()
+                            )
+                                .show()
                         },
                         onNegativeButtonClick = {},
                     )
                 }
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
+                )
             },
         )
         DropdownMenuItem(
@@ -178,17 +191,19 @@ fun ChatMoreOptionsPopup(
                         dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
                         onPositiveButtonClick = {
                             viewModel.deleteChatMessages(chat)
-                            Toast
-                                .makeText(
+                            Toast.makeText(
                                     viewModel.context,
                                     "Chat '${chat.name}' cleared",
                                     Toast.LENGTH_LONG,
-                                ).show()
+                            )
+                                .show()
                         },
                         onNegativeButtonClick = {},
                     )
                 }
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
+                )
             },
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -210,7 +225,9 @@ fun ChatMoreOptionsPopup(
             },
             onClick = {
                 viewModel.showContextLengthUsageDialog()
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
+                )
             },
         )
         DropdownMenuItem(
@@ -229,7 +246,9 @@ fun ChatMoreOptionsPopup(
             },
             onClick = {
                 viewModel.toggleRAMUsageLabelVisibility()
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
+                )
             },
         )
     }

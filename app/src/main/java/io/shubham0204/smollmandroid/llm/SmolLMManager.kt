@@ -33,9 +33,7 @@ private const val LOGTAG = "[SmolLMManager-Kt]"
 private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 
 @Single
-class SmolLMManager(
-    private val appDB: AppDB,
-) {
+class SmolLMManager(private val appDB: AppDB) {
     private val instance = SmolLM()
     private var responseGenerationJob: Job? = null
     private var modelInitJob: Job? = null
@@ -105,15 +103,12 @@ class SmolLMManager(
                 CoroutineScope(Dispatchers.Default).launch {
                     isInferenceOn = true
                     var response = ""
-                    val duration =
-                        measureTime {
-                            instance.getResponseAsFlow(query).collect { piece ->
-                                response += piece
-                                withContext(Dispatchers.Main) {
-                                    onPartialResponseGenerated(response)
-                                }
-                            }
+                    val duration = measureTime {
+                        instance.getResponseAsFlow(query).collect { piece ->
+                            response += piece
+                            withContext(Dispatchers.Main) { onPartialResponseGenerated(response) }
                         }
+                    }
                     response = responseTransform(response)
                     // once the response is generated
                     // add it to the messages database
@@ -126,7 +121,7 @@ class SmolLMManager(
                                 generationSpeed = instance.getResponseGenerationSpeed(),
                                 generationTimeSecs = duration.inWholeSeconds.toInt(),
                                 contextLengthUsed = instance.getContextLengthUsed(),
-                            ),
+                            )
                         )
                     }
                 }

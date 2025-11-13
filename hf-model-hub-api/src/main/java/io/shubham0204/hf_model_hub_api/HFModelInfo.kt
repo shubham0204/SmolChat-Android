@@ -23,9 +23,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
-class HFModelInfo(
-    private val client: HttpClient,
-) {
+class HFModelInfo(private val client: HttpClient) {
     @Serializable
     data class ModelInfo(
         val _id: String,

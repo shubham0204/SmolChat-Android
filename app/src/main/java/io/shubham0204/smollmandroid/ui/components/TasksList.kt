@@ -78,39 +78,26 @@ private fun TaskItem(
                     .clickable { onTaskSelected() }
             } else {
                 Modifier.fillMaxWidth()
-            }.background(MaterialTheme.colorScheme.surfaceContainerHighest),
+            }
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
     ) {
         val context = LocalContext.current
-        Column(
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .padding(4.dp)
-                    .padding(8.dp),
-        ) {
+        Column(modifier = Modifier
+            .weight(1f)
+            .padding(4.dp)
+            .padding(8.dp)) {
             LargeLabelText(text = task.name)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = task.systemPrompt,
-                style = MaterialTheme.typography.labelSmall,
-            )
+            Text(text = task.systemPrompt, style = MaterialTheme.typography.labelSmall)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = task.modelName,
-                style = MaterialTheme.typography.labelSmall,
-            )
+            Text(text = task.modelName, style = MaterialTheme.typography.labelSmall)
         }
         if (showTaskOptions) {
             Box {
                 var showTaskOptionsPopup by remember { mutableStateOf(false) }
-                IconButton(
-                    onClick = { showTaskOptionsPopup = true },
-                ) {
-                    Icon(
-                        FeatherIcons.MoreVertical,
-                        contentDescription = "More Options",
-                    )
+                IconButton(onClick = { showTaskOptionsPopup = true }) {
+                    Icon(FeatherIcons.MoreVertical, contentDescription = "More Options")
                 }
                 if (showTaskOptionsPopup) {
                     TaskOptionsPopup(
@@ -120,12 +107,12 @@ private fun TaskItem(
                             task.shortcutId?.let {
                                 ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(it))
                                 onUpdateTask(task.copy(shortcutId = null))
-                                Toast
-                                    .makeText(
+                                Toast.makeText(
                                         context,
                                         "Shortcut for task '${task.name}' removed",
                                         Toast.LENGTH_LONG,
-                                    ).show()
+                                )
+                                    .show()
                             }
                             onDeleteTaskClick()
                             showTaskOptionsPopup = false
@@ -136,27 +123,28 @@ private fun TaskItem(
                         },
                         onAddTaskShortcut = {
                             val shortcut =
-                                ShortcutInfoCompat
-                                    .Builder(context, "${task.id}")
+                                ShortcutInfoCompat.Builder(context, "${task.id}")
                                     .setShortLabel(task.name)
                                     .setIcon(
                                         IconCompat.createWithResource(
                                             context,
                                             R.drawable.task_shortcut_icon,
-                                        ),
-                                    ).setIntent(
+                                        )
+                                    )
+                                    .setIntent(
                                         Intent(context, ChatActivity::class.java).apply {
                                             action = Intent.ACTION_VIEW
                                             putExtra("task_id", task.id)
-                                        },
-                                    ).build()
+                                        }
+                                    )
+                                    .build()
                             ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
-                            Toast
-                                .makeText(
+                            Toast.makeText(
                                     context,
                                     "Shortcut for task '${task.name}' added",
                                     Toast.LENGTH_LONG,
-                                ).show()
+                            )
+                                .show()
                             onUpdateTask(task.copy(shortcutId = shortcut.id))
                             showTaskOptionsPopup = false
                         },
@@ -164,12 +152,12 @@ private fun TaskItem(
                             task.shortcutId?.let {
                                 ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(it))
                                 onUpdateTask(task.copy(shortcutId = null))
-                                Toast
-                                    .makeText(
+                                Toast.makeText(
                                         context,
                                         "Shortcut for task '${task.name}' removed",
                                         Toast.LENGTH_LONG,
-                                    ).show()
+                                )
+                                    .show()
                             }
                             showTaskOptionsPopup = false
                         },

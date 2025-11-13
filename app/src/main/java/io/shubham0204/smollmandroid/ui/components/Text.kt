@@ -24,34 +24,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
-fun MediumLabelText(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        modifier = modifier,
-    )
+fun MediumLabelText(text: String, modifier: Modifier = Modifier) {
+    Text(text = text, style = MaterialTheme.typography.labelMedium, modifier = modifier)
 }
 
 @Composable
-fun LargeLabelText(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        modifier = modifier,
-    )
+fun LargeLabelText(text: String, modifier: Modifier = Modifier) {
+    Text(text = text, style = MaterialTheme.typography.labelLarge, modifier = modifier)
 }
 
 @Composable
-fun AppBarTitleText(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
+fun AppBarTitleText(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleMedium,

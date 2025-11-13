@@ -61,21 +61,13 @@ sealed class ChatScreenUIEvent {
     data object Idle : ChatScreenUIEvent()
 
     sealed class DialogEvents {
-        data class ToggleChangeFolderDialog(
-            val visible: Boolean,
-        ) : ChatScreenUIEvent()
+        data class ToggleChangeFolderDialog(val visible: Boolean) : ChatScreenUIEvent()
 
-        data class ToggleSelectModelListDialog(
-            val visible: Boolean,
-        ) : ChatScreenUIEvent()
+        data class ToggleSelectModelListDialog(val visible: Boolean) : ChatScreenUIEvent()
 
-        data class ToggleMoreOptionsPopup(
-            val visible: Boolean,
-        ) : ChatScreenUIEvent()
+        data class ToggleMoreOptionsPopup(val visible: Boolean) : ChatScreenUIEvent()
 
-        data class ToggleTaskListBottomList(
-            val visible: Boolean,
-        ) : ChatScreenUIEvent()
+        data class ToggleTaskListBottomList(val visible: Boolean) : ChatScreenUIEvent()
     }
 }
 
@@ -142,8 +134,7 @@ class ChatScreenViewModel(
         activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val prism4j = Prism4j(PrismGrammarLocator())
         markwon =
-            Markwon
-                .builder(context)
+            Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, Prism4jThemeDarkula.create()))
                 .usePlugin(MarkwonInlineParserPlugin.create())
@@ -154,8 +145,9 @@ class ChatScreenViewModel(
                             it.inlinesEnabled(true)
                             it.blocksEnabled(true)
                         },
-                    ),
-                ).usePlugin(LinkifyPlugin.create(Linkify.WEB_URLS))
+                    )
+                )
+                .usePlugin(LinkifyPlugin.create(Linkify.WEB_URLS))
                 .usePlugin(HtmlPlugin.create())
                 .usePlugin(
                     object : AbstractMarkwonPlugin() {
@@ -164,8 +156,9 @@ class ChatScreenViewModel(
                                 ResourcesCompat.getFont(context, R.font.jetbrains_mono)!!
                             builder
                                 .codeBlockTypeface(
-                                    ResourcesCompat.getFont(context, R.font.jetbrains_mono)!!,
-                                ).codeBlockTextColor(Color.WHITE)
+                                    ResourcesCompat.getFont(context, R.font.jetbrains_mono)!!
+                                )
+                                .codeBlockTextColor(Color.WHITE)
                                 .codeBlockTextSize(spToPx(10f))
                                 .codeBlockBackgroundColor(Color.BLACK)
                                 .codeTypeface(jetbrainsMonoFont)
@@ -174,13 +167,13 @@ class ChatScreenViewModel(
                                 .codeBackgroundColor(Color.BLACK)
                                 .isLinkUnderlined(true)
                         }
-                    },
-                ).build()
+                    }
+                )
+                .build()
     }
 
     private fun spToPx(sp: Float): Int =
-        TypedValue
-            .applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.resources.displayMetrics)
+        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.resources.displayMetrics)
             .toInt()
 
     fun getChats(): Flow<List<Chat>> = appDB.getChats()
@@ -191,10 +184,7 @@ class ChatScreenViewModel(
 
     fun getChatsForFolder(folderId: Long): Flow<List<Chat>> = appDB.getChatsForFolder(folderId)
 
-    fun updateChatLLMParams(
-        modelId: Long,
-        chatTemplate: String,
-    ) {
+    fun updateChatLLMParams(modelId: Long, chatTemplate: String) {
         _currChatState.value =
             _currChatState.value?.copy(llmModelId = modelId, chatTemplate = chatTemplate)
         appDB.updateChat(_currChatState.value!!)
@@ -217,10 +207,7 @@ class ChatScreenViewModel(
         appDB.deleteMessage(messageId)
     }
 
-    fun sendUserQuery(
-        query: String,
-        addMessageToDB: Boolean = true,
-    ) {
+    fun sendUserQuery(query: String, addMessageToDB: Boolean = true) {
         _currChatState.value?.let { chat ->
             // Update the 'dateUsed' attribute of the current Chat instance
             // when a query is sent by the user
@@ -247,9 +234,7 @@ class ChatScreenViewModel(
                         "<blockquote><i><h6>${matchResult.groupValues[1].trim()}</i></h6></blockquote>"
                     }
                 },
-                onPartialResponseGenerated = {
-                    _partialResponse.value = it
-                },
+                onPartialResponseGenerated = { _partialResponse.value = it },
                 onSuccess = { response ->
                     _isGeneratingResponse.value = false
                     responseGenerationsSpeed = response.generationSpeed
@@ -264,7 +249,8 @@ class ChatScreenViewModel(
                     _isGeneratingResponse.value = false
                     createAlertDialog(
                         dialogTitle = "An error occurred",
-                        dialogText = "The app is unable to process the query. The error message is: ${exception.message}",
+                        dialogText =
+                            "The app is unable to process the query. The error message is: ${exception.message}",
                         dialogPositiveButtonText = "Change model",
                         onPositiveButtonClick = {},
                         dialogNegativeButtonText = "",
@@ -336,12 +322,13 @@ class ChatScreenViewModel(
                         createAlertDialog(
                             dialogTitle = context.getString(R.string.dialog_err_title),
                             dialogText = context.getString(R.string.dialog_err_text, e.message),
-                            dialogPositiveButtonText = context.getString(R.string.dialog_err_change_model),
+                            dialogPositiveButtonText =
+                                context.getString(R.string.dialog_err_change_model),
                             onPositiveButtonClick = {
                                 onEvent(
                                     ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(
-                                        visible = true,
-                                    ),
+                                        visible = true
+                                    )
                                 )
                             },
                             dialogNegativeButtonText = context.getString(R.string.dialog_err_close),
@@ -357,10 +344,7 @@ class ChatScreenViewModel(
         }
     }
 
-    /**
-     * Clears the resources occupied by the model only
-     * if the inference is not in progress.
-     */
+    /** Clears the resources occupied by the model only if the inference is not in progress. */
     fun unloadModel(): Boolean =
         if (!smolLMManager.isInferenceOn) {
             smolLMManager.close()
@@ -371,9 +355,8 @@ class ChatScreenViewModel(
         }
 
     /**
-     * Get the current memory usage of the device.
-     * This method returns the memory consumed (in GBs) and the total
-     * memory available on the device (in GBs)
+     * Get the current memory usage of the device. This method returns the memory consumed (in GBs)
+     * and the total memory available on the device (in GBs)
      */
     fun getCurrentMemoryUsage(): Pair<Float, Float> {
         val memoryInfo = MemoryInfo()

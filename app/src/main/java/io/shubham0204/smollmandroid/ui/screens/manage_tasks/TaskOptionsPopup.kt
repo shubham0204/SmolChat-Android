@@ -51,10 +51,7 @@ fun TaskOptionsPopup(
     onAddTaskShortcut: () -> Unit,
     onRemoveTaskShortcut: () -> Unit,
 ) {
-    DropdownMenu(
-        expanded = true,
-        onDismissRequest = { onDismiss() },
-    ) {
+    DropdownMenu(expanded = true, onDismissRequest = { onDismiss() }) {
         DropdownMenuItem(
             leadingIcon = { Icon(FeatherIcons.Edit, contentDescription = "Edit Task") },
             text = { Text(stringResource(R.string.task_popup_edit_task)) },
@@ -67,7 +64,9 @@ fun TaskOptionsPopup(
         )
         if (isTaskShortcut) {
             DropdownMenuItem(
-                leadingIcon = { Icon(FeatherIcons.Delete, contentDescription = "Remove Task Shortcut") },
+                leadingIcon = {
+                    Icon(FeatherIcons.Delete, contentDescription = "Remove Task Shortcut")
+                },
                 text = { Text(stringResource(R.string.task_popup_remove_shortcut)) },
                 onClick = { onRemoveTaskShortcut() },
             )

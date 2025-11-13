@@ -50,7 +50,8 @@ fun ChatMessageOptionsDialog() {
                             .background(
                                 MaterialTheme.colorScheme.surfaceContainer,
                                 RoundedCornerShape(8.dp),
-                            ).padding(16.dp),
+                            )
+                            .padding(16.dp)
                 ) {
                     ChatMessageOption(
                         titleStringResId = R.string.chat_message_copy,
@@ -87,25 +88,14 @@ fun ChatMessageOptionsDialog() {
 }
 
 @Composable
-private fun ChatMessageOption(
-    titleStringResId: Int,
-    icon: ImageVector,
-    onClick: () -> Unit,
-) {
+private fun ChatMessageOption(titleStringResId: Int, icon: ImageVector, onClick: () -> Unit) {
     Row(
-        modifier =
-            Modifier
-                .padding(8.dp)
-                .clickable {
-                    onClick()
-                },
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.surfaceTint,
-        )
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceTint)
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             stringResource(titleStringResId),

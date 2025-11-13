@@ -19,10 +19,9 @@ package io.shubham0204.smollmandroid.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * Material 3 Color Scheme
- * check the role of each color here: https://m3.material.io/styles/color/roles
+ * Material 3 Color Scheme check the role of each color here:
+ * https://m3.material.io/styles/color/roles
  */
-
 val primaryLight = Color(0xFF0254CC)
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFF346EE6)

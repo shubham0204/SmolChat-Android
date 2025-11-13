@@ -20,10 +20,7 @@ import io.noties.prism4j.GrammarLocator
 import io.noties.prism4j.Prism4j
 
 class PrismGrammarLocator : GrammarLocator {
-    override fun grammar(
-        prism4j: Prism4j,
-        language: String,
-    ): Prism4j.Grammar? {
+    override fun grammar(prism4j: Prism4j, language: String): Prism4j.Grammar? {
         return when (language) {
             "brainfuck" -> Prism_brainfuck.create(prism4j)
             "c" -> Prism_c.create(prism4j)

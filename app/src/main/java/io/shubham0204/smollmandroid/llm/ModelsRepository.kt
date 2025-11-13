@@ -24,10 +24,7 @@ import org.koin.core.annotation.Single
 import java.io.File
 
 @Single
-class ModelsRepository(
-    private val context: Context,
-    private val appDB: AppDB,
-) {
+class ModelsRepository(private val context: Context, private val appDB: AppDB) {
     init {
         for (model in appDB.getModelsList()) {
             if (!File(model.path).exists()) {

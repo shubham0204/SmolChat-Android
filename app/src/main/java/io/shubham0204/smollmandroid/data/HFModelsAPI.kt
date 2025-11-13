@@ -28,27 +28,31 @@ import org.koin.core.annotation.Single
 
 @Single
 class HFModelsAPI {
-    suspend fun getModelInfo(modelId: String): HFModelInfo.ModelInfo = HFModels.getInfo().getModelInfo(modelId)
+    suspend fun getModelInfo(modelId: String): HFModelInfo.ModelInfo =
+        HFModels.getInfo().getModelInfo(modelId)
 
-    suspend fun getModelTree(modelId: String): List<HFModelTree.HFModelFile> = HFModels.getTree().getModelFileTree(modelId)
+    suspend fun getModelTree(modelId: String): List<HFModelTree.HFModelFile> =
+        HFModels.getTree().getModelFileTree(modelId)
 
     fun getModelsList(query: String) =
         Pager(
             config = PagingConfig(pageSize = 10),
-            pagingSourceFactory = {
-                HFModelSearchPagedDataSource(query)
-            },
-        ).flow
+            pagingSourceFactory = { HFModelSearchPagedDataSource(query) },
+        )
+            .flow
 
-    class HFModelSearchPagedDataSource(
-        private val query: String,
-    ) : PagingSource<Int, HFModelSearch.ModelSearchResult>() {
+    class HFModelSearchPagedDataSource(private val query: String) :
+        PagingSource<Int, HFModelSearch.ModelSearchResult>() {
         private val ggufModelFilter = "gguf,conversational"
         private val pageSize = 10
 
-        override suspend fun load(params: LoadParams<Int>): LoadResult<Int, HFModelSearch.ModelSearchResult> {
+        override suspend fun load(
+            params: LoadParams<Int>
+        ): LoadResult<Int, HFModelSearch.ModelSearchResult> {
             val pageNumber = params.key ?: 1
-            val result = HFModels.getSearch().searchModels(query, "", limit = pageSize, filter = ggufModelFilter)
+            val result =
+                HFModels.getSearch()
+                    .searchModels(query, "", limit = pageSize, filter = ggufModelFilter)
             return LoadResult.Page(
                 data = result,
                 prevKey = null,

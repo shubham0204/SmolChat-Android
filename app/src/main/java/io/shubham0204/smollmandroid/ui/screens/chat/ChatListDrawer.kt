@@ -93,7 +93,7 @@ fun DrawerUI(
                     .windowInsetsPadding(WindowInsets.safeDrawing)
                     .padding(8.dp)
                     .requiredWidth(300.dp)
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -105,7 +105,7 @@ fun DrawerUI(
                         val newChat =
                             viewModel.appDB.addChat(chatName = "Untitled ${chatCount + 1}")
                         onItemClick(newChat)
-                    },
+                    }
                 ) {
                     Icon(FeatherIcons.Plus, contentDescription = "New Chat")
                     Text(
@@ -113,9 +113,7 @@ fun DrawerUI(
                         style = MaterialTheme.typography.labelMedium,
                     )
                 }
-                Button(
-                    onClick = onCreateTaskClick,
-                ) {
+                Button(onClick = onCreateTaskClick) {
                     Icon(FeatherIcons.PlusSquare, contentDescription = "New Task")
                     Text(
                         stringResource(R.string.chat_drawer_new_task),
@@ -124,11 +122,7 @@ fun DrawerUI(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            ChatsList(
-                viewModel,
-                onManageTasksClick,
-                onItemClick,
-            )
+            ChatsList(viewModel, onManageTasksClick, onItemClick)
         }
         AppAlertDialog()
     }
@@ -146,10 +140,9 @@ private fun ColumnScope.ChatsList(
     val context = LocalContext.current
     Column {
         Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clickable { onManageTasksClick() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onManageTasksClick() },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -160,10 +153,9 @@ private fun ColumnScope.ChatsList(
             Text(
                 stringResource(R.string.chat_drawer_manage_tasks),
                 style = MaterialTheme.typography.labelLarge,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -178,13 +170,13 @@ private fun ColumnScope.ChatsList(
                     createTextFieldDialog(
                         dialogTitle = context.getString(R.string.dialog_create_folder_title),
                         dialogDefaultText = "",
-                        dialogPlaceholder = context.getString(R.string.dialog_create_folder_placeholder),
-                        dialogButtonText = context.getString(R.string.dialog_create_folder_button_text),
-                        onButtonClick = { text ->
-                            viewModel.appDB.addFolder(text)
-                        },
+                        dialogPlaceholder =
+                            context.getString(R.string.dialog_create_folder_placeholder),
+                        dialogButtonText =
+                            context.getString(R.string.dialog_create_folder_button_text),
+                        onButtonClick = { text -> viewModel.appDB.addFolder(text) },
                     )
-                },
+                }
             ) {
                 Icon(
                     FeatherIcons.FolderPlus,
@@ -202,12 +194,8 @@ private fun ColumnScope.ChatsList(
                 onEditFolderNameClick = { newName ->
                     viewModel.appDB.updateFolder(folder.copy(name = newName))
                 },
-                onDeleteFolderClick = {
-                    viewModel.appDB.deleteFolder(folder.id)
-                },
-                onDeleteFolderWithChatsClick = {
-                    viewModel.appDB.deleteFolderWithChats(folder.id)
-                },
+                onDeleteFolderClick = { viewModel.appDB.deleteFolder(folder.id) },
+                onDeleteFolderWithChatsClick = { viewModel.appDB.deleteFolderWithChats(folder.id) },
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -219,13 +207,7 @@ private fun ColumnScope.ChatsList(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            items(chats) { chat ->
-                ChatListItem(
-                    chat,
-                    onItemClick,
-                    currentChat?.id == chat.id,
-                )
-            }
+            items(chats) { chat -> ChatListItem(chat, onItemClick, currentChat?.id == chat.id) }
         }
     }
 }
@@ -265,8 +247,8 @@ private fun LazyItemScope.ChatListItem(
                         Modifier
                             .padding(start = 4.dp)
                             .background(MaterialTheme.colorScheme.tertiary, CircleShape)
-                            .size(10.dp),
-                ) { }
+                            .size(10.dp)
+                ) {}
             }
         }
     }
@@ -294,56 +276,56 @@ private fun FolderListItem(
             tint = MaterialTheme.colorScheme.secondary,
         )
         Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            folder.name,
-            modifier =
-                Modifier
-                    .noRippleClickable { expanded = !expanded }
-                    .weight(1f),
-        )
-        IconButton(onClick = {
-            createFolderOptionsDialog(
-                editFolderNameClick = {
-                    createTextFieldDialog(
-                        dialogTitle = context.getString(R.string.dialog_edit_folder_name_title),
-                        dialogPlaceholder = context.getString(R.string.dialog_create_folder_placeholder),
-                        dialogDefaultText = folder.name,
-                        dialogButtonText = context.getString(R.string.dialog_edit_folder_button_text),
-                        onButtonClick = { text ->
-                            onEditFolderNameClick(text)
-                        },
-                    )
-                },
-                deleteFolderClick = {
-                    createAlertDialog(
-                        dialogTitle = context.getString(R.string.dialog_delete_folder_title),
-                        dialogText =
-                            context.getString(
-                                R.string.dialog_delete_folder_text,
-                                folder.name,
-                            ),
-                        dialogPositiveButtonText = context.getString(R.string.dialog_pos_delete),
-                        onPositiveButtonClick = { onDeleteFolderClick() },
-                        dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
-                        onNegativeButtonClick = {},
-                    )
-                },
-                deleteFolderWithChatsClick = {
-                    createAlertDialog(
-                        dialogTitle = context.getString(R.string.dialog_delete_folder_with_chats_title),
-                        dialogText =
-                            context.getString(
-                                R.string.dialog_delete_folder_with_chats_text,
-                                folder.name,
-                            ),
-                        dialogPositiveButtonText = context.getString(R.string.dialog_pos_delete),
-                        onPositiveButtonClick = { onDeleteFolderWithChatsClick() },
-                        dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
-                        onNegativeButtonClick = {},
-                    )
-                },
-            )
-        }) {
+        Text(folder.name, modifier = Modifier
+            .noRippleClickable { expanded = !expanded }
+            .weight(1f))
+        IconButton(
+            onClick = {
+                createFolderOptionsDialog(
+                    editFolderNameClick = {
+                        createTextFieldDialog(
+                            dialogTitle = context.getString(R.string.dialog_edit_folder_name_title),
+                            dialogPlaceholder =
+                                context.getString(R.string.dialog_create_folder_placeholder),
+                            dialogDefaultText = folder.name,
+                            dialogButtonText =
+                                context.getString(R.string.dialog_edit_folder_button_text),
+                            onButtonClick = { text -> onEditFolderNameClick(text) },
+                        )
+                    },
+                    deleteFolderClick = {
+                        createAlertDialog(
+                            dialogTitle = context.getString(R.string.dialog_delete_folder_title),
+                            dialogText =
+                                context.getString(R.string.dialog_delete_folder_text, folder.name),
+                            dialogPositiveButtonText =
+                                context.getString(R.string.dialog_pos_delete),
+                            onPositiveButtonClick = { onDeleteFolderClick() },
+                            dialogNegativeButtonText =
+                                context.getString(R.string.dialog_neg_cancel),
+                            onNegativeButtonClick = {},
+                        )
+                    },
+                    deleteFolderWithChatsClick = {
+                        createAlertDialog(
+                            dialogTitle =
+                                context.getString(R.string.dialog_delete_folder_with_chats_title),
+                            dialogText =
+                                context.getString(
+                                    R.string.dialog_delete_folder_with_chats_text,
+                                    folder.name,
+                                ),
+                            dialogPositiveButtonText =
+                                context.getString(R.string.dialog_pos_delete),
+                            onPositiveButtonClick = { onDeleteFolderWithChatsClick() },
+                            dialogNegativeButtonText =
+                                context.getString(R.string.dialog_neg_cancel),
+                            onNegativeButtonClick = {},
+                        )
+                    },
+                )
+            }
+        ) {
             Icon(
                 FeatherIcons.MoreVertical,
                 contentDescription = "Folder Options",
@@ -351,10 +333,7 @@ private fun FolderListItem(
             )
         }
     }
-    AnimatedVisibility(
-        expanded,
-        enter = slideInVertically(),
-    ) {
+    AnimatedVisibility(expanded, enter = slideInVertically()) {
         LazyColumn {
             items(chatsInFolder) {
                 Row {

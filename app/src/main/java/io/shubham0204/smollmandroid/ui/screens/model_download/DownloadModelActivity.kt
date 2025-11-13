@@ -93,9 +93,11 @@ class DownloadModelActivity : ComponentActivity() {
                     composable<ViewModelRoute>(
                         typeMap =
                             mapOf(
-                                typeOf<HFModelInfo.ModelInfo>() to CustomNavTypes.HFModelInfoNavType,
-                                typeOf<List<HFModelTree.HFModelFile>>() to CustomNavTypes.HFModelFileNavType,
-                            ),
+                                typeOf<HFModelInfo.ModelInfo>() to
+                                        CustomNavTypes.HFModelInfoNavType,
+                                typeOf<List<HFModelTree.HFModelFile>>() to
+                                        CustomNavTypes.HFModelFileNavType,
+                            )
                     ) { backStackEntry ->
                         val route: ViewModelRoute = backStackEntry.toRoute()
                         ViewHFModelScreen(
@@ -105,9 +107,7 @@ class DownloadModelActivity : ComponentActivity() {
                             onDownloadModel = { modelUrl ->
                                 viewModel.downloadModelFromUrl(modelUrl)
                             },
-                            onBackClicked = {
-                                navController.navigateUp()
-                            },
+                            onBackClicked = { navController.navigateUp() },
                         )
                     }
                     composable<HfModelSelectRoute> {
@@ -117,16 +117,21 @@ class DownloadModelActivity : ComponentActivity() {
                             onModelClick = { modelId ->
                                 setProgressDialogTitle("Getting Model Data")
                                 showProgressDialog()
-                                viewModel.fetchModelInfoAndTree(modelId, onResult = { modelInfo, modelFiles ->
-                                    hideProgressDialog()
-                                    navController.navigate(ViewModelRoute(modelId, modelInfo, modelFiles))
-                                })
+                                viewModel.fetchModelInfoAndTree(
+                                    modelId,
+                                    onResult = { modelInfo, modelFiles ->
+                                        hideProgressDialog()
+                                        navController.navigate(
+                                            ViewModelRoute(modelId, modelInfo, modelFiles)
+                                        )
+                                    },
+                                )
                             },
                         )
                     }
                     composable<DownloadModelRoute> {
                         AddNewModelScreen(
-                            onHFModelSelectClick = { navController.navigate(HfModelSelectRoute) },
+                            onHFModelSelectClick = { navController.navigate(HfModelSelectRoute) }
                         )
                     }
                 }
@@ -160,15 +165,14 @@ class DownloadModelActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 topBar = {
                     TopAppBar(
-                        title = { AppBarTitleText(stringResource(R.string.add_new_model_title)) },
+                        title = { AppBarTitleText(stringResource(R.string.add_new_model_title)) }
                     )
                 },
             ) { innerPadding ->
                 Surface(
-                    modifier =
-                        Modifier
-                            .padding(innerPadding)
-                            .verticalScroll(rememberScrollState()),
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .verticalScroll(rememberScrollState())
                 ) {
                     when (addNewModelStep) {
                         AddNewModelStep.ImportModel -> {
@@ -178,12 +182,14 @@ class DownloadModelActivity : ComponentActivity() {
                                 },
                                 checkGGUFFile = ::checkGGUFFile,
                                 copyModelFile = { modelFileUri ->
-                                    viewModel.copyModelFile(modelFileUri, onComplete = { openChatActivity() })
+                                    viewModel.copyModelFile(
+                                        modelFileUri,
+                                        onComplete = { openChatActivity() },
+                                    )
                                 },
-                                modifier =
-                                    Modifier
-                                        .fillMaxSize()
-                                        .padding(8.dp),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(8.dp),
                             )
                         }
 
@@ -196,10 +202,9 @@ class DownloadModelActivity : ComponentActivity() {
                                 onDownloadModelClick = { selectedPopularModelIndex ->
                                     viewModel.downloadModelFromIndex(selectedPopularModelIndex)
                                 },
-                                modifier =
-                                    Modifier
-                                        .fillMaxSize()
-                                        .padding(8.dp),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(8.dp),
                             )
                         }
                     }

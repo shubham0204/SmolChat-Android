@@ -99,6 +99,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Menu
 import compose.icons.feathericons.MoreVertical
@@ -122,10 +123,17 @@ import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.koin.android.ext.android.inject
 
 private const val LOGTAG = "[ChatActivity-Kt]"
 private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
+
+@Serializable
+object ChatRoute
+
+@Serializable
+data class EditChatSettingsRoute(val settings: EditableChatSettings, val modelContextSize: Int)
 
 class ChatActivity : ComponentActivity() {
     private val viewModel: ChatScreenViewModel by inject()
@@ -136,8 +144,8 @@ class ChatActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         /**
-         * Check if the activity was launched by an intent to share text with the app
-         * If yes, then, extract the text and set its value to [viewModel.questionTextDefaultVal]
+         * Check if the activity was launched by an intent to share text with the app If yes, then,
+         * extract the text and set its value to [viewModel.questionTextDefaultVal]
          */
         if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
             intent.getStringExtra(Intent.EXTRA_TEXT)?.let { text ->
@@ -149,15 +157,13 @@ class ChatActivity : ComponentActivity() {
         }
 
         /**
-         * Check if the activity was launched by an intent created by a dynamic shortcut
-         * If yes, get the corresponding task (task ID is stored within the intent)
-         * and create a new chat instance with the task's parameters
+         * Check if the activity was launched by an intent created by a dynamic shortcut If yes, get
+         * the corresponding task (task ID is stored within the intent) and create a new chat
+         * instance with the task's parameters
          */
         if (intent?.action == Intent.ACTION_VIEW && intent.getLongExtra("task_id", 0L) != 0L) {
             val taskId = intent.getLongExtra("task_id", 0L)
-            viewModel.appDB.getTask(taskId)?.let { task ->
-                createChatFromTask(viewModel, task)
-            }
+            viewModel.appDB.getTask(taskId)?.let { task -> createChatFromTask(viewModel, task) }
         }
 
         setContent {
@@ -165,20 +171,30 @@ class ChatActivity : ComponentActivity() {
             Box(modifier = Modifier.safeDrawingPadding()) {
                 NavHost(
                     navController = navController,
-                    startDestination = "chat",
+                    startDestination = ChatRoute,
                     enterTransition = { fadeIn() },
                     exitTransition = { fadeOut() },
                 ) {
-                    composable("edit-chat") {
+                    composable<EditChatSettingsRoute> { backStackEntry ->
+                        val route: EditChatSettingsRoute = backStackEntry.toRoute()
                         EditChatSettingsScreen(
-                            viewModel,
+                            route.settings,
+                            route.modelContextSize,
+                            onUpdateChat = { viewModel.updateChat(it) },
                             onBackClicked = { navController.navigateUp() },
                         )
                     }
-                    composable("chat") {
+                    composable<ChatRoute> {
                         ChatActivityScreenUI(
                             viewModel,
-                            onEditChatParamsClick = { navController.navigate("edit-chat") },
+                            onEditChatParamsClick = { chat, modelContextSize ->
+                                navController.navigate(
+                                    EditChatSettingsRoute(
+                                        EditableChatSettings.fromChat(chat),
+                                        modelContextSize,
+                                    )
+                                )
+                            },
                         )
                     }
                 }
@@ -187,9 +203,9 @@ class ChatActivity : ComponentActivity() {
     }
 
     /**
-     * Load the model when the activity is visible to the user and
-     * unload the model when the activity is not visible to the user.
-     * see https://developer.android.com/guide/components/activities/activity-lifecycle
+     * Load the model when the activity is visible to the user and unload the model when the
+     * activity is not visible to the user. see
+     * https://developer.android.com/guide/components/activities/activity-lifecycle
      */
     override fun onStart() {
         super.onStart()
@@ -210,10 +226,13 @@ class ChatActivity : ComponentActivity() {
 @Composable
 fun ChatActivityScreenUI(
     viewModel: ChatScreenViewModel,
-    onEditChatParamsClick: () -> Unit,
+    onEditChatParamsClick: (Chat, Int) -> Unit,
 ) {
     val context = LocalContext.current
-    val currChat by viewModel.currChatState.collectAsStateWithLifecycle(lifecycleOwner = LocalLifecycleOwner.current)
+    val currChat by
+    viewModel.currChatState.collectAsStateWithLifecycle(
+        lifecycleOwner = LocalLifecycleOwner.current
+    )
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     LaunchedEffect(currChat) { viewModel.loadModel() }
@@ -236,15 +255,11 @@ fun ChatActivityScreenUI(
                     onCreateTaskClick = {
                         scope.launch { drawerState.close() }
                         viewModel.onEvent(
-                            ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(
-                                visible = true,
-                            ),
+                            ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = true)
                         )
                     },
                 )
-                BackHandler(drawerState.isOpen) {
-                    scope.launch { drawerState.close() }
-                }
+                BackHandler(drawerState.isOpen) { scope.launch { drawerState.close() } }
             },
         ) {
             Scaffold(
@@ -258,7 +273,7 @@ fun ChatActivityScreenUI(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 AppBarTitleText(
-                                    currChat?.name ?: stringResource(R.string.chat_select_chat),
+                                    currChat?.name ?: stringResource(R.string.chat_select_chat)
                                 )
                                 Text(
                                     if (currChat != null && currChat?.llmModelId != -1L) {
@@ -287,11 +302,10 @@ fun ChatActivityScreenUI(
                                     IconButton(
                                         onClick = {
                                             viewModel.onEvent(
-                                                ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(
-                                                    visible = true,
-                                                ),
+                                                ChatScreenUIEvent.DialogEvents
+                                                    .ToggleMoreOptionsPopup(visible = true)
                                             )
-                                        },
+                                        }
                                     ) {
                                         Icon(
                                             FeatherIcons.MoreVertical,
@@ -299,7 +313,17 @@ fun ChatActivityScreenUI(
                                             tint = MaterialTheme.colorScheme.secondary,
                                         )
                                     }
-                                    ChatMoreOptionsPopup(viewModel, onEditChatParamsClick)
+                                    ChatMoreOptionsPopup(
+                                        viewModel,
+                                        {
+                                            onEditChatParamsClick(
+                                                currChat!!,
+                                                viewModel.modelsRepository
+                                                    .getModelFromId(currChat!!.llmModelId)
+                                                    .contextSize,
+                                            )
+                                        },
+                                    )
                                 }
                             }
                         },
@@ -310,7 +334,7 @@ fun ChatActivityScreenUI(
                     modifier =
                         Modifier
                             .padding(innerPadding)
-                            .background(MaterialTheme.colorScheme.surface),
+                            .background(MaterialTheme.colorScheme.surface)
                 ) {
                     if (currChat != null) {
                         ScreenUI(viewModel, currChat!!)
@@ -327,22 +351,12 @@ fun ChatActivityScreenUI(
 }
 
 @Composable
-private fun ColumnScope.ScreenUI(
-    viewModel: ChatScreenViewModel,
-    currChat: Chat,
-) {
+private fun ColumnScope.ScreenUI(viewModel: ChatScreenViewModel, currChat: Chat) {
     val isGeneratingResponse by viewModel.isGeneratingResponse.collectAsStateWithLifecycle()
     RAMUsageLabel(viewModel)
     Spacer(modifier = Modifier.height(4.dp))
-    MessagesList(
-        viewModel,
-        isGeneratingResponse,
-        currChat.id,
-    )
-    MessageInput(
-        viewModel,
-        isGeneratingResponse,
-    )
+    MessagesList(viewModel, isGeneratingResponse, currChat.id)
+    MessageInput(viewModel, isGeneratingResponse)
 }
 
 @Composable
@@ -379,44 +393,44 @@ private fun ColumnScope.MessagesList(
     val context = LocalContext.current
     val listState = rememberLazyListState()
     val messages by viewModel.getChatMessages(chatId).collectAsState(emptyList())
-    val lastUserMessageIndex by remember { derivedStateOf { messages.indexOfLast { it.isUserMessage } } }
+    val lastUserMessageIndex by remember {
+        derivedStateOf { messages.indexOfLast { it.isUserMessage } }
+    }
     val partialResponse by viewModel.partialResponse.collectAsStateWithLifecycle()
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size)
         }
     }
-    LazyColumn(
-        state = listState,
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .weight(1f),
-    ) {
+    LazyColumn(state = listState, modifier = Modifier
+        .fillMaxSize()
+        .weight(1f)) {
         itemsIndexed(messages) { i, chatMessage ->
             MessageListItem(
                 viewModel.markwon.render(viewModel.markwon.parse(chatMessage.message)),
-                responseGenerationSpeed = if (i == messages.size - 1) viewModel.responseGenerationsSpeed else null,
-                responseGenerationTimeSecs = if (i == messages.size - 1) viewModel.responseGenerationTimeSecs else null,
+                responseGenerationSpeed =
+                    if (i == messages.size - 1) viewModel.responseGenerationsSpeed else null,
+                responseGenerationTimeSecs =
+                    if (i == messages.size - 1) viewModel.responseGenerationTimeSecs else null,
                 chatMessage.isUserMessage,
                 onCopyClicked = {
                     val clipboard =
                         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     val clip = ClipData.newPlainText("Copied message", chatMessage.message)
                     clipboard.setPrimaryClip(clip)
-                    Toast
-                        .makeText(
+                    Toast.makeText(
                             context,
                             context.getString(R.string.chat_message_copied),
                             Toast.LENGTH_SHORT,
-                        ).show()
+                    )
+                        .show()
                 },
                 onShareClicked = {
                     context.startActivity(
                         Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, chatMessage.message)
-                        },
+                        }
                     )
                 },
                 onMessageEdited = { newMessage ->
@@ -433,11 +447,13 @@ private fun ColumnScope.MessagesList(
                     }
                     viewModel.appDB.addUserMessage(chatId, newMessage)
                     viewModel.unloadModel()
-                    viewModel.loadModel(onComplete = {
-                        if (it == ModelLoadingState.SUCCESS) {
-                            viewModel.sendUserQuery(newMessage, addMessageToDB = false)
+                    viewModel.loadModel(
+                        onComplete = {
+                            if (it == ModelLoadingState.SUCCESS) {
+                                viewModel.sendUserQuery(newMessage, addMessageToDB = false)
+                            }
                         }
-                    })
+                    )
                 },
                 // allow editing the message only if it is the last message in the list
                 allowEditing = (i == lastUserMessageIndex),
@@ -475,10 +491,9 @@ private fun ColumnScope.MessagesList(
                         )
                         Text(
                             text = stringResource(R.string.chat_thinking),
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
                             fontSize = 12.sp,
                         )
                     }
@@ -504,12 +519,9 @@ private fun LazyItemScope.MessageListItem(
     var isEditing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     if (!isUserMessage) {
-        Row(
-            modifier =
-                modifier
-                    .fillMaxWidth()
-                    .animateItem(),
-        ) {
+        Row(modifier = modifier
+            .fillMaxWidth()
+            .animateItem()) {
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 ChatMessageText(
@@ -528,7 +540,7 @@ private fun LazyItemScope.MessageListItem(
                         createChatMessageOptionsDialog(
                             showEditOption = false,
                             onEditClick = {
-                                /** Not applicable as showEditOption is set to false **/
+                                /** Not applicable as showEditOption is set to false * */
                             },
                             onCopyClick = { onCopyClicked() },
                             onShareClick = { onShareClicked() },
@@ -538,33 +550,26 @@ private fun LazyItemScope.MessageListItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     responseGenerationSpeed?.let {
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "%.2f tokens/s".format(it),
-                            fontSize = 8.sp,
-                        )
+                        Text(text = "%.2f tokens/s".format(it), fontSize = 8.sp)
                         Spacer(modifier = Modifier.width(6.dp))
                         Box(
                             modifier =
                                 Modifier
                                     .size(2.dp)
                                     .clip(CircleShape)
-                                    .background(Color.DarkGray),
+                                    .background(Color.DarkGray)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "$responseGenerationTimeSecs s",
-                            fontSize = 8.sp,
-                        )
+                        Text(text = "$responseGenerationTimeSecs s", fontSize = 8.sp)
                     }
                 }
             }
         }
     } else {
         Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .animateItem(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateItem(),
             horizontalArrangement = Arrangement.End,
         ) {
             Column(horizontalAlignment = Alignment.End) {
@@ -579,7 +584,8 @@ private fun LazyItemScope.MessageListItem(
                                 .background(
                                     MaterialTheme.colorScheme.surfaceContainerHighest,
                                     RoundedCornerShape(16.dp),
-                                ).padding(8.dp)
+                                )
+                                .padding(8.dp)
                                 .widthIn(max = 250.dp),
                         colors =
                             TextFieldDefaults.colors(
@@ -597,7 +603,8 @@ private fun LazyItemScope.MessageListItem(
                                 .background(
                                     MaterialTheme.colorScheme.surfaceContainerHighest,
                                     RoundedCornerShape(16.dp),
-                                ).padding(8.dp)
+                                )
+                                .padding(8.dp)
                                 .widthIn(max = 250.dp),
                         textColor = MaterialTheme.colorScheme.onSurface.toArgb(),
                         textSize = 16f,
@@ -646,17 +653,11 @@ private fun LazyItemScope.MessageListItem(
 }
 
 @Composable
-private fun MessageInput(
-    viewModel: ChatScreenViewModel,
-    isGeneratingResponse: Boolean,
-) {
+private fun MessageInput(viewModel: ChatScreenViewModel, isGeneratingResponse: Boolean) {
     val currChat by viewModel.currChatState.collectAsStateWithLifecycle()
     val modelLoadingState by viewModel.modelLoadState.collectAsStateWithLifecycle()
     if ((currChat?.llmModelId ?: -1L) == -1L) {
-        Text(
-            modifier = Modifier.padding(8.dp),
-            text = stringResource(R.string.chat_select_model),
-        )
+        Text(modifier = Modifier.padding(8.dp), text = stringResource(R.string.chat_select_model))
     } else {
         var questionText by remember { mutableStateOf(viewModel.questionTextDefaultVal ?: "") }
         val keyboardController = LocalSoftwareKeyboardController.current
@@ -683,10 +684,9 @@ private fun MessageInput(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TextField(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
                         value = questionText,
                         onValueChange = { questionText = it },
                         shape = RoundedCornerShape(16.dp),
@@ -697,22 +697,20 @@ private fun MessageInput(
                                 unfocusedIndicatorColor = Color.Transparent,
                                 disabledIndicatorColor = Color.Transparent,
                             ),
-                        placeholder = {
-                            Text(
-                                text = stringResource(R.string.chat_ask_question),
-                            )
-                        },
+                        placeholder = { Text(text = stringResource(R.string.chat_ask_question)) },
                         keyboardOptions =
                             KeyboardOptions.Default.copy(
                                 capitalization = KeyboardCapitalization.Sentences,
                                 imeAction = ImeAction.Go,
                             ),
                         keyboardActions =
-                            KeyboardActions(onGo = {
-                                keyboardController?.hide()
-                                viewModel.sendUserQuery(questionText)
-                                questionText = ""
-                            }),
+                            KeyboardActions(
+                                onGo = {
+                                    keyboardController?.hide()
+                                    viewModel.sendUserQuery(questionText)
+                                    questionText = ""
+                                }
+                            ),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     if (isGeneratingResponse) {
@@ -753,7 +751,8 @@ private fun MessageInput(
 @Composable
 private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
     val context = LocalContext.current
-    val showTaskListBottomList by viewModel.showTaskListBottomListState.collectAsStateWithLifecycle()
+    val showTaskListBottomList by
+    viewModel.showTaskListBottomListState.collectAsStateWithLifecycle()
     if (showTaskListBottomList) {
         // adding bottom sheets in Compose
         // See https://developer.android.com/develop/ui/compose/components/bottom-sheets
@@ -761,9 +760,7 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
             onDismissRequest = {
                 viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(
-                        visible = false,
-                    ),
+                    ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = false)
                 )
             },
         ) {
@@ -774,7 +771,8 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                         .background(
                             MaterialTheme.colorScheme.surfaceContainer,
                             RoundedCornerShape(8.dp),
-                        ).padding(8.dp),
+                        )
+                        .padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
@@ -792,13 +790,13 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                         onClick = {
                             viewModel.onEvent(
                                 ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(
-                                    visible = true,
-                                ),
+                                    visible = true
+                                )
                             )
                             Intent(context, ManageTasksActivity::class.java).also {
                                 context.startActivity(it)
                             }
-                        },
+                        }
                     ) {
                         MediumLabelText(stringResource(R.string.chat_create_task))
                     }
@@ -812,9 +810,7 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
                                     ?: return@map it
                             it.copy(modelName = modelName)
                         },
-                        onTaskSelected = { task ->
-                            createChatFromTask(viewModel, task)
-                        },
+                        onTaskSelected = { task -> createChatFromTask(viewModel, task) },
                         onUpdateTaskClick = { // Not applicable as showTaskOptions is set to `false`
                         },
                         onEditTaskClick = { // Not applicable as showTaskOptions is set to `false`
@@ -832,7 +828,8 @@ private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
 
 @Composable
 private fun SelectModelsList(viewModel: ChatScreenViewModel) {
-    val showSelectModelsListDialog by viewModel.showSelectModelListDialogState.collectAsStateWithLifecycle()
+    val showSelectModelsListDialog by
+    viewModel.showSelectModelListDialogState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     if (showSelectModelsListDialog) {
         val modelsList by
@@ -840,25 +837,25 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
         SelectModelsList(
             onDismissRequest = {
                 viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(
-                        visible = false,
-                    ),
+                    ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = false)
                 )
             },
             modelsList,
             onModelListItemClick = { model ->
                 viewModel.updateChatLLMParams(model.id, model.chatTemplate)
                 viewModel.loadModel()
-                viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = false))
+                viewModel.onEvent(
+                    ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = false)
+                )
             },
             onModelDeleteClick = { model ->
                 viewModel.deleteModel(model.id)
-                Toast
-                    .makeText(
+                Toast.makeText(
                         viewModel.context,
                         context.getString(R.string.chat_model_deleted, model.name),
                         Toast.LENGTH_LONG,
-                    ).show()
+                )
+                    .show()
             },
         )
     }
@@ -866,31 +863,25 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
 
 @Composable
 private fun ChangeFolderDialog(viewModel: ChatScreenViewModel) {
-    val showChangeFolderDialogState by viewModel.showChangeFolderDialogState.collectAsStateWithLifecycle()
+    val showChangeFolderDialogState by
+    viewModel.showChangeFolderDialogState.collectAsStateWithLifecycle()
     val currentChat by viewModel.currChatState.collectAsStateWithLifecycle()
     if (showChangeFolderDialogState && currentChat != null) {
         val folders by viewModel.appDB.getFolders().collectAsState(emptyList())
         ChangeFolderDialogUI(
             onDismissRequest = {
                 viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(
-                        visible = false,
-                    ),
+                    ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(visible = false)
                 )
             },
             currentChat!!.folderId,
             folders,
-            onUpdateFolderId = { folderId ->
-                viewModel.updateChatFolder(folderId)
-            },
+            onUpdateFolderId = { folderId -> viewModel.updateChatFolder(folderId) },
         )
     }
 }
 
-private fun createChatFromTask(
-    viewModel: ChatScreenViewModel,
-    task: Task,
-) {
+private fun createChatFromTask(viewModel: ChatScreenViewModel, task: Task) {
     // Using parameters from the `task`
     // create a `Chat` instance and switch to it
     viewModel.modelsRepository.getModelFromId(task.modelId)?.let { model ->

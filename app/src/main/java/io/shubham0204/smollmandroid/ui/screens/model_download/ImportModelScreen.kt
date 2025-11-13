@@ -32,11 +32,7 @@ import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 @Preview
 @Composable
 private fun PreviewImportModelScreen() {
-    ImportModelScreen(
-        onPrevSectionClick = {},
-        checkGGUFFile = { false },
-        copyModelFile = { },
-    )
+    ImportModelScreen(onPrevSectionClick = {}, checkGGUFFile = { false }, copyModelFile = {})
 }
 
 @Composable
@@ -83,10 +79,10 @@ fun ImportModelScreen(
                         setType("application/octet-stream")
                         putExtra(
                             DocumentsContract.EXTRA_INITIAL_URI,
-                            Environment
-                                .getExternalStoragePublicDirectory(
-                                    Environment.DIRECTORY_DOWNLOADS,
-                                ).toUri(),
+                            Environment.getExternalStoragePublicDirectory(
+                                Environment.DIRECTORY_DOWNLOADS
+                            )
+                                .toUri(),
                         )
                     }
                 launcher.launch(intent)
@@ -96,12 +92,8 @@ fun ImportModelScreen(
             Text(stringResource(R.string.download_models_select_gguf_button))
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        ) {
-            OutlinedButton(
-                onClick = onPrevSectionClick,
-            ) {
+        Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            OutlinedButton(onClick = onPrevSectionClick) {
                 Icon(FeatherIcons.ArrowLeft, contentDescription = null)
                 Text(stringResource(R.string.button_text_back))
             }

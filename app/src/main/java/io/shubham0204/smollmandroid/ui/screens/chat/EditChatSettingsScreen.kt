@@ -52,305 +52,302 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Check
 import io.shubham0204.smollmandroid.R
+import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class EditableChatSettings(
+    val name: String,
+    val systemPrompt: String,
+    val minP: Float,
+    val temperature: Float,
+    val contextSize: Int,
+    val nThreads: Int,
+    val chatTemplate: String,
+    val useMmap: Boolean,
+    val useMlock: Boolean,
+    val isTask: Boolean,
+) {
+    companion object {
+        fun fromChat(chat: Chat): EditableChatSettings {
+            return EditableChatSettings(
+                name = chat.name,
+                systemPrompt = chat.systemPrompt,
+                minP = chat.minP,
+                temperature = chat.temperature,
+                contextSize = chat.contextSize,
+                nThreads = chat.nThreads,
+                chatTemplate = chat.chatTemplate,
+                useMmap = chat.useMmap,
+                useMlock = chat.useMlock,
+                isTask = chat.isTask,
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditChatSettingsScreen(
-    viewModel: ChatScreenViewModel,
+    chat: EditableChatSettings,
+    llmModelContextSize: Int,
+    onUpdateChat: (EditableChatSettings) -> Unit,
     onBackClicked: () -> Unit,
 ) {
-    val currChat by viewModel.currChatState.collectAsStateWithLifecycle()
-    currChat?.let { chat ->
-        var chatName by remember { mutableStateOf(chat.name) }
-        var systemPrompt by remember { mutableStateOf(chat.systemPrompt) }
-        var minP by remember { mutableFloatStateOf(chat.minP) }
-        var temperature by remember { mutableFloatStateOf(chat.temperature) }
-        var contextSize by remember { mutableIntStateOf(chat.contextSize) }
-        var nThreads by remember { mutableIntStateOf(chat.nThreads) }
-        var takeContextSizeFromModel by remember { mutableStateOf(false) }
-        var chatTemplate by remember { mutableStateOf(chat.chatTemplate) }
-        var useMmap by remember { mutableStateOf(chat.useMmap) }
-        var useMlock by remember { mutableStateOf(chat.useMlock) }
-        val context = LocalContext.current
-        val llmModel = viewModel.modelsRepository.getModelFromId(chat.llmModelId)
+    var chatName by remember { mutableStateOf(chat.name) }
+    var systemPrompt by remember { mutableStateOf(chat.systemPrompt) }
+    var minP by remember { mutableFloatStateOf(chat.minP) }
+    var temperature by remember { mutableFloatStateOf(chat.temperature) }
+    var contextSize by remember { mutableIntStateOf(chat.contextSize) }
+    var nThreads by remember { mutableIntStateOf(chat.nThreads) }
+    var takeContextSizeFromModel by remember { mutableStateOf(false) }
+    var chatTemplate by remember { mutableStateOf(chat.chatTemplate) }
+    var useMmap by remember { mutableStateOf(chat.useMmap) }
+    var useMlock by remember { mutableStateOf(chat.useMlock) }
+    val context = LocalContext.current
+    val totalThreads = Runtime.getRuntime().availableProcessors()
 
-        val totalThreads = Runtime.getRuntime().availableProcessors()
-
-        SmolLMAndroidTheme {
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { AppBarTitleText(stringResource(R.string.edit_chat_screen_title)) },
-                        navigationIcon = {
-                            IconButton(onClick = { onBackClicked() }) {
-                                Icon(
-                                    FeatherIcons.ArrowLeft,
-                                    contentDescription = "Navigate Back",
-                                )
+    SmolLMAndroidTheme {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { AppBarTitleText(stringResource(R.string.edit_chat_screen_title)) },
+                    navigationIcon = {
+                        IconButton(onClick = { onBackClicked() }) {
+                            Icon(FeatherIcons.ArrowLeft, contentDescription = "Navigate Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                val updatedChat =
+                                    chat.copy(
+                                        name = chatName,
+                                        systemPrompt = systemPrompt,
+                                        minP = minP,
+                                        temperature = temperature,
+                                        contextSize = contextSize,
+                                        chatTemplate = chatTemplate,
+                                        nThreads = nThreads,
+                                        useMmap = useMmap,
+                                        useMlock = useMlock,
+                                    )
+                                if (chat != updatedChat) {
+                                    onUpdateChat(updatedChat)
+                                    // viewModel.updateChat()
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(
+                                            R.string.edit_chat_new_settings_applied
+                                        ),
+                                        Toast.LENGTH_LONG,
+                                    )
+                                        .show()
+                                }
+                                onBackClicked()
                             }
+                        ) {
+                            Icon(FeatherIcons.Check, contentDescription = "Save settings")
+                        }
+                    },
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier =
+                    Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .padding(paddingValues)
+                        .verticalScroll(rememberScrollState())
+            ) {
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = chatName,
+                    onValueChange = { chatName = it },
+                    label = { Text(stringResource(R.string.chat_settings_label_chat_name)) },
+                    keyboardOptions =
+                        KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = systemPrompt,
+                    onValueChange = { systemPrompt = it },
+                    label = { Text(stringResource(R.string.chat_settings_label_sys_prompt)) },
+                    keyboardOptions =
+                        KeyboardOptions.Default.copy(
+                            capitalization = KeyboardCapitalization.Sentences
+                        ),
+                    maxLines = 5,
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = chatTemplate,
+                    onValueChange = { chatTemplate = it },
+                    label = { Text("Chat template") },
+                    keyboardOptions =
+                        KeyboardOptions.Default.copy(
+                            capitalization = KeyboardCapitalization.Sentences
+                        ),
+                    maxLines = 5,
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (chat.isTask) {
+                    Text(
+                        text = stringResource(R.string.chat_settings_desc_task_update),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    stringResource(R.string.chat_settings_label_minp),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    stringResource(R.string.chat_settings_desc_minp),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Slider(
+                    value = minP,
+                    onValueChange = { minP = it },
+                    valueRange = 0.0f..1.0f,
+                    steps = 100,
+                )
+                Text(text = "%.2f".format(minP), style = MaterialTheme.typography.labelSmall)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    stringResource(R.string.chat_settings_label_temp),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    stringResource(R.string.chat_settings_desc_temp),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Slider(
+                    value = temperature,
+                    onValueChange = { temperature = it },
+                    valueRange = 0.0f..5.0f,
+                    steps = 50,
+                )
+                Text(text = "%.1f".format(temperature), style = MaterialTheme.typography.labelSmall)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    stringResource(R.string.chat_settings_label_ctx_size),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    stringResource(R.string.chat_settings_desc_ctx_length),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                TextField(
+                    enabled = !takeContextSizeFromModel,
+                    modifier = Modifier.fillMaxWidth(),
+                    value =
+                        if (takeContextSizeFromModel) {
+                            contextSize = llmModelContextSize
+                            contextSize.toString()
+                        } else {
+                            contextSize.toString()
                         },
-                        actions = {
-                            IconButton(
-                                onClick = {
-                                    val updatedChat =
-                                        chat.copy(
-                                            name = chatName,
-                                            systemPrompt = systemPrompt,
-                                            minP = minP,
-                                            temperature = temperature,
-                                            contextSize = contextSize,
-                                            chatTemplate = chatTemplate,
-                                            nThreads = nThreads,
-                                            useMmap = useMmap,
-                                            useMlock = useMlock,
-                                        )
-                                    if (chat != updatedChat) {
-                                        viewModel.updateChat(updatedChat)
-                                        Toast
-                                            .makeText(
-                                                context,
-                                                context.getString(R.string.edit_chat_new_settings_applied),
-                                                Toast.LENGTH_LONG,
-                                            ).show()
-                                    }
-                                    onBackClicked()
-                                },
-                            ) {
-                                Icon(
-                                    FeatherIcons.Check,
-                                    contentDescription = "Save settings",
-                                )
+                    onValueChange = {
+                        contextSize =
+                            if (it.isNotEmpty()) {
+                                it.toInt()
+                            } else {
+                                0
                             }
-                        },
+                    },
+                    isError = contextSize == 0,
+                    label = {
+                        if (contextSize == 0) {
+                            Text(stringResource(R.string.chat_settings_err_min_ctx_size))
+                        } else {
+                            if (takeContextSizeFromModel) {
+                                Text(stringResource(R.string.context_size_taken_from_model))
+                            } else {
+                                Text(stringResource(R.string.chat_settings_title_num_tokens))
+                            }
+                        }
+                    },
+                    keyboardOptions =
+                        KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            capitalization = KeyboardCapitalization.Sentences,
+                        ),
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = takeContextSizeFromModel,
+                        onCheckedChange = { takeContextSizeFromModel = it },
                     )
-                },
-            ) { paddingValues ->
-                Column(
-                    modifier =
-                        Modifier
-                            .background(MaterialTheme.colorScheme.surface)
-                            .fillMaxSize()
-                            .padding(16.dp)
-                            .padding(paddingValues)
-                            .verticalScroll(rememberScrollState()),
-                ) {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = chatName,
-                        onValueChange = { chatName = it },
-                        label = { Text(stringResource(R.string.chat_settings_label_chat_name)) },
-                        keyboardOptions =
-                            KeyboardOptions.Default.copy(
-                                capitalization = KeyboardCapitalization.Words,
-                            ),
+                    Text(
+                        text = stringResource(R.string.chat_settings_take_from_gguf),
+                        style = MaterialTheme.typography.labelSmall,
                     )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "Number of Threads", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(R.string.chat_settings_desc_n_threads),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Slider(
+                    value = nThreads.toFloat(),
+                    onValueChange = { nThreads = it.toInt() },
+                    valueRange = 0.0f..(totalThreads).toFloat(),
+                    steps = totalThreads,
+                )
+                Text(text = "$nThreads", style = MaterialTheme.typography.labelSmall)
 
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = systemPrompt,
-                        onValueChange = { systemPrompt = it },
-                        label = { Text(stringResource(R.string.chat_settings_label_sys_prompt)) },
-                        keyboardOptions =
-                            KeyboardOptions.Default.copy(
-                                capitalization = KeyboardCapitalization.Sentences,
-                            ),
-                        maxLines = 5,
-                    )
+                Spacer(modifier = Modifier.height(24.dp))
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = chatTemplate,
-                        onValueChange = { chatTemplate = it },
-                        label = { Text("Chat template") },
-                        keyboardOptions =
-                            KeyboardOptions.Default.copy(
-                                capitalization = KeyboardCapitalization.Sentences,
-                            ),
-                        maxLines = 5,
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    if (chat.isTask) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Checkbox(checked = useMmap, onCheckedChange = { useMmap = it })
+                    Column {
+                        Text(text = "Use mmap", style = MaterialTheme.typography.titleMedium)
                         Text(
                             text =
-                                stringResource(R.string.chat_settings_desc_task_update),
+                                "Disable memory mapping (mmap) for potentially fewer pageouts and better performance on low-memory systems, but with slower load times and a risk of preventing loading large models.",
                             style = MaterialTheme.typography.labelSmall,
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        stringResource(R.string.chat_settings_label_minp),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        stringResource(R.string.chat_settings_desc_minp),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                    Slider(
-                        value = minP,
-                        onValueChange = { minP = it },
-                        valueRange = 0.0f..1.0f,
-                        steps = 100,
-                    )
-                    Text(
-                        text = "%.2f".format(minP),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        stringResource(R.string.chat_settings_label_temp),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        stringResource(R.string.chat_settings_desc_temp),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                    Slider(
-                        value = temperature,
-                        onValueChange = { temperature = it },
-                        valueRange = 0.0f..5.0f,
-                        steps = 50,
-                    )
-                    Text(
-                        text = "%.1f".format(temperature),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        stringResource(R.string.chat_settings_label_ctx_size),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        stringResource(R.string.chat_settings_desc_ctx_length),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                    TextField(
-                        enabled = !takeContextSizeFromModel,
-                        modifier = Modifier.fillMaxWidth(),
-                        value =
-                            if (takeContextSizeFromModel) {
-                                if (llmModel != null) {
-                                    contextSize = llmModel.contextSize
-                                    contextSize.toString()
-                                } else {
-                                    stringResource(R.string.chat_settings_err_load_llm)
-                                }
-                            } else {
-                                contextSize.toString()
-                            },
-                        onValueChange = {
-                            contextSize =
-                                if (it.isNotEmpty()) {
-                                    it.toInt()
-                                } else {
-                                    0
-                                }
-                        },
-                        isError = contextSize == 0,
-                        label = {
-                            if (contextSize == 0) {
-                                Text(stringResource(R.string.chat_settings_err_min_ctx_size))
-                            } else {
-                                if (takeContextSizeFromModel) {
-                                    Text(stringResource(R.string.context_size_taken_from_model))
-                                } else {
-                                    Text(stringResource(R.string.chat_settings_title_num_tokens))
-                                }
-                            }
-                        },
-                        keyboardOptions =
-                            KeyboardOptions.Default.copy(
-                                keyboardType = KeyboardType.Number,
-                                capitalization = KeyboardCapitalization.Sentences,
-                            ),
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = takeContextSizeFromModel,
-                            onCheckedChange = { takeContextSizeFromModel = it },
-                        )
-                        Text(
-                            text = stringResource(R.string.chat_settings_take_from_gguf),
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        text = "Number of Threads",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        stringResource(R.string.chat_settings_desc_n_threads),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                    Slider(
-                        value = nThreads.toFloat(),
-                        onValueChange = { nThreads = it.toInt() },
-                        valueRange = 0.0f..(totalThreads).toFloat(),
-                        steps = totalThreads,
-                    )
-                    Text(
-                        text = "$nThreads",
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Checkbox(
-                            checked = useMmap,
-                            onCheckedChange = { useMmap = it },
-                        )
-                        Column {
-                            Text(
-                                text = "Use mmap",
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-                            Text(
-                                text = "Disable memory mapping (mmap) for potentially fewer pageouts and better performance on low-memory systems, but with slower load times and a risk of preventing loading large models.",
-                                style = MaterialTheme.typography.labelSmall,
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Checkbox(
-                            checked = useMlock,
-                            onCheckedChange = { useMlock = it },
-                        )
-                        Column {
-                            Text(
-                                text = "Use mlock",
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-                            Text(
-                                text = "Keep the model loaded in RAM for faster performance, but uses more memory and may load slower.",
-                                style = MaterialTheme.typography.labelSmall,
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Checkbox(checked = useMlock, onCheckedChange = { useMlock = it })
+                    Column {
+                        Text(text = "Use mlock", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text =
+                                "Keep the model loaded in RAM for faster performance, but uses more memory and may load slower.",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }

@@ -124,6 +124,9 @@ dependencies {
     // Serialization for typed navigation routes
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
+    // Kotlin Immutable Collections
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.4.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

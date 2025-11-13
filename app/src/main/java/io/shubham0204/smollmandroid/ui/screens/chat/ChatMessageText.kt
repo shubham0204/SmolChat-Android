@@ -18,9 +18,7 @@ package io.shubham0204.smollmandroid.ui.screens.chat
 
 import android.graphics.Color
 import android.text.Spanned
-import android.text.method.LinkMovementMethod
 import android.text.util.Linkify
-import android.util.Log
 import android.widget.TextView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -38,11 +36,7 @@ fun ChatMessageText(
     onLongClick: () -> Unit,
 ) {
     AndroidView(
-        modifier =
-            modifier.combinedClickable(
-                onClick = {},
-                onLongClick = onLongClick,
-            ),
+        modifier = modifier.combinedClickable(onClick = {}, onLongClick = onLongClick),
         factory = {
             val textView = TextView(it)
             textView.textSize = textSize

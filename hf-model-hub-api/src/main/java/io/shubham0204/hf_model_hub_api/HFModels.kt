@@ -26,13 +26,7 @@ class HFModels {
     companion object {
         private val client: HttpClient =
             HttpClient(OkHttp) {
-                install(ContentNegotiation) {
-                    json(
-                        Json {
-                            ignoreUnknownKeys = true
-                        },
-                    )
-                }
+                install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
             }
 
         fun getInfo(): HFModelInfo = HFModelInfo(client)

@@ -109,9 +109,7 @@ fun SmolLMAndroidTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
-    content:
-        @Composable()
-        () -> Unit,
+    content: @Composable() () -> Unit,
 ) {
     val colorScheme =
         when {
@@ -123,9 +121,5 @@ fun SmolLMAndroidTheme(
             darkTheme -> darkScheme
             else -> lightScheme
         }
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content,
-        typography = AppTypography,
-    )
+    MaterialTheme(colorScheme = colorScheme, content = content, typography = AppTypography)
 }

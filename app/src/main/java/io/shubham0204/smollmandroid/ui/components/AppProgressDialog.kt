@@ -52,7 +52,10 @@ fun AppProgressDialog() {
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(8.dp)),
+                            .background(
+                                MaterialTheme.colorScheme.surfaceContainer,
+                                shape = RoundedCornerShape(8.dp),
+                            ),
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -60,17 +63,14 @@ fun AppProgressDialog() {
                     ) {
                         Text(text = progressDialogTitle.value)
                         Spacer(modifier = Modifier.padding(4.dp))
-                        LinearProgressIndicator(
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                         Spacer(modifier = Modifier.padding(4.dp))
                         Text(
                             text = progressDialogText.value,
                             textAlign = TextAlign.Center,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
                             style = MaterialTheme.typography.labelSmall,
                         )
                     }

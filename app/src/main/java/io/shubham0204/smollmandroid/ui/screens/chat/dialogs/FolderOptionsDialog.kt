@@ -47,7 +47,8 @@ fun FolderOptionsDialog() {
                             .background(
                                 MaterialTheme.colorScheme.surfaceContainer,
                                 RoundedCornerShape(8.dp),
-                            ).padding(16.dp),
+                            )
+                            .padding(16.dp)
                 ) {
                     Row(
                         modifier =

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -51,7 +50,8 @@ fun TextFieldDialog() {
                             .background(
                                 MaterialTheme.colorScheme.surfaceContainer,
                                 RoundedCornerShape(8.dp),
-                            ).padding(16.dp),
+                            )
+                            .padding(16.dp)
                 ) {
                     var text by remember { mutableStateOf(defaultText) }
                     var label by remember { mutableStateOf("") }
@@ -75,15 +75,17 @@ fun TextFieldDialog() {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceAround,
                     ) {
-                        Button(onClick = {
-                            if (text.trim().isEmpty()) {
-                                label = "The field cannot be empty"
-                                isError = true
-                            } else {
-                                buttonOnClick(text)
-                                visible = false
+                        Button(
+                            onClick = {
+                                if (text.trim().isEmpty()) {
+                                    label = "The field cannot be empty"
+                                    isError = true
+                                } else {
+                                    buttonOnClick(text)
+                                    visible = false
+                                }
                             }
-                        }) {
+                        ) {
                             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                             Text(buttonText)
                         }

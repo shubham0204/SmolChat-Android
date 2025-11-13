@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -57,7 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Calendar
-import compose.icons.feathericons.Delete
 import compose.icons.feathericons.Plus
 import compose.icons.feathericons.Trash
 import compose.icons.feathericons.Type
@@ -90,7 +88,8 @@ fun SelectModelsList(
                         .background(
                             MaterialTheme.colorScheme.surfaceContainer,
                             RoundedCornerShape(8.dp),
-                        ).padding(16.dp),
+                        )
+                        .padding(16.dp)
             ) {
                 Text(
                     text = stringResource(R.string.chat_model_list_screen_title),
@@ -106,13 +105,13 @@ fun SelectModelsList(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Animate switching between different types of content
-                // See https://developer.android.com/develop/ui/compose/animation/quick-guide#switch-different
+                // See
+                // https://developer.android.com/develop/ui/compose/animation/quick-guide#switch-different
                 AnimatedContent(
                     sortOrder,
                     transitionSpec = {
-                        fadeIn(
-                            animationSpec = tween(100),
-                        ) togetherWith fadeOut(animationSpec = tween(100))
+                        fadeIn(animationSpec = tween(100)) togetherWith
+                                fadeOut(animationSpec = tween(100))
                     },
                     modifier =
                         Modifier.clickable(
@@ -137,7 +136,8 @@ fun SelectModelsList(
                                     indication = null,
                                 ) {
                                     sortOrder =
-                                        if (sortOrder == SortOrder.NAME) SortOrder.DATE_ADDED else SortOrder.NAME
+                                        if (sortOrder == SortOrder.NAME) SortOrder.DATE_ADDED
+                                        else SortOrder.NAME
                                 },
                     ) {
                         when (targetSortOrder) {
@@ -225,18 +225,15 @@ private fun ModelListItem(
                 .background(
                     MaterialTheme.colorScheme.surfaceContainerHighest,
                     RoundedCornerShape(8.dp),
-                ).padding(4.dp)
+                )
+                .padding(4.dp)
                 .noRippleClickable { onModelListItemClick(model) }
                 .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = model.name,
-                style = MaterialTheme.typography.labelMedium,
-                maxLines = 1,
-            )
+            Text(text = model.name, style = MaterialTheme.typography.labelMedium, maxLines = 1)
             Text(
                 text = "%.1f GB".format(File(model.path).length() / (1e+9)),
                 style = MaterialTheme.typography.labelSmall,
@@ -250,15 +247,13 @@ private fun ModelListItem(
                     createAlertDialog(
                         dialogTitle = context.getString(R.string.dialog_title_delete_chat),
                         dialogText =
-                            context
-                                .getString(R.string.dialog_text_delete_chat)
-                                .format(model.name),
+                            context.getString(R.string.dialog_text_delete_chat).format(model.name),
                         dialogPositiveButtonText = context.getString(R.string.dialog_pos_delete),
                         dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
                         onPositiveButtonClick = { onModelDeleteClick(model) },
                         onNegativeButtonClick = {},
                     )
-                },
+                }
             ) {
                 Icon(
                     FeatherIcons.Trash,
