@@ -30,6 +30,12 @@ android {
         }
     }
 
+    // https://gitlab.com/fdroid/fdroiddata/-/merge_requests/21563#note_2890971890
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = true
+    }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
