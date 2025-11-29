@@ -197,9 +197,13 @@ class ChatScreenViewModel(
         appDB.updateChat(_currChatState.value!!.copy(folderId = folderId))
     }
 
-    fun updateChat(chat: Chat) {
-        _currChatState.value = chat
-        appDB.updateChat(chat)
+    fun updateChatSettings(
+        existingChat: Chat,
+        settings: EditableChatSettings
+    ) {
+        val newChat = settings.toChat(existingChat)
+        _currChatState.value = newChat
+        appDB.updateChat(newChat)
         loadModel()
     }
 

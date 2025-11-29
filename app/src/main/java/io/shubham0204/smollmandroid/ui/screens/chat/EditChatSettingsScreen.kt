@@ -90,26 +90,39 @@ data class EditableChatSettings(
             )
         }
     }
+
+    fun toChat(existingChat: Chat): Chat {
+        existingChat.name = name
+        existingChat.systemPrompt = systemPrompt
+        existingChat.minP = minP
+        existingChat.temperature = temperature
+        existingChat.contextSize = contextSize
+        existingChat.nThreads = nThreads
+        existingChat.chatTemplate = chatTemplate
+        existingChat.useMmap = useMmap
+        existingChat.useMlock = useMlock
+        return existingChat
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditChatSettingsScreen(
-    chat: EditableChatSettings,
+    settings: EditableChatSettings,
     llmModelContextSize: Int,
     onUpdateChat: (EditableChatSettings) -> Unit,
     onBackClicked: () -> Unit,
 ) {
-    var chatName by remember { mutableStateOf(chat.name) }
-    var systemPrompt by remember { mutableStateOf(chat.systemPrompt) }
-    var minP by remember { mutableFloatStateOf(chat.minP) }
-    var temperature by remember { mutableFloatStateOf(chat.temperature) }
-    var contextSize by remember { mutableIntStateOf(chat.contextSize) }
-    var nThreads by remember { mutableIntStateOf(chat.nThreads) }
+    var chatName by remember { mutableStateOf(settings.name) }
+    var systemPrompt by remember { mutableStateOf(settings.systemPrompt) }
+    var minP by remember { mutableFloatStateOf(settings.minP) }
+    var temperature by remember { mutableFloatStateOf(settings.temperature) }
+    var contextSize by remember { mutableIntStateOf(settings.contextSize) }
+    var nThreads by remember { mutableIntStateOf(settings.nThreads) }
     var takeContextSizeFromModel by remember { mutableStateOf(false) }
-    var chatTemplate by remember { mutableStateOf(chat.chatTemplate) }
-    var useMmap by remember { mutableStateOf(chat.useMmap) }
-    var useMlock by remember { mutableStateOf(chat.useMlock) }
+    var chatTemplate by remember { mutableStateOf(settings.chatTemplate) }
+    var useMmap by remember { mutableStateOf(settings.useMmap) }
+    var useMlock by remember { mutableStateOf(settings.useMlock) }
     val context = LocalContext.current
     val totalThreads = Runtime.getRuntime().availableProcessors()
 
@@ -127,7 +140,7 @@ fun EditChatSettingsScreen(
                         IconButton(
                             onClick = {
                                 val updatedChat =
-                                    chat.copy(
+                                    settings.copy(
                                         name = chatName,
                                         systemPrompt = systemPrompt,
                                         minP = minP,
@@ -138,7 +151,7 @@ fun EditChatSettingsScreen(
                                         useMmap = useMmap,
                                         useMlock = useMlock,
                                     )
-                                if (chat != updatedChat) {
+                                if (settings != updatedChat) {
                                     onUpdateChat(updatedChat)
                                     // viewModel.updateChat()
                                     Toast.makeText(
@@ -207,7 +220,7 @@ fun EditChatSettingsScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                if (chat.isTask) {
+                if (settings.isTask) {
                     Text(
                         text = stringResource(R.string.chat_settings_desc_task_update),
                         style = MaterialTheme.typography.labelSmall,

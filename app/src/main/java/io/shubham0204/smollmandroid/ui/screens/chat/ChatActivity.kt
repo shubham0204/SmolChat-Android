@@ -16,6 +16,7 @@
 
 package io.shubham0204.smollmandroid.ui.screens.chat
 
+import CustomNavTypes
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -125,6 +126,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.android.ext.android.inject
+import kotlin.reflect.typeOf
 
 private const val LOGTAG = "[ChatActivity-Kt]"
 private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
@@ -133,7 +135,7 @@ private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 object ChatRoute
 
 @Serializable
-data class EditChatSettingsRoute(val settings: EditableChatSettings, val modelContextSize: Int)
+data class EditChatSettingsRoute(val chat: Chat, val modelContextSize: Int)
 
 class ChatActivity : ComponentActivity() {
     private val viewModel: ChatScreenViewModel by inject()
@@ -175,12 +177,22 @@ class ChatActivity : ComponentActivity() {
                     enterTransition = { fadeIn() },
                     exitTransition = { fadeOut() },
                 ) {
-                    composable<EditChatSettingsRoute> { backStackEntry ->
+                    composable<EditChatSettingsRoute>(
+                        typeMap = mapOf(
+                            typeOf<Chat>() to CustomNavTypes.ChatNavType
+                        )
+                    ) { backStackEntry ->
                         val route: EditChatSettingsRoute = backStackEntry.toRoute()
+                        val settings = EditableChatSettings.fromChat(route.chat)
                         EditChatSettingsScreen(
-                            route.settings,
+                            settings,
                             route.modelContextSize,
-                            onUpdateChat = { viewModel.updateChat(it) },
+                            onUpdateChat = {
+                                viewModel.updateChatSettings(
+                                    existingChat = route.chat,
+                                    it
+                                )
+                            },
                             onBackClicked = { navController.navigateUp() },
                         )
                     }
@@ -190,7 +202,7 @@ class ChatActivity : ComponentActivity() {
                             onEditChatParamsClick = { chat, modelContextSize ->
                                 navController.navigate(
                                     EditChatSettingsRoute(
-                                        EditableChatSettings.fromChat(chat),
+                                        chat,
                                         modelContextSize,
                                     )
                                 )

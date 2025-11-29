@@ -25,13 +25,28 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.util.Date
 
 private const val LOGTAG = "[ChatDB-Kt]"
 private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 
+object DateSerializer : KSerializer<Date> {
+    override fun serialize(encoder: Encoder, value: Date) = encoder.encodeLong(value.time)
+    override fun deserialize(decoder: Decoder): Date = Date(decoder.decodeLong())
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Date", PrimitiveKind.LONG)
+}
+
 @Entity(tableName = "Chat")
 @Stable
+@Serializable
 data class Chat(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
     /**
@@ -49,7 +64,9 @@ data class Chat(
      * [dateUsed] is updated every time the chat is used in the app. [dateCreated] is set when the
      * chat is created for the first time.
      */
+    @Serializable(with = DateSerializer::class)
     var dateCreated: Date = Date(),
+    @Serializable(with = DateSerializer::class)
     var dateUsed: Date = Date(),
     /**
      * The ID of the [LLMModel] currently being used for this chat. A model with this ID is loaded
@@ -115,4 +132,7 @@ interface ChatsDao {
 
     @Query("UPDATE Chat SET folderId = :newFolderId WHERE folderId = :oldFolderId")
     fun updateFolderIds(oldFolderId: Long, newFolderId: Long)
+
+    @Query("SELECT * FROM Chat WHERE id = :chatId")
+    fun getChat(chatId: Long): Chat
 }
