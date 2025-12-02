@@ -122,6 +122,7 @@ import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMoreOptionsPopup
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.createChatMessageOptionsDialog
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -833,7 +834,7 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
                     ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = false)
                 )
             },
-            modelsList,
+            modelsList.toImmutableList(),
             onModelListItemClick = { model ->
                 viewModel.updateChatLLMParams(model.id, model.chatTemplate)
                 viewModel.loadModel()

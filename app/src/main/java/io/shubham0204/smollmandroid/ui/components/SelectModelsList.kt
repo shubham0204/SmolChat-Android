@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import compose.icons.FeatherIcons
@@ -61,18 +62,33 @@ import compose.icons.feathericons.Trash
 import compose.icons.feathericons.Type
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.LLMModel
+import io.shubham0204.smollmandroid.ui.preview.dummyLLMModels
 import io.shubham0204.smollmandroid.ui.screens.model_download.DownloadModelActivity
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import java.io.File
 
-enum class SortOrder {
+private enum class SortOrder {
     NAME,
     DATE_ADDED,
+}
+
+@Preview
+@Composable
+private fun PreviewSelectModelsList() {
+    SelectModelsList(
+        onDismissRequest = {},
+        modelsList = dummyLLMModels.toImmutableList(),
+        onModelListItemClick = {},
+        onModelDeleteClick = {},
+        showModelDeleteIcon = false,
+    )
 }
 
 @Composable
 fun SelectModelsList(
     onDismissRequest: () -> Unit,
-    modelsList: List<LLMModel>,
+    modelsList: ImmutableList<LLMModel>,
     onModelListItemClick: (LLMModel) -> Unit,
     onModelDeleteClick: (LLMModel) -> Unit,
     showModelDeleteIcon: Boolean = true,
