@@ -240,7 +240,6 @@ fun ChatActivityScreenUI(
     viewModel: ChatScreenViewModel,
     onEditChatParamsClick: (Chat, Int) -> Unit,
 ) {
-    val context = LocalContext.current
     val currChat by
     viewModel.currChatState.collectAsStateWithLifecycle(
         lifecycleOwner = LocalLifecycleOwner.current
@@ -252,25 +251,7 @@ fun ChatActivityScreenUI(
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
-                DrawerUI(
-                    viewModel,
-                    onItemClick = { chat ->
-                        viewModel.switchChat(chat)
-                        scope.launch { drawerState.close() }
-                    },
-                    onManageTasksClick = {
-                        scope.launch { drawerState.close() }
-                        Intent(context, ManageTasksActivity::class.java).also {
-                            context.startActivity(it)
-                        }
-                    },
-                    onCreateTaskClick = {
-                        scope.launch { drawerState.close() }
-                        viewModel.onEvent(
-                            ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = true)
-                        )
-                    },
-                )
+                DrawerUI(viewModel, onCloseDrawer = { scope.launch { drawerState.close() } })
                 BackHandler(drawerState.isOpen) { scope.launch { drawerState.close() } }
             },
         ) {

@@ -16,6 +16,7 @@
 
 package io.shubham0204.smollmandroid.ui.screens.chat
 
+import android.content.Intent
 import android.text.format.DateUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -24,7 +25,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -60,6 +60,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ChevronDown
@@ -76,15 +77,33 @@ import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.components.createTextFieldDialog
 import io.shubham0204.smollmandroid.ui.components.noRippleClickable
+import io.shubham0204.smollmandroid.ui.preview.dummyChats
+import io.shubham0204.smollmandroid.ui.preview.dummyFolders
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.createFolderOptionsDialog
+import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
+
+@Preview
+@Composable
+private fun PreviewChatsAndFoldersList() {
+    Surface(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+        ChatsAndFoldersList(
+            currentChat = dummyChats[0],
+            chats = dummyChats.toImmutableList(),
+            folders = dummyFolders.toImmutableList(),
+            onManageTasksClick = {},
+            onItemClick = {},
+            onDeleteFolderClick = {},
+            onDeleteFolderWithChatsClick = {},
+            onUpdateFolder = {},
+            onAddFolder = {},
+        )
+    }
+}
 
 @Composable
-fun DrawerUI(
-    viewModel: ChatScreenViewModel,
-    onItemClick: (Chat) -> Unit,
-    onManageTasksClick: () -> Unit,
-    onCreateTaskClick: () -> Unit,
-) {
+fun DrawerUI(viewModel: ChatScreenViewModel, onCloseDrawer: () -> Unit) {
     Surface {
         Column(
             modifier =
@@ -95,6 +114,10 @@ fun DrawerUI(
                     .requiredWidth(300.dp)
                     .fillMaxHeight()
         ) {
+            val chats by viewModel.getChats().collectAsState(emptyList())
+            val folders by viewModel.getFolders().collectAsState(emptyList())
+            val currentChat by viewModel.currChatState.collectAsState(null)
+            val context = LocalContext.current
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -104,7 +127,7 @@ fun DrawerUI(
                         val chatCount = viewModel.appDB.getChatsCount()
                         val newChat =
                             viewModel.appDB.addChat(chatName = "Untitled ${chatCount + 1}")
-                        onItemClick(newChat)
+                        viewModel.switchChat(newChat)
                     }
                 ) {
                     Icon(FeatherIcons.Plus, contentDescription = "New Chat")
@@ -113,7 +136,13 @@ fun DrawerUI(
                         style = MaterialTheme.typography.labelMedium,
                     )
                 }
-                Button(onClick = onCreateTaskClick) {
+                Button(
+                    onClick = {
+                        viewModel.onEvent(
+                            ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = true)
+                        )
+                    }
+                ) {
                     Icon(FeatherIcons.PlusSquare, contentDescription = "New Task")
                     Text(
                         stringResource(R.string.chat_drawer_new_task),
@@ -122,22 +151,42 @@ fun DrawerUI(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            ChatsList(viewModel, onManageTasksClick, onItemClick)
+            ChatsAndFoldersList(
+                currentChat,
+                chats.toImmutableList(),
+                folders.toImmutableList(),
+                onManageTasksClick = {
+                    Intent(context, ManageTasksActivity::class.java).also {
+                        context.startActivity(it)
+                    }
+                    onCloseDrawer()
+                },
+                onItemClick = {
+                    viewModel.switchChat(it)
+                    onCloseDrawer()
+                },
+                onDeleteFolderClick = { viewModel.appDB.deleteFolder(it.id) },
+                onDeleteFolderWithChatsClick = { viewModel.appDB.deleteFolderWithChats(it.id) },
+                onUpdateFolder = { viewModel.appDB.updateFolder(it) },
+                onAddFolder = { viewModel.appDB.addFolder(it) },
+            )
         }
         AppAlertDialog()
     }
 }
 
 @Composable
-private fun ColumnScope.ChatsList(
-    viewModel: ChatScreenViewModel,
+private fun ChatsAndFoldersList(
+    currentChat: Chat?,
+    chats: ImmutableList<Chat>,
+    folders: ImmutableList<Folder>,
     onManageTasksClick: () -> Unit,
     onItemClick: (Chat) -> Unit,
+    onDeleteFolderClick: (Folder) -> Unit,
+    onDeleteFolderWithChatsClick: (Folder) -> Unit,
+    onUpdateFolder: (Folder) -> Unit,
+    onAddFolder: (String) -> Unit,
 ) {
-    val chats by viewModel.getChats().collectAsState(emptyList())
-    val folders by viewModel.getFolders().collectAsState(emptyList())
-    val currentChat by viewModel.currChatState.collectAsState(null)
-    val context = LocalContext.current
     Column {
         Row(
             modifier = Modifier
@@ -159,56 +208,31 @@ private fun ColumnScope.ChatsList(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                stringResource(R.string.chat_drawer_folders),
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.weight(1f),
-            )
-            IconButton(
-                onClick = {
-                    createTextFieldDialog(
-                        dialogTitle = context.getString(R.string.dialog_create_folder_title),
-                        dialogDefaultText = "",
-                        dialogPlaceholder =
-                            context.getString(R.string.dialog_create_folder_placeholder),
-                        dialogButtonText =
-                            context.getString(R.string.dialog_create_folder_button_text),
-                        onButtonClick = { text -> viewModel.appDB.addFolder(text) },
-                    )
-                }
-            ) {
-                Icon(
-                    FeatherIcons.FolderPlus,
-                    contentDescription = "Add Folder",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
-        folders.forEach { folder ->
-            val chatsInFolder by viewModel.getChatsForFolder(folder.id).collectAsState(emptyList())
-            FolderListItem(
-                folder = folder,
-                chatsInFolder = chatsInFolder,
-                onItemClick,
-                onEditFolderNameClick = { newName ->
-                    viewModel.appDB.updateFolder(folder.copy(name = newName))
-                },
-                onDeleteFolderClick = { viewModel.appDB.deleteFolder(folder.id) },
-                onDeleteFolderWithChatsClick = { viewModel.appDB.deleteFolderWithChats(folder.id) },
-            )
-        }
+        FoldersList(
+            chats,
+            folders,
+            onItemClick,
+            onDeleteFolderClick,
+            onDeleteFolderWithChatsClick,
+            onUpdateFolder,
+            onAddFolder,
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        LazyColumn {
-            item {
-                Text(
-                    stringResource(R.string.chat_drawer_previous_chat),
-                    style = MaterialTheme.typography.labelSmall,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            items(chats) { chat -> ChatListItem(chat, onItemClick, currentChat?.id == chat.id) }
+        ChatsList(currentChat, chats, onItemClick)
+    }
+}
+
+@Composable
+private fun ChatsList(currentChat: Chat?, chats: ImmutableList<Chat>, onItemClick: (Chat) -> Unit) {
+    LazyColumn {
+        item {
+            Text(
+                stringResource(R.string.chat_drawer_previous_chat),
+                style = MaterialTheme.typography.labelSmall,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
+        items(chats) { chat -> ChatListItem(chat, onItemClick, currentChat?.id == chat.id) }
     }
 }
 
@@ -255,9 +279,57 @@ private fun LazyItemScope.ChatListItem(
 }
 
 @Composable
+private fun FoldersList(
+    allChats: ImmutableList<Chat>,
+    folders: ImmutableList<Folder>,
+    onItemClick: (Chat) -> Unit,
+    onDeleteFolderClick: (Folder) -> Unit,
+    onDeleteFolderWithChatsClick: (Folder) -> Unit,
+    onUpdateFolder: (Folder) -> Unit,
+    onAddFolder: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            stringResource(R.string.chat_drawer_folders),
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(
+            onClick = {
+                createTextFieldDialog(
+                    dialogTitle = context.getString(R.string.dialog_create_folder_title),
+                    dialogDefaultText = "",
+                    dialogPlaceholder =
+                        context.getString(R.string.dialog_create_folder_placeholder),
+                    dialogButtonText = context.getString(R.string.dialog_create_folder_button_text),
+                    onButtonClick = onAddFolder,
+                )
+            }
+        ) {
+            Icon(
+                FeatherIcons.FolderPlus,
+                contentDescription = "Add Folder",
+                tint = MaterialTheme.colorScheme.secondary,
+            )
+        }
+    }
+    folders.forEach { folder ->
+        FolderListItem(
+            folder = folder,
+            chatsInFolder = folder.getChats(allChats).toImmutableList(),
+            onItemClick,
+            onEditFolderNameClick = { newName -> onUpdateFolder(folder.copy(name = newName)) },
+            onDeleteFolderClick = { onDeleteFolderClick(folder) },
+            onDeleteFolderWithChatsClick = { onDeleteFolderWithChatsClick(folder) },
+        )
+    }
+}
+
+@Composable
 private fun FolderListItem(
     folder: Folder,
-    chatsInFolder: List<Chat>,
+    chatsInFolder: ImmutableList<Chat>,
     onChatItemClick: (Chat) -> Unit,
     onEditFolderNameClick: (String) -> Unit,
     onDeleteFolderClick: () -> Unit,
@@ -348,3 +420,6 @@ private fun FolderListItem(
         }
     }
 }
+
+private fun Folder.getChats(allChats: List<Chat>): List<Chat> =
+    allChats.filter { it.folderId == id }
