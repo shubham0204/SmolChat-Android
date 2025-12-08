@@ -243,7 +243,9 @@ class ChatScreenViewModel(
                     _isGeneratingResponse.value = false
                     responseGenerationsSpeed = response.generationSpeed
                     responseGenerationTimeSecs = response.generationTimeSecs
-                    appDB.updateChat(chat.copy(contextSizeConsumed = response.contextLengthUsed))
+                    val updatedChat = chat.copy(contextSizeConsumed = response.contextLengthUsed)
+                    _currChatState.value = updatedChat
+                    appDB.updateChat(updatedChat)
                 },
                 onCancelled = {
                     // ignore CancellationException, as it was called because
