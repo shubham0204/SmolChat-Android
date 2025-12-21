@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -75,6 +76,10 @@ fun TextFieldDialog() {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceAround,
                     ) {
+                        OutlinedButton(onClick = { visible = false }) {
+                            Icon(Icons.Default.Close, contentDescription = null)
+                            Text(stringResource(R.string.dialog_err_close))
+                        }
                         Button(
                             onClick = {
                                 if (text.trim().isEmpty()) {
@@ -88,10 +93,6 @@ fun TextFieldDialog() {
                         ) {
                             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                             Text(buttonText)
-                        }
-                        Button(onClick = { visible = false }) {
-                            Icon(Icons.Default.Close, contentDescription = null)
-                            Text(stringResource(R.string.dialog_err_close))
                         }
                     }
                 }
