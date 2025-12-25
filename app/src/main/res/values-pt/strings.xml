@@ -81,7 +81,7 @@
     <string name="dialog_progress_copy_model_text">%1$s\n(O modelo precisa de ser copiado para o diretório interno da aplicação para ser usado)</string>
     <string name="toast_invalid_file">Ficheiro inválido</string>
     <string name="chat_options_clear_messages">Limpar Mensagens do Chat</string>
-    <string name="chat_options_clear_messages_text">Tem a certeza que deseja limpar todas as mensagens deste chat?</string>
+    <string name="chat_options_clear_messages_text">Tem certeza de que deseja limpar todas as mensagens deste chat? Isso também redefinirá o contexto/memória do modelo.</string>
     <string name="dialog_pos_clear">Limpar</string>
     <string name="task_popup_add_shortcut">Adicionar Atalho</string>
     <string name="task_popup_remove_shortcut">Remover Atalho</string>

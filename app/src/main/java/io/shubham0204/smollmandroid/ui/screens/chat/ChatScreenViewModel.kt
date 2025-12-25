@@ -402,12 +402,17 @@ class ChatScreenViewModel(
                     dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
                     onPositiveButtonClick = {
                         deleteChatMessages(event.chat)
-                        Toast.makeText(
-                            context,
-                            "Chat '${event.chat.name}' cleared",
-                            Toast.LENGTH_LONG,
-                        )
-                            .show()
+                        unloadModel()
+                        loadModel(onComplete = {
+                            if (it == ModelLoadingState.SUCCESS) {
+                                Toast.makeText(
+                                    context,
+                                    "Chat '${event.chat.name}' cleared",
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                            }
+                        })
+
                     },
                     onNegativeButtonClick = {},
                 )

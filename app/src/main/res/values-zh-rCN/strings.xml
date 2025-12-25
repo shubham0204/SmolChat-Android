@@ -96,7 +96,7 @@
     <string name="dialog_progress_copy_model_text">%1$s\n（模型需要复制到应用的内部目录才能使用）</string>
     <string name="toast_invalid_file">无效文件</string>
     <string name="chat_options_clear_messages">清除聊天记录</string>
-    <string name="chat_options_clear_messages_text">确定要清除此聊天中的所有消息吗？</string>
+    <string name="chat_options_clear_messages_text">您确定要清除此会话的所有消息吗？这将同时重置模型的上下文/记忆。</string>
     <string name="dialog_pos_clear">清除</string>
     <string name="task_popup_add_shortcut">添加快捷方式</string>
     <string name="task_popup_remove_shortcut">删除快捷方式</string>
