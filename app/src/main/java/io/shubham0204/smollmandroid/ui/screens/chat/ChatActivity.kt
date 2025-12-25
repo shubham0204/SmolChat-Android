@@ -91,6 +91,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -114,6 +115,10 @@ import io.shubham0204.smollmandroid.ui.components.MediumLabelText
 import io.shubham0204.smollmandroid.ui.components.SelectModelsList
 import io.shubham0204.smollmandroid.ui.components.TasksList
 import io.shubham0204.smollmandroid.ui.components.TextFieldDialog
+import io.shubham0204.smollmandroid.ui.preview.dummyChats
+import io.shubham0204.smollmandroid.ui.preview.dummyFolders
+import io.shubham0204.smollmandroid.ui.preview.dummyLLMModels
+import io.shubham0204.smollmandroid.ui.preview.dummyTasksList
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoadingState
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChangeFolderDialogUI
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMessageOptionsDialog
@@ -123,6 +128,7 @@ import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.createChatMessageOpt
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -239,6 +245,22 @@ class ChatActivity : ComponentActivity() {
             LOGD("onStop() called - model unloaded result: $modelUnloaded")
         }
     }
+}
+
+@Preview
+@Composable
+private fun PreviewChatActivityScreenUI() {
+    ChatActivityScreenUI(
+        uiState = ChatScreenUIState(
+            chat = dummyChats[0].copy(llmModel = dummyLLMModels[1]),
+            folders = dummyFolders.toImmutableList(),
+            chats = dummyChats.toImmutableList(),
+            models = dummyLLMModels.toImmutableList(),
+            tasks = dummyTasksList.toImmutableList()
+        ),
+        onEditChatParamsClick = { _, _ -> },
+        onEvent = {}
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
