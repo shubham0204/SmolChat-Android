@@ -74,8 +74,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -109,6 +107,7 @@ import compose.icons.feathericons.StopCircle
 import compose.icons.feathericons.User
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
+import io.shubham0204.smollmandroid.data.ChatMessage
 import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.components.MediumLabelText
@@ -119,11 +118,11 @@ import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoa
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChangeFolderDialogUI
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMessageOptionsDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMoreOptionsPopup
+import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.FolderOptionsDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.createChatMessageOptionsDialog
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.delay
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.android.ext.android.inject
@@ -139,6 +138,7 @@ object ChatRoute
 data class EditChatSettingsRoute(val chat: Chat, val modelContextSize: Int)
 
 class ChatActivity : ComponentActivity() {
+
     private val viewModel: ChatScreenViewModel by inject()
     private var modelUnloaded = false
 
@@ -154,19 +154,21 @@ class ChatActivity : ComponentActivity() {
             intent.getStringExtra(Intent.EXTRA_TEXT)?.let { text ->
                 val chatCount = viewModel.appDB.getChatsCount()
                 val newChat = viewModel.appDB.addChat(chatName = "Untitled ${chatCount + 1}")
-                viewModel.switchChat(newChat)
+                viewModel.onEvent(ChatScreenUIEvent.ChatEvents.SwitchChat(newChat))
                 viewModel.questionTextDefaultVal = text
             }
         }
 
         /**
-         * Check if the activity was launched by an intent created by a dynamic shortcut If yes, get
-         * the corresponding task (task ID is stored within the intent) and create a new chat
+         * Check if the activity was launched by an intent created by a dynamic shortcut. If yes,
+         * get the corresponding task (task ID is stored within the intent) and create a new chat
          * instance with the task's parameters
          */
         if (intent?.action == Intent.ACTION_VIEW && intent.getLongExtra("task_id", 0L) != 0L) {
             val taskId = intent.getLongExtra("task_id", 0L)
-            viewModel.appDB.getTask(taskId)?.let { task -> createChatFromTask(viewModel, task) }
+            viewModel.appDB.getTask(taskId).let { task ->
+                viewModel.onEvent(ChatScreenUIEvent.ChatEvents.OnTaskSelected(task))
+            }
         }
 
         setContent {
@@ -179,35 +181,37 @@ class ChatActivity : ComponentActivity() {
                     exitTransition = { fadeOut() },
                 ) {
                     composable<EditChatSettingsRoute>(
-                        typeMap = mapOf(
-                            typeOf<Chat>() to CustomNavTypes.ChatNavType
-                        )
+                        typeMap = mapOf(typeOf<Chat>() to CustomNavTypes.ChatNavType)
                     ) { backStackEntry ->
                         val route: EditChatSettingsRoute = backStackEntry.toRoute()
                         val settings = EditableChatSettings.fromChat(route.chat)
                         EditChatSettingsScreen(
                             settings,
                             route.modelContextSize,
-                            onUpdateChat = {
-                                viewModel.updateChatSettings(
-                                    existingChat = route.chat,
-                                    it
+                            onUpdateChat = { editableChatSettings ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.ChatEvents.UpdateChatSettings(
+                                        editableChatSettings,
+                                        route.chat,
+                                    )
                                 )
                             },
                             onBackClicked = { navController.navigateUp() },
                         )
                     }
                     composable<ChatRoute> {
+                        val uiState by
+                        viewModel.uiState.collectAsStateWithLifecycle(
+                            LocalLifecycleOwner.current
+                        )
                         ChatActivityScreenUI(
-                            viewModel,
+                            uiState,
                             onEditChatParamsClick = { chat, modelContextSize ->
                                 navController.navigate(
-                                    EditChatSettingsRoute(
-                                        chat,
-                                        modelContextSize,
-                                    )
+                                    EditChatSettingsRoute(chat, modelContextSize)
                                 )
                             },
+                            viewModel::onEvent,
                         )
                     }
                 }
@@ -238,21 +242,23 @@ class ChatActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatActivityScreenUI(
-    viewModel: ChatScreenViewModel,
+    uiState: ChatScreenUIState,
     onEditChatParamsClick: (Chat, Int) -> Unit,
+    onEvent: (ChatScreenUIEvent) -> Unit,
 ) {
-    val currChat by
-    viewModel.currChatState.collectAsStateWithLifecycle(
-        lifecycleOwner = LocalLifecycleOwner.current
-    )
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    LaunchedEffect(currChat) { viewModel.loadModel() }
     SmolLMAndroidTheme {
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
-                DrawerUI(viewModel, onCloseDrawer = { scope.launch { drawerState.close() } })
+                DrawerUI(
+                    uiState.chat,
+                    uiState.chats,
+                    uiState.folders,
+                    onCloseDrawer = { scope.launch { drawerState.close() } },
+                    onEvent = onEvent,
+                )
                 BackHandler(drawerState.isOpen) { scope.launch { drawerState.close() } }
             },
         ) {
@@ -266,14 +272,10 @@ fun ChatActivityScreenUI(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
-                                AppBarTitleText(
-                                    currChat?.name ?: stringResource(R.string.chat_select_chat)
-                                )
+                                AppBarTitleText(uiState.chat.name)
                                 Text(
-                                    if (currChat != null && currChat?.llmModelId != -1L) {
-                                        viewModel.modelsRepository
-                                            .getModelFromId(currChat!!.llmModelId)
-                                            ?.name ?: ""
+                                    if (uiState.chat.llmModelId != -1L) {
+                                        uiState.chat.llmModel!!.name
                                     } else {
                                         ""
                                     },
@@ -291,34 +293,34 @@ fun ChatActivityScreenUI(
                             }
                         },
                         actions = {
-                            if (currChat != null) {
-                                Box {
-                                    IconButton(
-                                        onClick = {
-                                            viewModel.onEvent(
-                                                ChatScreenUIEvent.DialogEvents
-                                                    .ToggleMoreOptionsPopup(visible = true)
+                            Box {
+                                IconButton(
+                                    onClick = {
+                                        onEvent(
+                                            ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(
+                                                visible = true
                                             )
-                                        }
-                                    ) {
-                                        Icon(
-                                            FeatherIcons.MoreVertical,
-                                            contentDescription = "Options",
-                                            tint = MaterialTheme.colorScheme.secondary,
                                         )
                                     }
-                                    ChatMoreOptionsPopup(
-                                        viewModel,
-                                        {
-                                            onEditChatParamsClick(
-                                                currChat!!,
-                                                viewModel.modelsRepository
-                                                    .getModelFromId(currChat!!.llmModelId)
-                                                    .contextSize,
-                                            )
-                                        },
+                                ) {
+                                    Icon(
+                                        FeatherIcons.MoreVertical,
+                                        contentDescription = "Options",
+                                        tint = MaterialTheme.colorScheme.secondary,
                                     )
                                 }
+                                ChatMoreOptionsPopup(
+                                    uiState.chat,
+                                    uiState.showMoreOptionsPopup,
+                                    uiState.memoryUsage != null,
+                                    onEditChatSettingsClick = {
+                                        onEditChatParamsClick(
+                                            uiState.chat,
+                                            uiState.chat.llmModel!!.contextSize,
+                                        )
+                                    },
+                                    onEvent = onEvent,
+                                )
                             }
                         },
                     )
@@ -330,14 +332,46 @@ fun ChatActivityScreenUI(
                             .padding(innerPadding)
                             .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    if (currChat != null) {
-                        ScreenUI(viewModel, currChat!!)
-                    }
+                    ScreenUI(uiState, onEvent)
                 }
             }
-            SelectModelsList(viewModel)
-            TasksListBottomSheet(viewModel)
-            ChangeFolderDialog(viewModel)
+
+            if (uiState.showSelectModelListDialog) {
+                SelectModelsList(
+                    onDismissRequest = {
+                        onEvent(
+                            ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(
+                                visible = false
+                            )
+                        )
+                    },
+                    uiState.models,
+                    onModelListItemClick = { model ->
+                        onEvent(ChatScreenUIEvent.ChatEvents.UpdateChatModel(model))
+                    },
+                    onModelDeleteClick = { model ->
+                        onEvent(ChatScreenUIEvent.ChatEvents.DeleteModel(model))
+                    },
+                )
+            }
+            if (uiState.showTasksBottomSheet) {
+                TasksListBottomSheet(uiState.tasks, onEvent)
+            }
+            if (uiState.showChangeFolderDialog) {
+                ChangeFolderDialogUI(
+                    onDismissRequest = {
+                        onEvent(
+                            ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(visible = false)
+                        )
+                    },
+                    uiState.chat.folderId,
+                    uiState.folders,
+                    onUpdateFolderId = { folderId ->
+                        onEvent(ChatScreenUIEvent.FolderEvents.UpdateChatFolder(folderId))
+                    },
+                )
+            }
+            FolderOptionsDialog()
             TextFieldDialog()
             ChatMessageOptionsDialog()
         }
@@ -345,52 +379,48 @@ fun ChatActivityScreenUI(
 }
 
 @Composable
-private fun ColumnScope.ScreenUI(viewModel: ChatScreenViewModel, currChat: Chat) {
-    val isGeneratingResponse by viewModel.isGeneratingResponse.collectAsStateWithLifecycle()
-    RAMUsageLabel(viewModel)
+private fun ColumnScope.ScreenUI(uiState: ChatScreenUIState, onEvent: (ChatScreenUIEvent) -> Unit) {
+    if (uiState.memoryUsage != null) {
+        RAMUsageLabel(uiState.memoryUsage)
+    }
     Spacer(modifier = Modifier.height(4.dp))
-    MessagesList(viewModel, isGeneratingResponse, currChat.id)
-    MessageInput(viewModel, isGeneratingResponse)
+    MessagesList(
+        uiState.messages,
+        uiState.isGeneratingResponse,
+        uiState.renderedPartialResponse,
+        uiState.chat.id,
+        uiState.responseGenerationsSpeed,
+        uiState.responseGenerationTimeSecs,
+        onEvent,
+    )
+    MessageInput(uiState.chat, uiState.modelLoadingState, uiState.isGeneratingResponse, onEvent)
 }
 
 @Composable
-private fun RAMUsageLabel(viewModel: ChatScreenViewModel) {
-    val showRAMUsageLabel by viewModel.showRAMUsageLabel.collectAsStateWithLifecycle()
+private fun RAMUsageLabel(memoryUsage: Pair<Float, Float>) {
     val context = LocalContext.current
-    var labelText by remember { mutableStateOf("") }
-    LaunchedEffect(showRAMUsageLabel) {
-        if (showRAMUsageLabel) {
-            while (true) {
-                val (used, total) = viewModel.getCurrentMemoryUsage()
-                labelText = context.getString(R.string.label_device_ram).format(used, total)
-                delay(3000L)
-            }
-        }
-    }
-    if (showRAMUsageLabel) {
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            labelText,
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-        )
-    }
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        context.getString(R.string.label_device_ram).format(memoryUsage.first, memoryUsage.second),
+        style = MaterialTheme.typography.labelSmall,
+        modifier = Modifier.fillMaxWidth(),
+        textAlign = TextAlign.Center,
+    )
 }
 
 @Composable
 private fun ColumnScope.MessagesList(
-    viewModel: ChatScreenViewModel,
+    messages: ImmutableList<ChatMessage>,
     isGeneratingResponse: Boolean,
+    renderedPartialResponse: Spanned?,
     chatId: Long,
+    responseGenerationsSpeed: Float? = null,
+    responseGenerationTimeSecs: Int? = null,
+    onEvent: (ChatScreenUIEvent) -> Unit,
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
-    val messages by viewModel.getChatMessages(chatId).collectAsState(emptyList())
-    val lastUserMessageIndex by remember {
-        derivedStateOf { messages.indexOfLast { it.isUserMessage } }
-    }
-    val partialResponse by viewModel.partialResponse.collectAsStateWithLifecycle()
+    val lastUserMessageIndex = messages.indexOfLast { it.isUserMessage }
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size)
@@ -401,11 +431,11 @@ private fun ColumnScope.MessagesList(
         .weight(1f)) {
         itemsIndexed(messages) { i, chatMessage ->
             MessageListItem(
-                viewModel.markwon.render(viewModel.markwon.parse(chatMessage.message)),
+                chatMessage.renderedMessage,
                 responseGenerationSpeed =
-                    if (i == messages.size - 1) viewModel.responseGenerationsSpeed else null,
+                    if (i == messages.size - 1) responseGenerationsSpeed else null,
                 responseGenerationTimeSecs =
-                    if (i == messages.size - 1) viewModel.responseGenerationTimeSecs else null,
+                    if (i == messages.size - 1) responseGenerationTimeSecs else null,
                 chatMessage.isUserMessage,
                 onCopyClicked = {
                     val clipboard =
@@ -428,25 +458,13 @@ private fun ColumnScope.MessagesList(
                     )
                 },
                 onMessageEdited = { newMessage ->
-                    // viewModel.sendUserQuery will add a new message to the chat
-                    // hence we delete the old message and the corresponding LLM
-                    // response if there exists one
-                    // TODO: There should be no need to unload/load the model again
-                    //       as only the conversation messages have changed.
-                    //       Currently there's no native function to edit the conversation messages
-                    //       so unload (remove all messages) and load (add all messages) the model.
-                    viewModel.deleteMessage(chatMessage.id)
-                    if (!messages.last().isUserMessage) {
-                        viewModel.deleteMessage(messages.last().id)
-                    }
-                    viewModel.appDB.addUserMessage(chatId, newMessage)
-                    viewModel.unloadModel()
-                    viewModel.loadModel(
-                        onComplete = {
-                            if (it == ModelLoadingState.SUCCESS) {
-                                viewModel.sendUserQuery(newMessage, addMessageToDB = false)
-                            }
-                        }
+                    onEvent(
+                        ChatScreenUIEvent.ChatEvents.OnMessageEdited(
+                            chatId,
+                            chatMessage,
+                            messages.last(),
+                            newMessage,
+                        )
                     )
                 },
                 // allow editing the message only if it is the last message in the list
@@ -455,9 +473,9 @@ private fun ColumnScope.MessagesList(
         }
         if (isGeneratingResponse) {
             item {
-                if (partialResponse.isNotEmpty()) {
+                if (renderedPartialResponse != null) {
                     MessageListItem(
-                        viewModel.markwon.render(viewModel.markwon.parse(partialResponse)),
+                        renderedPartialResponse,
                         responseGenerationSpeed = null,
                         responseGenerationTimeSecs = null,
                         false,
@@ -647,13 +665,17 @@ private fun LazyItemScope.MessageListItem(
 }
 
 @Composable
-private fun MessageInput(viewModel: ChatScreenViewModel, isGeneratingResponse: Boolean) {
-    val currChat by viewModel.currChatState.collectAsStateWithLifecycle()
-    val modelLoadingState by viewModel.modelLoadState.collectAsStateWithLifecycle()
-    if ((currChat?.llmModelId ?: -1L) == -1L) {
+private fun MessageInput(
+    currChat: Chat,
+    modelLoadingState: ModelLoadingState,
+    isGeneratingResponse: Boolean,
+    onEvent: (ChatScreenUIEvent) -> Unit,
+    defaultQuestion: String? = null,
+) {
+    if (currChat.llmModelId == -1L) {
         Text(modifier = Modifier.padding(8.dp), text = stringResource(R.string.chat_select_model))
     } else {
-        var questionText by remember { mutableStateOf(viewModel.questionTextDefaultVal ?: "") }
+        var questionText by remember { mutableStateOf(defaultQuestion ?: "") }
         val keyboardController = LocalSoftwareKeyboardController.current
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -701,7 +723,9 @@ private fun MessageInput(viewModel: ChatScreenViewModel, isGeneratingResponse: B
                             KeyboardActions(
                                 onGo = {
                                     keyboardController?.hide()
-                                    viewModel.sendUserQuery(questionText)
+                                    onEvent(
+                                        ChatScreenUIEvent.ChatEvents.SendUserQuery(questionText)
+                                    )
                                     questionText = ""
                                 }
                             ),
@@ -710,7 +734,9 @@ private fun MessageInput(viewModel: ChatScreenViewModel, isGeneratingResponse: B
                     if (isGeneratingResponse) {
                         Box(contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()
-                            IconButton(onClick = { viewModel.stopGeneration() }) {
+                            IconButton(
+                                onClick = { onEvent(ChatScreenUIEvent.ChatEvents.StopGeneration) }
+                            ) {
                                 Icon(FeatherIcons.StopCircle, contentDescription = "Stop")
                             }
                         }
@@ -724,7 +750,7 @@ private fun MessageInput(viewModel: ChatScreenViewModel, isGeneratingResponse: B
                                 ),
                             onClick = {
                                 keyboardController?.hide()
-                                viewModel.sendUserQuery(questionText)
+                                onEvent(ChatScreenUIEvent.ChatEvents.SendUserQuery(questionText))
                                 questionText = ""
                             },
                         ) {
@@ -743,151 +769,67 @@ private fun MessageInput(viewModel: ChatScreenViewModel, isGeneratingResponse: B
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TasksListBottomSheet(viewModel: ChatScreenViewModel) {
+private fun TasksListBottomSheet(tasks: ImmutableList<Task>, onEvent: (ChatScreenUIEvent) -> Unit) {
     val context = LocalContext.current
-    val showTaskListBottomList by
-    viewModel.showTaskListBottomListState.collectAsStateWithLifecycle()
-    if (showTaskListBottomList) {
-        // adding bottom sheets in Compose
-        // See https://developer.android.com/develop/ui/compose/components/bottom-sheets
-        ModalBottomSheet(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            onDismissRequest = {
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = false)
-                )
-            },
+    // adding bottom sheets in Compose
+    // See https://developer.android.com/develop/ui/compose/components/bottom-sheets
+    ModalBottomSheet(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        onDismissRequest = {
+            onEvent(ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = false))
+        },
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.surfaceContainer,
+                        RoundedCornerShape(8.dp),
+                    )
+                    .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .background(
-                            MaterialTheme.colorScheme.surfaceContainer,
-                            RoundedCornerShape(8.dp),
+            if (tasks.isEmpty()) {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    stringResource(R.string.chat_no_task_created),
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.labelMedium,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = {
+                        onEvent(
+                            ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = true)
                         )
-                        .padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                val tasks by viewModel.appDB.getTasks().collectAsState(emptyList())
-                if (tasks.isEmpty()) {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        stringResource(R.string.chat_no_task_created),
-                        modifier = Modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.labelMedium,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedButton(
-                        onClick = {
-                            viewModel.onEvent(
-                                ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(
-                                    visible = true
-                                )
-                            )
-                            Intent(context, ManageTasksActivity::class.java).also {
-                                context.startActivity(it)
-                            }
+                        Intent(context, ManageTasksActivity::class.java).also {
+                            context.startActivity(it)
                         }
-                    ) {
-                        MediumLabelText(stringResource(R.string.chat_create_task))
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
-                } else {
-                    AppBarTitleText(stringResource(R.string.chat_select_task))
-                    TasksList(
-                        tasks.map {
-                            val modelName =
-                                viewModel.modelsRepository.getModelFromId(it.modelId)?.name
-                                    ?: return@map it
-                            it.copy(modelName = modelName)
-                        },
-                        onTaskSelected = { task -> createChatFromTask(viewModel, task) },
-                        onUpdateTaskClick = { // Not applicable as showTaskOptions is set to `false`
-                        },
-                        onEditTaskClick = { // Not applicable as showTaskOptions is set to `false`
-                        },
-                        onDeleteTaskClick = { // Not applicable as showTaskOptions is set to `false`
-                        },
-                        enableTaskClick = true,
-                        showTaskOptions = false,
-                    )
+                ) {
+                    MediumLabelText(stringResource(R.string.chat_create_task))
                 }
+                Spacer(modifier = Modifier.height(24.dp))
+            } else {
+                AppBarTitleText(stringResource(R.string.chat_select_task))
+                TasksList(
+                    tasks,
+                    onTaskSelected = { task ->
+                        onEvent(ChatScreenUIEvent.ChatEvents.OnTaskSelected(task))
+                    },
+                    onUpdateTaskClick = { // Not applicable as showTaskOptions is set to `false`
+                    },
+                    onEditTaskClick = { // Not applicable as showTaskOptions is set to `false`
+                    },
+                    onDeleteTaskClick = { // Not applicable as showTaskOptions is set to `false`
+                    },
+                    enableTaskClick = true,
+                    showTaskOptions = false,
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun SelectModelsList(viewModel: ChatScreenViewModel) {
-    val showSelectModelsListDialog by
-    viewModel.showSelectModelListDialogState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    if (showSelectModelsListDialog) {
-        val modelsList by
-            viewModel.modelsRepository.getAvailableModels().collectAsState(emptyList())
-        SelectModelsList(
-            onDismissRequest = {
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = false)
-                )
-            },
-            modelsList.toImmutableList(),
-            onModelListItemClick = { model ->
-                viewModel.updateChatLLMParams(model.id, model.chatTemplate)
-                viewModel.loadModel()
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = false)
-                )
-            },
-            onModelDeleteClick = { model ->
-                viewModel.deleteModel(model.id)
-                Toast.makeText(
-                        viewModel.context,
-                        context.getString(R.string.chat_model_deleted, model.name),
-                        Toast.LENGTH_LONG,
-                )
-                    .show()
-            },
-        )
-    }
-}
-
-@Composable
-private fun ChangeFolderDialog(viewModel: ChatScreenViewModel) {
-    val showChangeFolderDialogState by
-    viewModel.showChangeFolderDialogState.collectAsStateWithLifecycle()
-    val currentChat by viewModel.currChatState.collectAsStateWithLifecycle()
-    if (showChangeFolderDialogState && currentChat != null) {
-        val folders by viewModel.appDB.getFolders().collectAsState(emptyList())
-        ChangeFolderDialogUI(
-            onDismissRequest = {
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(visible = false)
-                )
-            },
-            currentChat!!.folderId,
-            folders,
-            onUpdateFolderId = { folderId -> viewModel.updateChatFolder(folderId) },
-        )
-    }
-}
-
-private fun createChatFromTask(viewModel: ChatScreenViewModel, task: Task) {
-    // Using parameters from the `task`
-    // create a `Chat` instance and switch to it
-    viewModel.modelsRepository.getModelFromId(task.modelId)?.let { model ->
-        val newTask =
-            viewModel.appDB.addChat(
-                chatName = task.name,
-                chatTemplate = model.chatTemplate,
-                systemPrompt = task.systemPrompt,
-                llmModelId = task.modelId,
-                isTask = true,
-            )
-        viewModel.switchChat(newTask)
-        viewModel.onEvent(ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = false))
     }
 }

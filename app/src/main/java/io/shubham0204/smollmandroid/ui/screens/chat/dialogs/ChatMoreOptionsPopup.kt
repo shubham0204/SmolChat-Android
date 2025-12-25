@@ -16,7 +16,6 @@
 
 package io.shubham0204.smollmandroid.ui.screens.chat.dialogs
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,12 +26,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Cpu
 import compose.icons.feathericons.Delete
@@ -42,21 +39,34 @@ import compose.icons.feathericons.Package
 import compose.icons.feathericons.Settings
 import compose.icons.feathericons.XCircle
 import io.shubham0204.smollmandroid.R
-import io.shubham0204.smollmandroid.ui.components.createAlertDialog
+import io.shubham0204.smollmandroid.data.Chat
+import io.shubham0204.smollmandroid.ui.preview.dummyChats
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenUIEvent
-import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel
+
+@Preview
+@Composable
+private fun PreviewChatMoreOptionsPopup() {
+    ChatMoreOptionsPopup(
+        chat = dummyChats[0],
+        isExpanded = true,
+        showRAMUsageLabel = true,
+        onEditChatSettingsClick = {},
+        onEvent = {}
+    )
+}
 
 @Composable
-fun ChatMoreOptionsPopup(viewModel: ChatScreenViewModel, onEditChatSettingsClick: () -> Unit) {
-    val expanded by viewModel.showMoreOptionsPopupState.collectAsStateWithLifecycle()
-    val showRAMUsageLabel by viewModel.showRAMUsageLabel.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+fun ChatMoreOptionsPopup(
+    chat: Chat,
+    isExpanded: Boolean,
+    showRAMUsageLabel: Boolean,
+    onEditChatSettingsClick: () -> Unit,
+    onEvent: (ChatScreenUIEvent) -> Unit,
+) {
     DropdownMenu(
-        expanded = expanded,
+        expanded = isExpanded,
         onDismissRequest = {
-            viewModel.onEvent(
-                ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
-            )
+            onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
         },
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
@@ -76,9 +86,7 @@ fun ChatMoreOptionsPopup(viewModel: ChatScreenViewModel, onEditChatSettingsClick
             },
             onClick = {
                 onEditChatSettingsClick()
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
-                )
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         DropdownMenuItem(
@@ -96,12 +104,8 @@ fun ChatMoreOptionsPopup(viewModel: ChatScreenViewModel, onEditChatSettingsClick
                 )
             },
             onClick = {
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(visible = true)
-                )
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
-                )
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(visible = true))
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         DropdownMenuItem(
@@ -119,12 +123,8 @@ fun ChatMoreOptionsPopup(viewModel: ChatScreenViewModel, onEditChatSettingsClick
                 )
             },
             onClick = {
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = true)
-                )
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
-                )
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = true))
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -145,27 +145,8 @@ fun ChatMoreOptionsPopup(viewModel: ChatScreenViewModel, onEditChatSettingsClick
                 )
             },
             onClick = {
-                viewModel.currChatState.value?.let { chat ->
-                    createAlertDialog(
-                        dialogTitle = context.getString(R.string.dialog_title_delete_chat),
-                        dialogText = context.getString(R.string.dialog_text_delete_chat, chat.name),
-                        dialogPositiveButtonText = context.getString(R.string.dialog_pos_delete),
-                        dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
-                        onPositiveButtonClick = {
-                            viewModel.deleteChat(chat)
-                            Toast.makeText(
-                                    viewModel.context,
-                                    "Chat '${chat.name}' deleted",
-                                    Toast.LENGTH_LONG,
-                            )
-                                .show()
-                        },
-                        onNegativeButtonClick = {},
-                    )
-                }
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
-                )
+                onEvent(ChatScreenUIEvent.ChatEvents.OnDeleteChat(chat))
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         DropdownMenuItem(
@@ -183,27 +164,8 @@ fun ChatMoreOptionsPopup(viewModel: ChatScreenViewModel, onEditChatSettingsClick
                 )
             },
             onClick = {
-                viewModel.currChatState.value?.let { chat ->
-                    createAlertDialog(
-                        dialogTitle = context.getString(R.string.chat_options_clear_messages),
-                        dialogText = context.getString(R.string.chat_options_clear_messages_text),
-                        dialogPositiveButtonText = context.getString(R.string.dialog_pos_clear),
-                        dialogNegativeButtonText = context.getString(R.string.dialog_neg_cancel),
-                        onPositiveButtonClick = {
-                            viewModel.deleteChatMessages(chat)
-                            Toast.makeText(
-                                    viewModel.context,
-                                    "Chat '${chat.name}' cleared",
-                                    Toast.LENGTH_LONG,
-                            )
-                                .show()
-                        },
-                        onNegativeButtonClick = {},
-                    )
-                }
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
-                )
+                onEvent(ChatScreenUIEvent.ChatEvents.OnDeleteChatMessages(chat))
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -224,10 +186,8 @@ fun ChatMoreOptionsPopup(viewModel: ChatScreenViewModel, onEditChatSettingsClick
                 )
             },
             onClick = {
-                viewModel.showContextLengthUsageDialog()
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
-                )
+                onEvent(ChatScreenUIEvent.DialogEvents.ShowContextLengthUsageDialog(chat))
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
         DropdownMenuItem(
@@ -245,10 +205,8 @@ fun ChatMoreOptionsPopup(viewModel: ChatScreenViewModel, onEditChatSettingsClick
                 )
             },
             onClick = {
-                viewModel.toggleRAMUsageLabelVisibility()
-                viewModel.onEvent(
-                    ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false)
-                )
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleRAMUsageLabel)
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
     }

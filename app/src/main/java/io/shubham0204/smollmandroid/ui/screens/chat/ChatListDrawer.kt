@@ -49,7 +49,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -103,7 +102,13 @@ private fun PreviewChatsAndFoldersList() {
 }
 
 @Composable
-fun DrawerUI(viewModel: ChatScreenViewModel, onCloseDrawer: () -> Unit) {
+fun DrawerUI(
+    currentChat: Chat,
+    chats: ImmutableList<Chat>,
+    folders: ImmutableList<Folder>,
+    onCloseDrawer: () -> Unit,
+    onEvent: (ChatScreenUIEvent) -> Unit,
+) {
     Surface {
         Column(
             modifier =
@@ -114,9 +119,6 @@ fun DrawerUI(viewModel: ChatScreenViewModel, onCloseDrawer: () -> Unit) {
                     .requiredWidth(300.dp)
                     .fillMaxHeight()
         ) {
-            val chats by viewModel.getChats().collectAsState(emptyList())
-            val folders by viewModel.getFolders().collectAsState(emptyList())
-            val currentChat by viewModel.currChatState.collectAsState(null)
             val context = LocalContext.current
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -124,10 +126,8 @@ fun DrawerUI(viewModel: ChatScreenViewModel, onCloseDrawer: () -> Unit) {
             ) {
                 Button(
                     onClick = {
-                        val chatCount = viewModel.appDB.getChatsCount()
-                        val newChat =
-                            viewModel.appDB.addChat(chatName = "Untitled ${chatCount + 1}")
-                        viewModel.switchChat(newChat)
+                        onCloseDrawer()
+                        onEvent(ChatScreenUIEvent.ChatEvents.NewChat)
                     }
                 ) {
                     Icon(FeatherIcons.Plus, contentDescription = "New Chat")
@@ -138,7 +138,8 @@ fun DrawerUI(viewModel: ChatScreenViewModel, onCloseDrawer: () -> Unit) {
                 }
                 Button(
                     onClick = {
-                        viewModel.onEvent(
+                        onCloseDrawer()
+                        onEvent(
                             ChatScreenUIEvent.DialogEvents.ToggleTaskListBottomList(visible = true)
                         )
                     }
@@ -162,13 +163,19 @@ fun DrawerUI(viewModel: ChatScreenViewModel, onCloseDrawer: () -> Unit) {
                     onCloseDrawer()
                 },
                 onItemClick = {
-                    viewModel.switchChat(it)
+                    onEvent(ChatScreenUIEvent.ChatEvents.SwitchChat(it))
                     onCloseDrawer()
                 },
-                onDeleteFolderClick = { viewModel.appDB.deleteFolder(it.id) },
-                onDeleteFolderWithChatsClick = { viewModel.appDB.deleteFolderWithChats(it.id) },
-                onUpdateFolder = { viewModel.appDB.updateFolder(it) },
-                onAddFolder = { viewModel.appDB.addFolder(it) },
+                onDeleteFolderClick = { onEvent(ChatScreenUIEvent.FolderEvents.DeleteFolder(it.id)) },
+                onDeleteFolderWithChatsClick = {
+                    onEvent(
+                        ChatScreenUIEvent.FolderEvents.DeleteFolderWithChats(
+                            it.id
+                        )
+                    )
+                },
+                onUpdateFolder = { onEvent(ChatScreenUIEvent.FolderEvents.UpdateFolder(it)) },
+                onAddFolder = { onEvent(ChatScreenUIEvent.FolderEvents.AddFolder(it)) },
             )
         }
         AppAlertDialog()

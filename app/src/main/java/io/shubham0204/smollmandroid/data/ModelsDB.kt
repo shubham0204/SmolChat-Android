@@ -23,9 +23,11 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.Serializable
 
 @Entity(tableName = "LLMModel")
 @Stable
+@Serializable
 data class LLMModel(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
     var name: String = "",

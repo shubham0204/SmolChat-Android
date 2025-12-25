@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.compose.runtime.Stable
 import androidx.room.Dao
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
@@ -102,6 +103,9 @@ data class Chat(
      * any folder.
      */
     var folderId: Long = -1L,
+
+    @Ignore
+    var llmModel: LLMModel? = null
 )
 
 @Dao

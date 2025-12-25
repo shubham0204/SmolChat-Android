@@ -58,6 +58,7 @@ import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.ui.components.SelectModelsList
 import io.shubham0204.smollmandroid.ui.preview.dummyLLMModels
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 @Preview
@@ -143,7 +144,7 @@ fun CreateTaskDialog(
                 if (isModelListDialogVisible) {
                     SelectModelsList(
                         onDismissRequest = { isModelListDialogVisible = false },
-                        modelsList = availableModelsList,
+                        modelsList = availableModelsList.toImmutableList(),
                         onModelListItemClick = { model ->
                             isModelListDialogVisible = false
                             selectedModel = model

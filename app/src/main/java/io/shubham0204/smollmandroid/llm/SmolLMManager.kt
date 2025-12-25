@@ -27,6 +27,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.time.measureTime
 
 private const val LOGTAG = "[SmolLMManager-Kt]"
@@ -35,11 +38,25 @@ private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 @Single
 class SmolLMManager(private val appDB: AppDB) {
     private val instance = SmolLM()
+
+    // Use ReentrantLock for thread-safe state management without suspending
+    private val stateLock = ReentrantLock()
+
+    @Volatile
     private var responseGenerationJob: Job? = null
+
+    @Volatile
     private var modelInitJob: Job? = null
+
+    @Volatile
     private var chat: Chat? = null
-    private var isInstanceLoaded = false
+
+    // Use java.util.concurrent.atomic for better thread safety
+    private val isInstanceLoaded = AtomicBoolean(false)
+
+    @Volatile
     var isInferenceOn = false
+        private set
 
     data class SmolLMResponse(
         val response: String,
@@ -55,37 +72,75 @@ class SmolLMManager(private val appDB: AppDB) {
         onError: (Exception) -> Unit,
         onSuccess: () -> Unit,
     ) {
-        try {
-            this.chat = chat
-            modelInitJob =
-                CoroutineScope(Dispatchers.Default).launch {
-                    if (isInstanceLoaded) {
-                        close()
-                    }
-                    instance.load(modelPath, params)
-                    LOGD("Model loaded")
-                    if (chat.systemPrompt.isNotEmpty()) {
-                        instance.addSystemPrompt(chat.systemPrompt)
-                        LOGD("System prompt added")
-                    }
-                    if (!chat.isTask) {
-                        appDB.getMessagesForModel(chat.id).forEach { message ->
-                            if (message.isUserMessage) {
-                                instance.addUserMessage(message.message)
-                                LOGD("User message added: ${message.message}")
-                            } else {
-                                instance.addAssistantMessage(message.message)
-                                LOGD("Assistant message added: ${message.message}")
+        stateLock.withLock {
+            // Cancel any existing load operation
+            modelInitJob?.cancel()
+
+            try {
+                this.chat = chat
+                modelInitJob = CoroutineScope(Dispatchers.Default).launch {
+                    try {
+                        instance.load(modelPath, params)
+                        LOGD("Model loaded")
+
+                        if (chat.systemPrompt.isNotEmpty()) {
+                            instance.addSystemPrompt(chat.systemPrompt)
+                            LOGD("System prompt added")
+                        }
+
+                        if (!chat.isTask) {
+                            appDB.getMessagesForModel(chat.id).forEach { message ->
+                                if (message.isUserMessage) {
+                                    instance.addUserMessage(message.message)
+                                    LOGD("User message added: ${message.message}")
+                                } else {
+                                    instance.addAssistantMessage(message.message)
+                                    LOGD("Assistant message added: ${message.message}")
+                                }
                             }
                         }
-                    }
-                    withContext(Dispatchers.Main) {
-                        isInstanceLoaded = true
-                        onSuccess()
+
+                        withContext(Dispatchers.Main) {
+                            isInstanceLoaded.set(true)
+                            onSuccess()
+                        }
+                    } catch (e: CancellationException) {
+                        LOGD("Model loading cancelled")
+                        throw e
+                    } catch (e: Exception) {
+                        LOGD("Error loading model: ${e.message}")
+                        withContext(Dispatchers.Main) {
+                            onError(e)
+                        }
                     }
                 }
-        } catch (e: Exception) {
-            onError(e)
+            } catch (e: Exception) {
+                onError(e)
+            }
+        }
+    }
+
+    fun unload() {
+        stateLock.withLock {
+            // Cancel jobs
+            responseGenerationJob.safeCancelJobIfActive()
+            modelInitJob.safeCancelJobIfActive()
+
+            // Launch a separate coroutine to wait for jobs to complete and clean up
+            // This is necessary because join() is suspending, but we can't make unload() suspend
+            CoroutineScope(Dispatchers.Default).launch {
+                responseGenerationJob?.join()
+                modelInitJob?.join()
+
+                try {
+                    instance.close()
+                } catch (e: Exception) {
+                    LOGD("Error closing instance: ${e.message}")
+                }
+            }
+
+            isInstanceLoaded.set(false)
+            chat = null
         }
     }
 
@@ -97,22 +152,40 @@ class SmolLMManager(private val appDB: AppDB) {
         onCancelled: () -> Unit,
         onError: (Exception) -> Unit,
     ) {
-        try {
-            assert(chat != null) { "Please call SmolLMManager.create() first." }
-            responseGenerationJob =
-                CoroutineScope(Dispatchers.Default).launch {
+        stateLock.withLock {
+            // Check if model is loaded
+            if (!isInstanceLoaded.get()) {
+                onError(IllegalStateException("Model not loaded"))
+                return
+            }
+
+            // Cancel any existing response generation
+            responseGenerationJob?.cancel()
+
+            responseGenerationJob = CoroutineScope(Dispatchers.Default).launch {
+                try {
                     isInferenceOn = true
                     var response = ""
+
                     val duration = measureTime {
                         instance.getResponseAsFlow(query).collect { piece ->
                             response += piece
-                            withContext(Dispatchers.Main) { onPartialResponseGenerated(response) }
+                            withContext(Dispatchers.Main) {
+                                onPartialResponseGenerated(response)
+                            }
                         }
                     }
+
                     response = responseTransform(response)
-                    // once the response is generated
-                    // add it to the messages database
-                    appDB.addAssistantMessage(chat!!.id, response)
+
+                    // Thread-safe access to chat
+                    val currentChat = stateLock.withLock { chat }
+
+                    if (currentChat != null) {
+                        // Add response to database
+                        appDB.addAssistantMessage(currentChat.id, response)
+                    }
+
                     withContext(Dispatchers.Main) {
                         isInferenceOn = false
                         onSuccess(
@@ -124,30 +197,29 @@ class SmolLMManager(private val appDB: AppDB) {
                             )
                         )
                     }
+                } catch (e: CancellationException) {
+                    isInferenceOn = false
+                    withContext(Dispatchers.Main) {
+                        onCancelled()
+                    }
+                } catch (e: Exception) {
+                    isInferenceOn = false
+                    withContext(Dispatchers.Main) {
+                        onError(e)
+                    }
                 }
-        } catch (e: CancellationException) {
-            isInferenceOn = false
-            onCancelled()
-        } catch (e: Exception) {
-            isInferenceOn = false
-            onError(e)
+            }
         }
     }
 
     fun stopResponseGeneration() {
-        responseGenerationJob?.let { cancelJobIfActive(it) }
-    }
-
-    fun close() {
-        stopResponseGeneration()
-        modelInitJob?.let { cancelJobIfActive(it) }
-        instance.close()
-        isInstanceLoaded = false
-    }
-
-    private fun cancelJobIfActive(job: Job) {
-        if (job.isActive) {
-            job.cancel()
+        stateLock.withLock {
+            responseGenerationJob.safeCancelJobIfActive()
+            isInferenceOn = false
         }
+    }
+
+    private fun Job?.safeCancelJobIfActive() {
+        this?.cancel()
     }
 }
