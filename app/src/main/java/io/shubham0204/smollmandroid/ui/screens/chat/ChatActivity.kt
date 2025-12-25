@@ -76,8 +76,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -125,7 +125,7 @@ import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.reflect.typeOf
 
 private const val LOGTAG = "[ChatActivity-Kt]"
@@ -139,7 +139,7 @@ data class EditChatSettingsRoute(val chat: Chat, val modelContextSize: Int)
 
 class ChatActivity : ComponentActivity() {
 
-    private val viewModel: ChatScreenViewModel by inject()
+    private val viewModel: ChatScreenViewModel by viewModel()
     private var modelUnloaded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -234,8 +234,10 @@ class ChatActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
-        modelUnloaded = viewModel.unloadModel()
-        LOGD("onStop() called - model unloaded result: $modelUnloaded")
+        if (!isChangingConfigurations) {
+            modelUnloaded = viewModel.unloadModel()
+            LOGD("onStop() called - model unloaded result: $modelUnloaded")
+        }
     }
 }
 
@@ -528,7 +530,7 @@ private fun LazyItemScope.MessageListItem(
     modifier: Modifier = Modifier,
     allowEditing: Boolean,
 ) {
-    var isEditing by remember { mutableStateOf(false) }
+    var isEditing by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     if (!isUserMessage) {
         Row(modifier = modifier
@@ -585,7 +587,7 @@ private fun LazyItemScope.MessageListItem(
             horizontalArrangement = Arrangement.End,
         ) {
             Column(horizontalAlignment = Alignment.End) {
-                var message by remember { mutableStateOf(messageStr.toString()) }
+                var message by rememberSaveable { mutableStateOf(messageStr.toString()) }
                 if (isEditing) {
                     TextField(
                         value = message,
@@ -675,7 +677,7 @@ private fun MessageInput(
     if (currChat.llmModelId == -1L) {
         Text(modifier = Modifier.padding(8.dp), text = stringResource(R.string.chat_select_model))
     } else {
-        var questionText by remember { mutableStateOf(defaultQuestion ?: "") }
+        var questionText by rememberSaveable { mutableStateOf(defaultQuestion ?: "") }
         val keyboardController = LocalSoftwareKeyboardController.current
         Row(
             verticalAlignment = Alignment.CenterVertically,
