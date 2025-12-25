@@ -51,6 +51,108 @@ set(SMOLLM_SOURCES
         ${LLAMA_DIR}/src/unicode.h
         ${LLAMA_DIR}/src/unicode.cpp
         ${LLAMA_DIR}/src/unicode-data.cpp
+        ${LLAMA_DIR}/src/models/arctic.cpp
+        ${LLAMA_DIR}/src/models/apertus.cpp
+        ${LLAMA_DIR}/src/models/dots1.cpp
+        ${LLAMA_DIR}/src/models/nemotron.cpp
+        ${LLAMA_DIR}/src/models/arcee.cpp
+        ${LLAMA_DIR}/src/models/grok.cpp
+        ${LLAMA_DIR}/src/models/falcon-h1.cpp
+        ${LLAMA_DIR}/src/models/jamba.cpp
+        ${LLAMA_DIR}/src/models/command-r.cpp
+        ${LLAMA_DIR}/src/models/minicpm3.cpp
+        ${LLAMA_DIR}/src/models/xverse.cpp
+        ${LLAMA_DIR}/src/models/mimo2-iswa.cpp
+        ${LLAMA_DIR}/src/models/qwen3moe.cpp
+        ${LLAMA_DIR}/src/models/rwkv6-base.cpp
+        ${LLAMA_DIR}/src/models/rwkv7-base.cpp
+        ${LLAMA_DIR}/src/models/granite-hybrid.cpp
+        ${LLAMA_DIR}/src/models/granite.cpp
+        ${LLAMA_DIR}/src/models/falcon.cpp
+        ${LLAMA_DIR}/src/models/llada-moe.cpp
+        ${LLAMA_DIR}/src/models/wavtokenizer-dec.cpp
+        ${LLAMA_DIR}/src/models/qwen.cpp
+        ${LLAMA_DIR}/src/models/modern-bert.cpp
+        ${LLAMA_DIR}/src/models/llama.cpp
+        ${LLAMA_DIR}/src/models/cohere2-iswa.cpp
+        ${LLAMA_DIR}/src/models/openai-moe-iswa.cpp
+        ${LLAMA_DIR}/src/models/gpt2.cpp
+        ${LLAMA_DIR}/src/models/mpt.cpp
+        ${LLAMA_DIR}/src/models/qwen3.cpp
+        ${LLAMA_DIR}/src/models/ernie4-5.cpp
+        ${LLAMA_DIR}/src/models/gemma.cpp
+        ${LLAMA_DIR}/src/models/plm.cpp
+        ${LLAMA_DIR}/src/models/qwen2.cpp
+        ${LLAMA_DIR}/src/models/lfm2.cpp
+        ${LLAMA_DIR}/src/models/deci.cpp
+        ${LLAMA_DIR}/src/models/phi2.cpp
+        ${LLAMA_DIR}/src/models/chatglm.cpp
+        ${LLAMA_DIR}/src/models/grovemoe.cpp
+        ${LLAMA_DIR}/src/models/bert.cpp
+        ${LLAMA_DIR}/src/models/chameleon.cpp
+        ${LLAMA_DIR}/src/models/gemma2-iswa.cpp
+        ${LLAMA_DIR}/src/models/phi3.cpp
+        ${LLAMA_DIR}/src/models/glm4-moe.cpp
+        ${LLAMA_DIR}/src/models/olmo2.cpp
+        ${LLAMA_DIR}/src/models/bloom.cpp
+        ${LLAMA_DIR}/src/models/bailingmoe.cpp
+        ${LLAMA_DIR}/src/models/arwkv7.cpp
+        ${LLAMA_DIR}/src/models/gptneox.cpp
+        ${LLAMA_DIR}/src/models/smallthinker.cpp
+        ${LLAMA_DIR}/src/models/llama-iswa.cpp
+        ${LLAMA_DIR}/src/models/olmoe.cpp
+        ${LLAMA_DIR}/src/models/glm4.cpp
+        ${LLAMA_DIR}/src/models/starcoder2.cpp
+        ${LLAMA_DIR}/src/models/refact.cpp
+        ${LLAMA_DIR}/src/models/deepseek2.cpp
+        ${LLAMA_DIR}/src/models/rnd1.cpp
+        ${LLAMA_DIR}/src/models/gemma3.cpp
+        ${LLAMA_DIR}/src/models/llada.cpp
+        ${LLAMA_DIR}/src/models/hunyuan-moe.cpp
+        ${LLAMA_DIR}/src/models/mamba.cpp
+        ${LLAMA_DIR}/src/models/neo-bert.cpp
+        ${LLAMA_DIR}/src/models/ernie4-5-moe.cpp
+        ${LLAMA_DIR}/src/models/dbrx.cpp
+        ${LLAMA_DIR}/src/models/t5-enc.cpp
+        ${LLAMA_DIR}/src/models/hunyuan-dense.cpp
+        ${LLAMA_DIR}/src/models/qwen3vl.cpp
+        ${LLAMA_DIR}/src/models/minimax-m2.cpp
+        ${LLAMA_DIR}/src/models/smollm3.cpp
+        ${LLAMA_DIR}/src/models/gemma3n-iswa.cpp
+        ${LLAMA_DIR}/src/models/dream.cpp
+        ${LLAMA_DIR}/src/models/internlm2.cpp
+        ${LLAMA_DIR}/src/models/graph-context-mamba.cpp
+        ${LLAMA_DIR}/src/models/t5-dec.cpp
+        ${LLAMA_DIR}/src/models/gemma-embedding.cpp
+        ${LLAMA_DIR}/src/models/mistral3.cpp
+        ${LLAMA_DIR}/src/models/cogvlm.cpp
+        ${LLAMA_DIR}/src/models/codeshell.cpp
+        ${LLAMA_DIR}/src/models/seed-oss.cpp
+        ${LLAMA_DIR}/src/models/openelm.cpp
+        ${LLAMA_DIR}/src/models/starcoder.cpp
+        ${LLAMA_DIR}/src/models/afmoe.cpp
+        ${LLAMA_DIR}/src/models/nemotron-h.cpp
+        ${LLAMA_DIR}/src/models/qwen2moe.cpp
+        ${LLAMA_DIR}/src/models/qwen2vl.cpp
+        ${LLAMA_DIR}/src/models/pangu-embedded.cpp
+        ${LLAMA_DIR}/src/models/plamo.cpp
+        ${LLAMA_DIR}/src/models/models.h
+        ${LLAMA_DIR}/src/models/deepseek.cpp
+        ${LLAMA_DIR}/src/models/qwen3next.cpp
+        ${LLAMA_DIR}/src/models/bitnet.cpp
+        ${LLAMA_DIR}/src/models/plamo2.cpp
+        ${LLAMA_DIR}/src/models/orion.cpp
+        ${LLAMA_DIR}/src/models/stablelm.cpp
+        ${LLAMA_DIR}/src/models/rwkv6qwen2.cpp
+        ${LLAMA_DIR}/src/models/exaone4.cpp
+        ${LLAMA_DIR}/src/models/olmo.cpp
+        ${LLAMA_DIR}/src/models/rwkv6.cpp
+        ${LLAMA_DIR}/src/models/exaone.cpp
+        ${LLAMA_DIR}/src/models/rwkv7.cpp
+        ${LLAMA_DIR}/src/models/qwen3vl-moe.cpp
+        ${LLAMA_DIR}/src/models/baichuan.cpp
+        ${LLAMA_DIR}/src/models/bailingmoe2.cpp
+        ${LLAMA_DIR}/src/models/jais.cpp
 
         ${VENDOR_DIR}/nlohmann/json_fwd.hpp
         ${VENDOR_DIR}/nlohmann/json.hpp
@@ -137,7 +239,7 @@ function(build_library target_name)
 
     target_link_libraries(
             ${target_name}
-            android log
+            android log vulkan
     )
     # -Wl,--gc-sections: remove unused sections (garbage collection)
     # -flto: link-time optimization
