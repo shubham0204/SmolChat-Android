@@ -353,6 +353,7 @@ private fun FolderListItem(
             },
             contentDescription = "",
             tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.noRippleClickable { expanded = !expanded }
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(folder.name, modifier = Modifier
