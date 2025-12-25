@@ -262,7 +262,11 @@ private fun LazyItemScope.ChatListItem(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    chat.name,
+                    if (chat.isTask) {
+                        "[Task] " + chat.name
+                    } else {
+                        chat.name
+                    },
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
