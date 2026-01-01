@@ -15,8 +15,8 @@ android {
         applicationId = "io.shubham0204.smollmandroid"
         minSdk = 26
         targetSdk = 35
-        versionCode = 11
-        versionName = "11"
+        versionCode = 12
+        versionName = "12"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

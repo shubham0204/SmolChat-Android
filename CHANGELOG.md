@@ -1,9 +1,11 @@
-- Fixed a bug where the app's memory usage kept increasing after switching models i.e. the memory acquired by the previous model was not 'released' when selecting a different model
-- Sync with upstream llama.cpp
-- Align default inference parameters with those found in `llama` executable
+- Add support for Portuguese language (alongside existing support for English and simplified
+  Chinese).
+- Clear model context/memory when clearing the chat i.e. deleting all messages from the current
+  chat.
+- Avoid model reloading when screen is rotated.
 
 ### UI Improvements
 
-- Chat message actions like share/copy/edit are now available in a dialog which appears when the message is long-pressed
-- Fix misleading/overflowing icons to enhance UX
-- Preserve query text in the search box when a model is opened while browsing HuggingFace
+- Earlier, the user had to click on the folder name to expand it. Clicking on the chevron icon now
+  also expands the folder.
+- Task names are now appended with `[Task]` in the chats list to distinguish them from other chats.
