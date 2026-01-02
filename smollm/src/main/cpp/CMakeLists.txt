@@ -1,194 +1,34 @@
 cmake_minimum_required(VERSION 3.22.1)
 project("smollm")
 
-# Resolve LLAMA_DIR to an absolute path
+add_subdirectory(../../../../llama.cpp llama.cpp)
 set(LLAMA_DIR_RELATIVE "../../../../llama.cpp")
 get_filename_component(LLAMA_DIR ${LLAMA_DIR_RELATIVE} ABSOLUTE)
 
 set(GGML_DIR ${LLAMA_DIR}/ggml)
 set(COMMON_DIR ${LLAMA_DIR}/common)
 set(VENDOR_DIR ${LLAMA_DIR}/vendor)
-set(SMOLLM_SOURCES
-        ${GGML_DIR}/src/ggml-alloc.c
-        ${GGML_DIR}/src/ggml-backend.cpp
-        ${GGML_DIR}/src/ggml-threading.cpp
-        ${GGML_DIR}/src/ggml-quants.c
-        ${GGML_DIR}/src/ggml-backend-reg.cpp
-        ${GGML_DIR}/src/ggml-opt.cpp
-        ${GGML_DIR}/src/ggml-cpu/arch/arm/quants.c
-        ${GGML_DIR}/src/ggml-cpu/ops.cpp
-        ${GGML_DIR}/src/ggml-cpu/vec.cpp
-        ${GGML_DIR}/src/ggml-cpu/quants.c
-        ${GGML_DIR}/src/ggml-cpu/traits.cpp
-        ${GGML_DIR}/src/ggml-cpu/unary-ops.cpp
-        ${GGML_DIR}/src/ggml-cpu/binary-ops.cpp
-        ${GGML_DIR}/src/ggml-cpu/ggml-cpu.c
-        ${GGML_DIR}/src/ggml-cpu/ggml-cpu.cpp
-        ${GGML_DIR}/src/ggml.c
-        ${GGML_DIR}/src/gguf.cpp
 
-        ${LLAMA_DIR}/src/llama.cpp
-        ${LLAMA_DIR}/src/llama-vocab.cpp
-        ${LLAMA_DIR}/src/llama-grammar.cpp
-        ${LLAMA_DIR}/src/llama-sampling.cpp
-        ${LLAMA_DIR}/src/llama-context.cpp
-        ${LLAMA_DIR}/src/llama-model.cpp
-        ${LLAMA_DIR}/src/llama-model-loader.cpp
-        ${LLAMA_DIR}/src/llama-impl.cpp
-        ${LLAMA_DIR}/src/llama-memory.cpp
-        ${LLAMA_DIR}/src/llama-memory-recurrent.cpp
-        ${LLAMA_DIR}/src/llama-memory-hybrid.cpp
-        ${LLAMA_DIR}/src/llama-mmap.cpp
-        ${LLAMA_DIR}/src/llama-hparams.cpp
-        ${LLAMA_DIR}/src/llama-hparams.cpp
-        ${LLAMA_DIR}/src/llama-kv-cache-iswa.cpp
-        ${LLAMA_DIR}/src/llama-kv-cache.cpp
-        ${LLAMA_DIR}/src/llama-batch.cpp
-        ${LLAMA_DIR}/src/llama-arch.cpp
-        ${LLAMA_DIR}/src/llama-adapter.cpp
-        ${LLAMA_DIR}/src/llama-chat.cpp
-        ${LLAMA_DIR}/src/llama-graph.cpp
-        ${LLAMA_DIR}/src/unicode.h
-        ${LLAMA_DIR}/src/unicode.cpp
-        ${LLAMA_DIR}/src/unicode-data.cpp
-        ${LLAMA_DIR}/src/models/arctic.cpp
-        ${LLAMA_DIR}/src/models/apertus.cpp
-        ${LLAMA_DIR}/src/models/dots1.cpp
-        ${LLAMA_DIR}/src/models/nemotron.cpp
-        ${LLAMA_DIR}/src/models/arcee.cpp
-        ${LLAMA_DIR}/src/models/grok.cpp
-        ${LLAMA_DIR}/src/models/falcon-h1.cpp
-        ${LLAMA_DIR}/src/models/jamba.cpp
-        ${LLAMA_DIR}/src/models/command-r.cpp
-        ${LLAMA_DIR}/src/models/minicpm3.cpp
-        ${LLAMA_DIR}/src/models/xverse.cpp
-        ${LLAMA_DIR}/src/models/mimo2-iswa.cpp
-        ${LLAMA_DIR}/src/models/qwen3moe.cpp
-        ${LLAMA_DIR}/src/models/rwkv6-base.cpp
-        ${LLAMA_DIR}/src/models/rwkv7-base.cpp
-        ${LLAMA_DIR}/src/models/granite-hybrid.cpp
-        ${LLAMA_DIR}/src/models/granite.cpp
-        ${LLAMA_DIR}/src/models/falcon.cpp
-        ${LLAMA_DIR}/src/models/llada-moe.cpp
-        ${LLAMA_DIR}/src/models/wavtokenizer-dec.cpp
-        ${LLAMA_DIR}/src/models/qwen.cpp
-        ${LLAMA_DIR}/src/models/modern-bert.cpp
-        ${LLAMA_DIR}/src/models/llama.cpp
-        ${LLAMA_DIR}/src/models/cohere2-iswa.cpp
-        ${LLAMA_DIR}/src/models/openai-moe-iswa.cpp
-        ${LLAMA_DIR}/src/models/gpt2.cpp
-        ${LLAMA_DIR}/src/models/mpt.cpp
-        ${LLAMA_DIR}/src/models/qwen3.cpp
-        ${LLAMA_DIR}/src/models/ernie4-5.cpp
-        ${LLAMA_DIR}/src/models/gemma.cpp
-        ${LLAMA_DIR}/src/models/plm.cpp
-        ${LLAMA_DIR}/src/models/qwen2.cpp
-        ${LLAMA_DIR}/src/models/lfm2.cpp
-        ${LLAMA_DIR}/src/models/deci.cpp
-        ${LLAMA_DIR}/src/models/phi2.cpp
-        ${LLAMA_DIR}/src/models/chatglm.cpp
-        ${LLAMA_DIR}/src/models/grovemoe.cpp
-        ${LLAMA_DIR}/src/models/bert.cpp
-        ${LLAMA_DIR}/src/models/chameleon.cpp
-        ${LLAMA_DIR}/src/models/gemma2-iswa.cpp
-        ${LLAMA_DIR}/src/models/phi3.cpp
-        ${LLAMA_DIR}/src/models/glm4-moe.cpp
-        ${LLAMA_DIR}/src/models/olmo2.cpp
-        ${LLAMA_DIR}/src/models/bloom.cpp
-        ${LLAMA_DIR}/src/models/bailingmoe.cpp
-        ${LLAMA_DIR}/src/models/arwkv7.cpp
-        ${LLAMA_DIR}/src/models/gptneox.cpp
-        ${LLAMA_DIR}/src/models/smallthinker.cpp
-        ${LLAMA_DIR}/src/models/llama-iswa.cpp
-        ${LLAMA_DIR}/src/models/olmoe.cpp
-        ${LLAMA_DIR}/src/models/glm4.cpp
-        ${LLAMA_DIR}/src/models/starcoder2.cpp
-        ${LLAMA_DIR}/src/models/refact.cpp
-        ${LLAMA_DIR}/src/models/deepseek2.cpp
-        ${LLAMA_DIR}/src/models/rnd1.cpp
-        ${LLAMA_DIR}/src/models/gemma3.cpp
-        ${LLAMA_DIR}/src/models/llada.cpp
-        ${LLAMA_DIR}/src/models/hunyuan-moe.cpp
-        ${LLAMA_DIR}/src/models/mamba.cpp
-        ${LLAMA_DIR}/src/models/neo-bert.cpp
-        ${LLAMA_DIR}/src/models/ernie4-5-moe.cpp
-        ${LLAMA_DIR}/src/models/dbrx.cpp
-        ${LLAMA_DIR}/src/models/t5-enc.cpp
-        ${LLAMA_DIR}/src/models/hunyuan-dense.cpp
-        ${LLAMA_DIR}/src/models/qwen3vl.cpp
-        ${LLAMA_DIR}/src/models/minimax-m2.cpp
-        ${LLAMA_DIR}/src/models/smollm3.cpp
-        ${LLAMA_DIR}/src/models/gemma3n-iswa.cpp
-        ${LLAMA_DIR}/src/models/dream.cpp
-        ${LLAMA_DIR}/src/models/internlm2.cpp
-        ${LLAMA_DIR}/src/models/graph-context-mamba.cpp
-        ${LLAMA_DIR}/src/models/t5-dec.cpp
-        ${LLAMA_DIR}/src/models/gemma-embedding.cpp
-        ${LLAMA_DIR}/src/models/mistral3.cpp
-        ${LLAMA_DIR}/src/models/cogvlm.cpp
-        ${LLAMA_DIR}/src/models/codeshell.cpp
-        ${LLAMA_DIR}/src/models/seed-oss.cpp
-        ${LLAMA_DIR}/src/models/openelm.cpp
-        ${LLAMA_DIR}/src/models/starcoder.cpp
-        ${LLAMA_DIR}/src/models/afmoe.cpp
-        ${LLAMA_DIR}/src/models/nemotron-h.cpp
-        ${LLAMA_DIR}/src/models/qwen2moe.cpp
-        ${LLAMA_DIR}/src/models/qwen2vl.cpp
-        ${LLAMA_DIR}/src/models/pangu-embedded.cpp
-        ${LLAMA_DIR}/src/models/plamo.cpp
-        ${LLAMA_DIR}/src/models/models.h
-        ${LLAMA_DIR}/src/models/deepseek.cpp
-        ${LLAMA_DIR}/src/models/qwen3next.cpp
-        ${LLAMA_DIR}/src/models/bitnet.cpp
-        ${LLAMA_DIR}/src/models/plamo2.cpp
-        ${LLAMA_DIR}/src/models/orion.cpp
-        ${LLAMA_DIR}/src/models/stablelm.cpp
-        ${LLAMA_DIR}/src/models/rwkv6qwen2.cpp
-        ${LLAMA_DIR}/src/models/exaone4.cpp
-        ${LLAMA_DIR}/src/models/olmo.cpp
-        ${LLAMA_DIR}/src/models/rwkv6.cpp
-        ${LLAMA_DIR}/src/models/exaone.cpp
-        ${LLAMA_DIR}/src/models/rwkv7.cpp
-        ${LLAMA_DIR}/src/models/qwen3vl-moe.cpp
-        ${LLAMA_DIR}/src/models/baichuan.cpp
-        ${LLAMA_DIR}/src/models/bailingmoe2.cpp
-        ${LLAMA_DIR}/src/models/jais.cpp
-
-        ${VENDOR_DIR}/nlohmann/json_fwd.hpp
-        ${VENDOR_DIR}/nlohmann/json.hpp
-
-        ${COMMON_DIR}/arg.cpp
-        ${COMMON_DIR}/base64.hpp
-        ${COMMON_DIR}/common.cpp
-        ${COMMON_DIR}/console.cpp
-        ${COMMON_DIR}/json-schema-to-grammar.cpp
-        ${COMMON_DIR}/log.cpp
-        ${COMMON_DIR}/ngram-cache.cpp
-        ${COMMON_DIR}/sampling.cpp
-
-        LLMInference.cpp
-        smollm.cpp
+# -fvisibility=hidden: hide all symbols by default
+# -fvisibility-inlines-hidden: hide all inline symbols by default
+target_compile_options(
+        llama
+        PUBLIC
+        -fvisibility=hidden -fvisibility-inlines-hidden
 )
-set(GGUF_READER_SOURCES
-        ${GGML_DIR}/src/ggml.c
-        ${GGML_DIR}/src/ggml-alloc.c
-        ${GGML_DIR}/src/ggml-backend.cpp
-        ${GGML_DIR}/src/ggml-threading.cpp
-        ${GGML_DIR}/src/ggml-quants.c
-        ${GGML_DIR}/src/ggml-backend-reg.cpp
-        ${GGML_DIR}/src/ggml-opt.cpp
-        ${GGML_DIR}/src/ggml-cpu/ops.cpp
-        ${GGML_DIR}/src/ggml-cpu/vec.cpp
-        ${GGML_DIR}/src/ggml-cpu/unary-ops.cpp
-        ${GGML_DIR}/src/ggml-cpu/binary-ops.cpp
-        ${GGML_DIR}/src/ggml-cpu/ggml-cpu.c
-        ${GGML_DIR}/src/ggml-cpu/ggml-cpu.cpp
-        ${GGML_DIR}/src/gguf.cpp
-        GGUFReader.cpp
+# -ffunction-sections: place each function in its own section
+# -fdata-sections: place each data member in its own section
+target_compile_options(
+        llama
+        PUBLIC
+        -ffunction-sections -fdata-sections
 )
-
-add_compile_options("-ffile-prefix-map=${LLAMA_DIR}=.")
-add_link_options("LINKER:--build-id=none")
+target_link_options(
+        llama
+        PRIVATE
+        -Wl,--gc-sections -flto
+        -Wl,--exclude-libs,ALL
+)
 
 # compiling for different CPU extensions for Arm64 (aarch64)
 # See docs/build_arm_flags.md for more details
@@ -197,7 +37,8 @@ function(build_library target_name)
     add_library(
             ${target_name}
             SHARED
-            ${SMOLLM_SOURCES}
+            LLMInference.cpp
+            smollm.cpp
     )
     target_include_directories(
             ${target_name}
@@ -209,19 +50,6 @@ function(build_library target_name)
             ${LLAMA_DIR}/include
             ${VENDOR_DIR}
     )
-
-    # Constants GGML_COMMIT and GGML_VERSION in ggml.c
-    # are supplied through llama.cpp's CMake script (that in turn gets them from git)
-    # As we are NOT using llama.cpp's CMake script, we need to define them here
-    # The functions used to access these constants are unused, hence setting them
-    # to empty strings does not affect any functionality.
-    target_compile_definitions(
-            ${target_name}
-            PRIVATE
-            GGML_COMMIT=""
-            GGML_VERSION=""
-    )
-
     # -fvisibility=hidden: hide all symbols by default
     # -fvisibility-inlines-hidden: hide all inline symbols by default
     target_compile_options(
@@ -236,10 +64,9 @@ function(build_library target_name)
             PUBLIC
             -ffunction-sections -fdata-sections
     )
-
     target_link_libraries(
             ${target_name}
-            android log vulkan
+            android log llama common vulkan
     )
     # -Wl,--gc-sections: remove unused sections (garbage collection)
     # -flto: link-time optimization
@@ -255,6 +82,14 @@ endfunction()
 
 function(build_library_arm64 target_name cpu_flags)
     build_library(${target_name})
+    set(GGML_SYSTEM_ARCH "ARM")
+    set(GGML_CPU_KLEIDIAI ON)
+    set(GGML_OPENMP ON)
+    target_compile_definitions(${target_name} PRIVATE
+            GGML_SYSTEM_ARCH=${GGML_SYSTEM_ARCH}
+            GGML_CPU_KLEIDIAI=$<BOOL:${GGML_CPU_KLEIDIAI}>
+            GGML_OPENMP=$<BOOL:${GGML_OPENMP}>
+    )
     target_compile_options(
             ${target_name}
             PUBLIC
@@ -299,29 +134,20 @@ endif()
 
 # library target for GGUFReader
 set(TARGET_NAME_GGUF_READER ggufreader)
-add_library(${TARGET_NAME_GGUF_READER} SHARED ${GGUF_READER_SOURCES})
+add_library(${TARGET_NAME_GGUF_READER} SHARED GGUFReader.cpp)
 target_include_directories(
         ${TARGET_NAME_GGUF_READER}
         PUBLIC
         ${GGML_DIR}/include
-        ${GGML_DIR}/src
-        ${GGML_DIR}/src/ggml-cpu
-)
-# Constants GGML_COMMIT and GGML_VERSION in ggml.c
-# are supplied through llama.cpp's CMake script (that in turn gets them from git)
-# As we are NOT using llama.cpp's CMake script, we need to define them here
-# The functions used to access these constants are unused, hence setting them
-# to empty strings does not affect any functionality.
-target_compile_definitions(
-        ${TARGET_NAME_GGUF_READER}
-        PRIVATE
-        GGML_COMMIT=""
-        GGML_VERSION=""
 )
 target_compile_options(
         ${TARGET_NAME_GGUF_READER}
         PUBLIC
         -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections
+)
+target_link_libraries(
+        ${TARGET_NAME_GGUF_READER}
+        ggml
 )
 target_link_options(
         ${TARGET_NAME_GGUF_READER}

@@ -35,7 +35,13 @@ android {
                 // https://developer.android.com/guide/practices/page-sizes#compile-r27
                 arguments += listOf("-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
                 arguments += "-DCMAKE_BUILD_TYPE=Release"
+                arguments += "-DCMAKE_MESSAGE_LOG_LEVEL=DEBUG"
+                arguments += "-DCMAKE_VERBOSE_MAKEFILE=ON"
 
+                arguments += "-DBUILD_SHARED_LIBS=ON"
+                arguments += "-DLLAMA_BUILD_COMMON=ON"
+                arguments += "-DLLAMA_CURL=OFF"
+                arguments += "-DGGML_LLAMAFILE=OFF"
                 // (debugging) uncomment the following line to enable debug builds
                 // and attach hardware-assisted address sanitizer
                 // arguments += "-DCMAKE_BUILD_TYPE=Debug"
