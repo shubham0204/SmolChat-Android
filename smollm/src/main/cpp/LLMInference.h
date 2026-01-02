@@ -1,6 +1,7 @@
 #pragma once
-#include "llama.h"
+#include "chat.h"
 #include "common.h"
+#include "llama.h"
 #include <string>
 #include <vector>
 
@@ -20,7 +21,6 @@ class LLMInference {
     // stores the tokens for the last query
     // appended to `_messages`
     std::vector<llama_token> _promptTokens;
-    int                      _prevLen = 0;
     const char*              _chatTemplate;
 
     // stores the complete response for the given query

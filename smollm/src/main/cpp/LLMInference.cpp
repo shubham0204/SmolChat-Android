@@ -83,7 +83,6 @@ LLMInference::getContextSizeUsed() const {
 void
 LLMInference::startCompletion(const char *query) {
     if (!_storeChats) {
-        _prevLen = 0;
         _formattedMessages.clear();
         _formattedMessages = std::vector<char>(llama_n_ctx(_ctx));
     }
@@ -91,19 +90,18 @@ LLMInference::startCompletion(const char *query) {
     _responseNumTokens = 0;
     addChatMessage(query, "user");
     // apply the chat-template
-    int newLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), true,
-                                           _formattedMessages.data(), _formattedMessages.size());
-    if (newLen > (int) _formattedMessages.size()) {
-        // resize the output buffer `_formattedMessages`
-        // and re-apply the chat template
-        _formattedMessages.resize(newLen);
-        newLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), true,
-                                           _formattedMessages.data(), _formattedMessages.size());
+    std::vector<common_chat_msg> messages;
+    for (const llama_chat_message& message : _messages) {
+        common_chat_msg msg;
+        msg.role    = message.role;
+        msg.content = message.content;
+        messages.push_back(msg);
     }
-    if (newLen < 0) {
-        throw std::runtime_error("llama_chat_apply_template() in LLMInference::startCompletion() failed");
-    }
-    std::string prompt(_formattedMessages.begin() + _prevLen, _formattedMessages.begin() + newLen);
+    common_chat_templates_inputs inputs;
+    inputs.use_jinja      = true;
+    inputs.messages       = messages;
+    auto        templates = common_chat_templates_init(_model, _chatTemplate);
+    std::string prompt    = common_chat_templates_apply(templates.get(), inputs).prompt;
     _promptTokens = common_tokenize(llama_model_get_vocab(_model), prompt, true, true);
 
     // create a llama_batch containing a single sequence
@@ -202,10 +200,6 @@ LLMInference::stopCompletion() {
         addChatMessage(_response.c_str(), "assistant");
     }
     _response.clear();
-    _prevLen = llama_chat_apply_template(_chatTemplate, _messages.data(), _messages.size(), false, nullptr, 0);
-    if (_prevLen < 0) {
-        throw std::runtime_error("llama_chat_apply_template() in LLMInference::stopCompletion() failed");
-    }
 }
 
 LLMInference::~LLMInference() {
