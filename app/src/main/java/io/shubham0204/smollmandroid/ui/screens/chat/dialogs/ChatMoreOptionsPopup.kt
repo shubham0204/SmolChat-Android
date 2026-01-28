@@ -16,6 +16,7 @@
 
 package io.shubham0204.smollmandroid.ui.screens.chat.dialogs
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,21 +28,27 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import compose.icons.FeatherIcons
+import compose.icons.feathericons.Clock
 import compose.icons.feathericons.Cpu
 import compose.icons.feathericons.Delete
 import compose.icons.feathericons.Folder
 import compose.icons.feathericons.Layout
+import compose.icons.feathericons.Mic
 import compose.icons.feathericons.Package
 import compose.icons.feathericons.Settings
+import compose.icons.feathericons.Volume2
+import compose.icons.feathericons.VolumeX
 import compose.icons.feathericons.XCircle
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.ui.preview.dummyChats
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenUIEvent
+import io.shubham0204.smollmandroid.ui.screens.whisper_download.DownloadWhisperModelActivity
 
 @Preview
 @Composable
@@ -50,6 +57,8 @@ private fun PreviewChatMoreOptionsPopup() {
         chat = dummyChats[0],
         isExpanded = true,
         showRAMUsageLabel = true,
+        ttsEnabled = false,
+        autoSubmitEnabled = false,
         onEditChatSettingsClick = {},
         onEvent = {}
     )
@@ -60,9 +69,12 @@ fun ChatMoreOptionsPopup(
     chat: Chat,
     isExpanded: Boolean,
     showRAMUsageLabel: Boolean,
+    ttsEnabled: Boolean,
+    autoSubmitEnabled: Boolean,
     onEditChatSettingsClick: () -> Unit,
     onEvent: (ChatScreenUIEvent) -> Unit,
 ) {
+    val context = LocalContext.current
     DropdownMenu(
         expanded = isExpanded,
         onDismissRequest = {
@@ -206,6 +218,63 @@ fun ChatMoreOptionsPopup(
             },
             onClick = {
                 onEvent(ChatScreenUIEvent.DialogEvents.ToggleRAMUsageLabel)
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = {
+                Icon(
+                    if (ttsEnabled) FeatherIcons.VolumeX else FeatherIcons.Volume2,
+                    contentDescription = "Text to Speech",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            text = {
+                Text(
+                    stringResource(if (ttsEnabled) R.string.tts_disable else R.string.tts_enable),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
+            onClick = {
+                onEvent(ChatScreenUIEvent.TTSEvents.ToggleTTS(!ttsEnabled))
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = {
+                Icon(
+                    FeatherIcons.Clock,
+                    contentDescription = "Auto Submit",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            text = {
+                Text(
+                    stringResource(if (autoSubmitEnabled) R.string.auto_submit_disable else R.string.auto_submit_enable),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
+            onClick = {
+                onEvent(ChatScreenUIEvent.AutoSubmitEvents.ToggleAutoSubmit(!autoSubmitEnabled))
+                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = {
+                Icon(
+                    FeatherIcons.Mic,
+                    contentDescription = "STT Models",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            },
+            text = {
+                Text(
+                    stringResource(R.string.stt_manage_models),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
+            onClick = {
+                context.startActivity(Intent(context, DownloadWhisperModelActivity::class.java))
                 onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
             },
         )
