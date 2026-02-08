@@ -126,4 +126,5 @@
     <string name="download_model_step_hf_browse">在 HuggingFace 上浏览模型并下载 .gguf 模型文件。</string>
     <string name="dialog_invalid_file_title">文件无效</string>
     <string name="dialog_invalid_file_text">选择的文件不是有效的 GGUF 文件。</string>
+    <string name="chat_options_benchmark_model">基准模型</string>
 </resources>

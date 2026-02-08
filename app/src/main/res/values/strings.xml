@@ -111,4 +111,5 @@
     <string name="download_model_step_hf_browse">Browse the model from HuggingFace and download the .gguf model file.</string>
     <string name="dialog_invalid_file_title">Invalid File</string>
     <string name="dialog_invalid_file_text">The selected file is not a valid GGUF file.</string>
+    <string name="chat_options_benchmark_model">Benchmark Model</string>
 </resources>

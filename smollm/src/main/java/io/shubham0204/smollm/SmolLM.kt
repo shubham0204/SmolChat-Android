@@ -285,6 +285,22 @@ class SmolLM {
     }
 
     /**
+     * Executes the model and returns a string containing the tok/sec taken by the model to process
+     * tokens (tg) and the prompt (pp)
+     *
+     * @param pp The number of tokens in the prompt.
+     * @param tg The number of tokens to generate.
+     * @param pl The number of tokens to preload.
+     * @param nr The number of repetitions to run.
+     * @return A string containing the tok/sec taken by the model to process tokens (tg) and the
+     *   prompt (pp).
+     */
+    fun benchModel(pp: Int, tg: Int, pl: Int, nr: Int): String {
+        verifyHandle()
+        return benchModel(nativePtr, pp, tg, pl, nr)
+    }
+
+    /**
      * Unloads the LLM model and releases resources. This method should be called when the SmolLM
      * instance is no longer needed to prevent memory leaks.
      */
@@ -324,4 +340,6 @@ class SmolLM {
     private external fun completionLoop(modelPtr: Long): String
 
     private external fun stopCompletion(modelPtr: Long)
+
+    private external fun benchModel(modelPtr: Long, pp: Int, tg: Int, pl: Int, nr: Int): String
 }

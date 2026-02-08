@@ -138,10 +138,13 @@ private const val LOGTAG = "[ChatActivity-Kt]"
 private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 
 @Serializable
-object ChatRoute
+private object ChatRoute
 
 @Serializable
-data class EditChatSettingsRoute(val chat: Chat, val modelContextSize: Int)
+private object BenchmarkModelRoute
+
+@Serializable
+private data class EditChatSettingsRoute(val chat: Chat, val modelContextSize: Int)
 
 class ChatActivity : ComponentActivity() {
 
@@ -186,6 +189,12 @@ class ChatActivity : ComponentActivity() {
                     enterTransition = { fadeIn() },
                     exitTransition = { fadeOut() },
                 ) {
+                    composable<BenchmarkModelRoute> {
+                        BenchmarkModelScreen(
+                            onBackClicked = { navController.navigateUp() },
+                            viewModel::onEvent,
+                        )
+                    }
                     composable<EditChatSettingsRoute>(
                         typeMap = mapOf(typeOf<Chat>() to CustomNavTypes.ChatNavType)
                     ) { backStackEntry ->
@@ -217,6 +226,7 @@ class ChatActivity : ComponentActivity() {
                                     EditChatSettingsRoute(chat, modelContextSize)
                                 )
                             },
+                            onBenchmarkModelClick = { navController.navigate(BenchmarkModelRoute) },
                             viewModel::onEvent,
                         )
                     }
@@ -251,15 +261,17 @@ class ChatActivity : ComponentActivity() {
 @Composable
 private fun PreviewChatActivityScreenUI() {
     ChatActivityScreenUI(
-        uiState = ChatScreenUIState(
-            chat = dummyChats[0].copy(llmModel = dummyLLMModels[1]),
-            folders = dummyFolders.toImmutableList(),
-            chats = dummyChats.toImmutableList(),
-            models = dummyLLMModels.toImmutableList(),
-            tasks = dummyTasksList.toImmutableList()
-        ),
+        uiState =
+            ChatScreenUIState(
+                chat = dummyChats[0].copy(llmModel = dummyLLMModels[1]),
+                folders = dummyFolders.toImmutableList(),
+                chats = dummyChats.toImmutableList(),
+                models = dummyLLMModels.toImmutableList(),
+                tasks = dummyTasksList.toImmutableList(),
+            ),
         onEditChatParamsClick = { _, _ -> },
-        onEvent = {}
+        onBenchmarkModelClick = {},
+        onEvent = {},
     )
 }
 
@@ -268,6 +280,7 @@ private fun PreviewChatActivityScreenUI() {
 fun ChatActivityScreenUI(
     uiState: ChatScreenUIState,
     onEditChatParamsClick: (Chat, Int) -> Unit,
+    onBenchmarkModelClick: () -> Unit,
     onEvent: (ChatScreenUIEvent) -> Unit,
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -343,6 +356,7 @@ fun ChatActivityScreenUI(
                                             uiState.chat.llmModel!!.contextSize,
                                         )
                                     },
+                                    onBenchmarkModelClick = { onBenchmarkModelClick() },
                                     onEvent = onEvent,
                                 )
                             }

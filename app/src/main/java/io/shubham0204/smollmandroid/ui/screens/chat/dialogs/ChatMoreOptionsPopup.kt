@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,6 +39,7 @@ import compose.icons.feathericons.Layout
 import compose.icons.feathericons.Package
 import compose.icons.feathericons.Settings
 import compose.icons.feathericons.XCircle
+import compose.icons.feathericons.Zap
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.ui.preview.dummyChats
@@ -51,7 +53,8 @@ private fun PreviewChatMoreOptionsPopup() {
         isExpanded = true,
         showRAMUsageLabel = true,
         onEditChatSettingsClick = {},
-        onEvent = {}
+        onBenchmarkModelClick = {},
+        onEvent = {},
     )
 }
 
@@ -61,6 +64,7 @@ fun ChatMoreOptionsPopup(
     isExpanded: Boolean,
     showRAMUsageLabel: Boolean,
     onEditChatSettingsClick: () -> Unit,
+    onBenchmarkModelClick: () -> Unit,
     onEvent: (ChatScreenUIEvent) -> Unit,
 ) {
     DropdownMenu(
@@ -70,144 +74,84 @@ fun ChatMoreOptionsPopup(
         },
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(
-                    FeatherIcons.Settings,
-                    contentDescription = "Edit Chat Settings",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            },
-            text = {
-                Text(
-                    stringResource(R.string.chat_options_edit_settings),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            },
-            onClick = {
+        val scope =
+            object : EventScope {
+                override fun onEvent(event: ChatScreenUIEvent) {
+                    onEvent(event)
+                }
+            }
+        with(scope) {
+            PopupMenuItem(
+                icon = FeatherIcons.Settings,
+                text = stringResource(R.string.chat_options_edit_settings),
+            ) {
                 onEditChatSettingsClick()
-                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
-            },
-        )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(
-                    FeatherIcons.Folder,
-                    contentDescription = "Change Folder",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            },
-            text = {
-                Text(
-                    stringResource(R.string.chat_options_change_folder),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            },
-            onClick = {
+            }
+            PopupMenuItem(
+                icon = FeatherIcons.Folder,
+                text = stringResource(R.string.chat_options_change_folder),
+            ) {
                 onEvent(ChatScreenUIEvent.DialogEvents.ToggleChangeFolderDialog(visible = true))
-                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
-            },
-        )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(
-                    FeatherIcons.Package,
-                    contentDescription = "Change Model",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            },
-            text = {
-                Text(
-                    stringResource(R.string.chat_options_change_model),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            },
-            onClick = {
+            }
+            PopupMenuItem(
+                icon = FeatherIcons.Package,
+                text = stringResource(R.string.chat_options_change_model),
+            ) {
                 onEvent(ChatScreenUIEvent.DialogEvents.ToggleSelectModelListDialog(visible = true))
-                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
-            },
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        HorizontalDivider(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(4.dp))
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(
-                    FeatherIcons.Delete,
-                    contentDescription = "Delete Chat",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            },
-            text = {
-                Text(
-                    stringResource(R.string.dialog_title_delete_chat),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            },
-            onClick = {
+            }
+            PopupMenuItem(
+                icon = FeatherIcons.Zap,
+                text = stringResource(R.string.chat_options_benchmark_model),
+                onClick = onBenchmarkModelClick,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(4.dp))
+            PopupMenuItem(
+                icon = FeatherIcons.Delete,
+                text = stringResource(R.string.dialog_title_delete_chat),
+            ) {
                 onEvent(ChatScreenUIEvent.ChatEvents.OnDeleteChat(chat))
-                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
-            },
-        )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(
-                    FeatherIcons.XCircle,
-                    contentDescription = "Clear Chat Messages",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            },
-            text = {
-                Text(
-                    stringResource(R.string.chat_options_clear_messages),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            },
-            onClick = {
+            }
+            PopupMenuItem(
+                icon = FeatherIcons.XCircle,
+                text = stringResource(R.string.chat_options_clear_messages),
+            ) {
                 onEvent(ChatScreenUIEvent.ChatEvents.OnDeleteChatMessages(chat))
-                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
-            },
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        HorizontalDivider(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(4.dp))
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(
-                    FeatherIcons.Layout,
-                    contentDescription = "Context Usage",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            },
-            text = {
-                Text(
-                    stringResource(R.string.chat_options_ctx_length_usage),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            },
-            onClick = {
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(4.dp))
+            PopupMenuItem(
+                icon = FeatherIcons.Layout,
+                text = stringResource(R.string.chat_options_ctx_length_usage),
+            ) {
                 onEvent(ChatScreenUIEvent.DialogEvents.ShowContextLengthUsageDialog(chat))
-                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
-            },
-        )
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(
-                    FeatherIcons.Cpu,
-                    contentDescription = "RAM Usage",
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
-            },
-            text = {
-                Text(
-                    if (showRAMUsageLabel) "Hide RAM usage" else "Show RAM usage",
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            },
-            onClick = {
+            }
+            PopupMenuItem(
+                icon = FeatherIcons.Cpu,
+                text = if (showRAMUsageLabel) "Hide RAM usage" else "Show RAM usage",
+            ) {
                 onEvent(ChatScreenUIEvent.DialogEvents.ToggleRAMUsageLabel)
-                onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
-            },
-        )
+            }
+        }
     }
+}
+
+private interface EventScope {
+    fun onEvent(event: ChatScreenUIEvent)
+}
+
+@Composable
+private fun EventScope.PopupMenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
+    DropdownMenuItem(
+        leadingIcon = {
+            Icon(icon, contentDescription = text, tint = MaterialTheme.colorScheme.secondary)
+        },
+        text = { Text(text, style = MaterialTheme.typography.labelMedium) },
+        onClick = {
+            onClick()
+            onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))
+        },
+    )
 }

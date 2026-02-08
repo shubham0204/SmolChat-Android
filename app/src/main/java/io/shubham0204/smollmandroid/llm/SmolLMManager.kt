@@ -212,6 +212,25 @@ class SmolLMManager(private val appDB: AppDB) {
         }
     }
 
+    private val BENCH_PROMPT_PROCESSING_TOKENS = 512
+    private val BENCH_TOKEN_GENERATION_TOKENS = 128
+    private val BENCH_SEQUENCE = 1
+    private val BENCH_REPETITION = 3
+
+    fun benchmark(onResult: (String) -> Unit) {
+        CoroutineScope(Dispatchers.Default).launch {
+            val result = instance.benchModel(
+                BENCH_PROMPT_PROCESSING_TOKENS,
+                BENCH_TOKEN_GENERATION_TOKENS,
+                BENCH_SEQUENCE,
+                BENCH_REPETITION
+            )
+            withContext(Dispatchers.Main) {
+                onResult(result)
+            }
+        }
+    }
+
     fun stopResponseGeneration() {
         stateLock.withLock {
             responseGenerationJob.safeCancelJobIfActive()

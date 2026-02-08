@@ -13,6 +13,8 @@ class LLMInference {
     llama_token    _currToken;
     llama_batch*   _batch;
 
+    llama_batch g_batch;
+
     // container to store user/assistant messages in the chat
     std::vector<llama_chat_message> _messages;
     // stores the string generated after applying
@@ -41,6 +43,8 @@ class LLMInference {
   public:
     void loadModel(const char* modelPath, float minP, float temperature, bool storeChats, long contextSize,
                    const char* chatTemplate, int nThreads, bool useMmap, bool useMlock);
+
+    std::string benchModel(int pp, int tg, int pl, int nr);
 
     void addChatMessage(const char* message, const char* role);
 

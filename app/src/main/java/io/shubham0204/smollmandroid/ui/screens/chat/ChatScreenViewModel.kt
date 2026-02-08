@@ -83,6 +83,8 @@ sealed class ChatScreenUIEvent {
 
         data class UpdateChatSettings(val settings: EditableChatSettings, val existingChat: Chat) :
             ChatScreenUIEvent()
+
+        data class StartBenchmark(val onResult: (String) -> Unit) : ChatScreenUIEvent()
     }
 
     sealed class FolderEvents {
@@ -126,6 +128,7 @@ data class ChatScreenUIState(
     val models: ImmutableList<LLMModel> = emptyList<LLMModel>().toImmutableList(),
     val messages: ImmutableList<ChatMessage> = emptyList<ChatMessage>().toImmutableList(),
     val tasks: ImmutableList<Task> = emptyList<Task>().toImmutableList(),
+    val benchmarkResult: String? = null,
     val showChangeFolderDialog: Boolean = false,
     val showSelectModelListDialog: Boolean = false,
     val showMoreOptionsPopup: Boolean = false,
@@ -433,6 +436,12 @@ class ChatScreenViewModel(
                 _uiState.update { it.copy(chat = newChat) }
                 appDB.updateChat(newChat)
                 loadModel()
+            }
+
+            is ChatScreenUIEvent.ChatEvents.StartBenchmark -> {
+                smolLMManager.benchmark { result ->
+                    event.onResult(result)
+                }
             }
         }
     }

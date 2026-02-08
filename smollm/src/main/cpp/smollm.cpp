@@ -78,3 +78,11 @@ Java_io_shubham0204_smollm_SmolLM_stopCompletion(JNIEnv* env, jobject thiz, jlon
     auto* llmInference = reinterpret_cast<LLMInference*>(modelPtr);
     llmInference->stopCompletion();
 }
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_shubham0204_smollm_SmolLM_benchModel(JNIEnv* env, jobject /*unused*/, jlong modelPtr, jint pp, jint tg, jint pl,
+                                             jint nr) {
+    auto*       llmInference = reinterpret_cast<LLMInference*>(modelPtr);
+    std::string result       = llmInference->benchModel(pp, tg, pl, nr);
+    return env->NewStringUTF(result.c_str());
+}
