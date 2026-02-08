@@ -1,11 +1,7 @@
-- Add support for Portuguese language (alongside existing support for English and simplified
-  Chinese).
-- Clear model context/memory when clearing the chat i.e. deleting all messages from the current
-  chat.
-- Avoid model reloading when screen is rotated.
+- App size is now reduced to half compared to the previous release. This is because the way
+  `llama.cpp` was integrated into the project has been changed, allowing for better compiler
+  optimizations and LTO (link-time optimization).
 
-### UI Improvements
-
-- Earlier, the user had to click on the folder name to expand it. Clicking on the chevron icon now
-  also expands the folder.
-- Task names are now appended with `[Task]` in the chats list to distinguish them from other chats.
+- The app allows benchmarking the model used in a chat. Go to `Settings > Benchmark Model` in any
+  chat and click 'Start Benchmarking'. The benchmark results are `pp` (tokens/sec for prompt
+  processing) and `tg` (tokens/sec for token generation).
