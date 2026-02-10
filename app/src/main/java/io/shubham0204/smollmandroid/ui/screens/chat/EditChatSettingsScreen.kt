@@ -18,6 +18,7 @@ package io.shubham0204.smollmandroid.ui.screens.chat
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,12 +30,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -56,8 +62,12 @@ import androidx.compose.ui.unit.dp
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Check
+import compose.icons.feathericons.Mic
+import compose.icons.feathericons.Scissors
+import compose.icons.feathericons.Volume2
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
+import io.shubham0204.smollmandroid.data.PreferencesManager
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 import kotlinx.serialization.Serializable
@@ -112,7 +122,17 @@ private fun PreviewEditChatSettingsScreen() {
     EditChatSettingsScreen(
         settings = EditableChatSettings.fromChat(Chat()),
         llmModelContextSize = 2048,
+        ttsEnabled = false,
+        autoSubmitEnabled = false,
+        autoSubmitDelayMs = 2000L,
+        sttLanguage = "en",
+        autoContextTrimEnabled = false,
         onUpdateChat = {},
+        onToggleTTS = {},
+        onToggleAutoSubmit = {},
+        onUpdateAutoSubmitDelay = {},
+        onUpdateSTTLanguage = {},
+        onToggleAutoContextTrim = {},
         onBackClicked = {},
     )
 }
@@ -122,7 +142,17 @@ private fun PreviewEditChatSettingsScreen() {
 fun EditChatSettingsScreen(
     settings: EditableChatSettings,
     llmModelContextSize: Int,
+    ttsEnabled: Boolean,
+    autoSubmitEnabled: Boolean,
+    autoSubmitDelayMs: Long,
+    sttLanguage: String,
+    autoContextTrimEnabled: Boolean,
     onUpdateChat: (EditableChatSettings) -> Unit,
+    onToggleTTS: (Boolean) -> Unit,
+    onToggleAutoSubmit: (Boolean) -> Unit,
+    onUpdateAutoSubmitDelay: (Long) -> Unit,
+    onUpdateSTTLanguage: (String) -> Unit,
+    onToggleAutoContextTrim: (Boolean) -> Unit,
     onBackClicked: () -> Unit,
 ) {
     var chatName by remember { mutableStateOf(settings.name) }
@@ -371,6 +401,118 @@ fun EditChatSettingsScreen(
                             style = MaterialTheme.typography.labelSmall,
                         )
                     }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        FeatherIcons.Volume2,
+                        contentDescription = "TTS",
+                        modifier = Modifier.padding(end = 16.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.tts_settings_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = stringResource(R.string.tts_settings_desc),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                    Switch(
+                        checked = ttsEnabled,
+                        onCheckedChange = { onToggleTTS(it) },
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // STT Language Selection
+                var languageDropdownExpanded by remember { mutableStateOf(false) }
+                val selectedLanguageName = PreferencesManager.SUPPORTED_LANGUAGES
+                    .find { it.first == sttLanguage }?.second ?: "English"
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        FeatherIcons.Mic,
+                        contentDescription = "STT Language",
+                        modifier = Modifier.padding(end = 16.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.stt_language_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = stringResource(R.string.stt_language_desc),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                    Box {
+                        OutlinedButton(
+                            onClick = { languageDropdownExpanded = true }
+                        ) {
+                            Text(selectedLanguageName)
+                        }
+                        DropdownMenu(
+                            expanded = languageDropdownExpanded,
+                            onDismissRequest = { languageDropdownExpanded = false }
+                        ) {
+                            PreferencesManager.SUPPORTED_LANGUAGES.forEach { (code, name) ->
+                                DropdownMenuItem(
+                                    text = { Text(name) },
+                                    onClick = {
+                                        onUpdateSTTLanguage(code)
+                                        languageDropdownExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Auto Context Trim
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        FeatherIcons.Scissors,
+                        contentDescription = "Auto Context Trim",
+                        modifier = Modifier.padding(end = 16.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.auto_context_trim_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = stringResource(R.string.auto_context_trim_desc),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                    Switch(
+                        checked = autoContextTrimEnabled,
+                        onCheckedChange = { onToggleAutoContextTrim(it) },
+                    )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
             }

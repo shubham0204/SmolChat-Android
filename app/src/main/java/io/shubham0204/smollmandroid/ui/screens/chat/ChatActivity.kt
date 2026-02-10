@@ -17,7 +17,12 @@
 package io.shubham0204.smollmandroid.ui.screens.chat
 
 import CustomNavTypes
+import android.Manifest
+import android.content.pm.PackageManager
 import android.content.ClipData
+import android.os.Build
+import android.view.WindowManager
+import androidx.core.content.ContextCompat
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -27,14 +32,18 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,8 +66,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,6 +77,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -73,12 +85,18 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.zIndex
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -101,7 +119,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import compose.icons.FeatherIcons
+import compose.icons.feathericons.Lock
 import compose.icons.feathericons.Menu
+import compose.icons.feathericons.Mic
+import compose.icons.feathericons.MicOff
 import compose.icons.feathericons.MoreVertical
 import compose.icons.feathericons.Send
 import compose.icons.feathericons.StopCircle
@@ -120,6 +141,7 @@ import io.shubham0204.smollmandroid.ui.preview.dummyFolders
 import io.shubham0204.smollmandroid.ui.preview.dummyLLMModels
 import io.shubham0204.smollmandroid.ui.preview.dummyTasksList
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenViewModel.ModelLoadingState
+import io.shubham0204.smollmandroid.stt.STTState
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChangeFolderDialogUI
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMessageOptionsDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.ChatMoreOptionsPopup
@@ -144,7 +166,15 @@ private object ChatRoute
 private object BenchmarkModelRoute
 
 @Serializable
-private data class EditChatSettingsRoute(val chat: Chat, val modelContextSize: Int)
+private data class EditChatSettingsRoute(
+    val chat: Chat,
+    val modelContextSize: Int,
+    val ttsEnabled: Boolean,
+    val autoSubmitEnabled: Boolean,
+    val autoSubmitDelayMs: Long,
+    val sttLanguage: String,
+    val autoContextTrimEnabled: Boolean
+)
 
 class ChatActivity : ComponentActivity() {
 
@@ -203,12 +233,42 @@ class ChatActivity : ComponentActivity() {
                         EditChatSettingsScreen(
                             settings,
                             route.modelContextSize,
+                            route.ttsEnabled,
+                            route.autoSubmitEnabled,
+                            route.autoSubmitDelayMs,
+                            route.sttLanguage,
+                            route.autoContextTrimEnabled,
                             onUpdateChat = { editableChatSettings ->
                                 viewModel.onEvent(
                                     ChatScreenUIEvent.ChatEvents.UpdateChatSettings(
                                         editableChatSettings,
                                         route.chat,
                                     )
+                                )
+                            },
+                            onToggleTTS = { enabled ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.TTSEvents.ToggleTTS(enabled)
+                                )
+                            },
+                            onToggleAutoSubmit = { enabled ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.AutoSubmitEvents.ToggleAutoSubmit(enabled)
+                                )
+                            },
+                            onUpdateAutoSubmitDelay = { delayMs ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.AutoSubmitEvents.UpdateAutoSubmitDelay(delayMs)
+                                )
+                            },
+                            onUpdateSTTLanguage = { language ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.STTEvents.UpdateSTTLanguage(language)
+                                )
+                            },
+                            onToggleAutoContextTrim = { enabled ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.ContextEvents.ToggleAutoContextTrim(enabled)
                                 )
                             },
                             onBackClicked = { navController.navigateUp() },
@@ -223,11 +283,21 @@ class ChatActivity : ComponentActivity() {
                             uiState,
                             onEditChatParamsClick = { chat, modelContextSize ->
                                 navController.navigate(
-                                    EditChatSettingsRoute(chat, modelContextSize)
+                                    EditChatSettingsRoute(
+                                        chat,
+                                        modelContextSize,
+                                        uiState.ttsEnabled,
+                                        uiState.autoSubmitEnabled,
+                                        uiState.autoSubmitDelayMs,
+                                        uiState.sttLanguage,
+                                        uiState.autoContextTrimEnabled
+                                    )
                                 )
                             },
                             onBenchmarkModelClick = { navController.navigate(BenchmarkModelRoute) },
                             viewModel::onEvent,
+                            viewModel::resetAutoSubmitTrigger,
+                            viewModel::resetClearInputFlag,
                         )
                     }
                 }
@@ -251,8 +321,13 @@ class ChatActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         if (!isChangingConfigurations) {
-            modelUnloaded = viewModel.unloadModel()
-            LOGD("onStop() called - model unloaded result: $modelUnloaded")
+            // Don't unload model if voice chat service is active (screen locked but voice mode on)
+            if (viewModel.voiceChatServiceManager.isServiceRunning.value) {
+                LOGD("onStop() called - keeping model loaded for voice chat service")
+            } else {
+                modelUnloaded = viewModel.unloadModel()
+                LOGD("onStop() called - model unloaded result: $modelUnloaded")
+            }
         }
     }
 }
@@ -282,9 +357,77 @@ fun ChatActivityScreenUI(
     onEditChatParamsClick: (Chat, Int) -> Unit,
     onBenchmarkModelClick: () -> Unit,
     onEvent: (ChatScreenUIEvent) -> Unit,
+    onAutoSubmitHandled: () -> Unit = {},
+    onClearInputHandled: () -> Unit = {},
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    // Permission launcher for RECORD_AUDIO
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        onEvent(ChatScreenUIEvent.ChatEvents.RecordingPermissionHandled)
+        if (isGranted) {
+            onEvent(ChatScreenUIEvent.ChatEvents.RecordingPermissionGranted)
+        } else {
+            Toast.makeText(
+                context,
+                context.getString(R.string.stt_permission_denied),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    // Permission launcher for POST_NOTIFICATIONS (Android 13+)
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        // Continue with voice mode regardless of result (notification is optional but nice to have)
+        onEvent(ChatScreenUIEvent.ChatEvents.NotificationPermissionHandled)
+    }
+
+    // Request notification permission when the state indicates it's needed
+    LaunchedEffect(uiState.requestNotificationPermission) {
+        if (uiState.requestNotificationPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    // Request permission when the state indicates it's needed
+    LaunchedEffect(uiState.requestRecordingPermission) {
+        if (uiState.requestRecordingPermission) {
+            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    // Handle pocket mode screen dimming - keeps screen on but at minimum brightness
+    // This prevents CPU throttling that happens when the screen is locked
+    // Samsung's "Accidental touch protection" will block touches when phone is in pocket
+    val activity = context as? ComponentActivity
+    DisposableEffect(uiState.isPocketModeEnabled) {
+        if (uiState.isPocketModeEnabled && activity != null) {
+            Log.d("ChatActivity", "Pocket mode enabled - keeping screen on with min brightness")
+            activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            // Set brightness to minimum (0.01f) - almost black but screen stays "on"
+            // This keeps CPU at full speed while saving battery
+            val layoutParams = activity.window.attributes
+            layoutParams.screenBrightness = 0.01f
+            activity.window.attributes = layoutParams
+        }
+        onDispose {
+            if (activity != null) {
+                Log.d("ChatActivity", "Pocket mode disabled - restoring normal screen behavior")
+                activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                // Restore automatic brightness (-1f means use system default)
+                val layoutParams = activity.window.attributes
+                layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                activity.window.attributes = layoutParams
+            }
+        }
+    }
+
     SmolLMAndroidTheme {
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -312,7 +455,7 @@ fun ChatActivityScreenUI(
                                 AppBarTitleText(uiState.chat.name)
                                 Text(
                                     if (uiState.chat.llmModelId != -1L) {
-                                        uiState.chat.llmModel!!.name
+                                        uiState.chat.llmModel?.name ?: ""
                                     } else {
                                         ""
                                     },
@@ -350,10 +493,12 @@ fun ChatActivityScreenUI(
                                     uiState.chat,
                                     uiState.showMoreOptionsPopup,
                                     uiState.memoryUsage != null,
+                                    uiState.ttsEnabled,
+                                    uiState.autoSubmitEnabled,
                                     onEditChatSettingsClick = {
                                         onEditChatParamsClick(
                                             uiState.chat,
-                                            uiState.chat.llmModel!!.contextSize,
+                                            uiState.chat.llmModel?.contextSize ?: 0,
                                         )
                                     },
                                     onBenchmarkModelClick = { onBenchmarkModelClick() },
@@ -370,7 +515,7 @@ fun ChatActivityScreenUI(
                             .padding(innerPadding)
                             .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    ScreenUI(uiState, onEvent)
+                    ScreenUI(uiState, onEvent, onAutoSubmitHandled, onClearInputHandled)
                 }
             }
 
@@ -412,12 +557,273 @@ fun ChatActivityScreenUI(
             FolderOptionsDialog()
             TextFieldDialog()
             ChatMessageOptionsDialog()
+
+            // Pocket mode overlay - covers entire screen when active
+            if (uiState.isPocketModeEnabled) {
+                PocketModeOverlay(
+                    onExitPocketMode = {
+                        onEvent(ChatScreenUIEvent.ChatEvents.DisablePocketMode)
+                    }
+                )
+            }
+
+            // Context warning dialog
+            if (uiState.showContextWarningDialog) {
+                ContextWarningDialog(
+                    contextUsed = uiState.chat.contextSizeConsumed,
+                    contextMax = uiState.chat.contextSize,
+                    onTrimMessages = {
+                        onEvent(ChatScreenUIEvent.ChatEvents.TrimOldMessages)
+                    },
+                    onNewChat = {
+                        onEvent(ChatScreenUIEvent.ChatEvents.DismissContextWarning)
+                        onEvent(ChatScreenUIEvent.ChatEvents.NewChat)
+                    },
+                    onContinue = {
+                        onEvent(ChatScreenUIEvent.ChatEvents.ContinueAnywayContextWarning)
+                    },
+                    onDismiss = {
+                        onEvent(ChatScreenUIEvent.ChatEvents.DismissContextWarning)
+                    }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Full-screen overlay for pocket mode. Requires long-press (2 seconds) to exit.
+ */
+@Composable
+private fun PocketModeOverlay(
+    onExitPocketMode: () -> Unit
+) {
+    val holdDurationMs = 2000L
+    var isHolding by remember { mutableStateOf(false) }
+    var holdProgress by remember { mutableFloatStateOf(0f) }
+    val scope = rememberCoroutineScope()
+
+    // Progress animation while holding
+    LaunchedEffect(isHolding) {
+        if (isHolding) {
+            holdProgress = 0f
+            val startTime = System.currentTimeMillis()
+            while (isHolding && holdProgress < 1f) {
+                delay(50)
+                val elapsed = System.currentTimeMillis() - startTime
+                holdProgress = (elapsed.toFloat() / holdDurationMs).coerceIn(0f, 1f)
+                if (holdProgress >= 1f) {
+                    onExitPocketMode()
+                }
+            }
+        } else {
+            holdProgress = 0f
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.95f))
+            .zIndex(100f),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(32.dp)
+        ) {
+            // Lock icon
+            Icon(
+                imageVector = FeatherIcons.Lock,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(64.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = stringResource(R.string.pocket_mode_active),
+                color = Color.White,
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Exit button with long-press requirement
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isHolding) MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
+                    .border(
+                        width = 3.dp,
+                        color = if (isHolding) MaterialTheme.colorScheme.error else Color.White.copy(alpha = 0.5f),
+                        shape = CircleShape
+                    )
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                isHolding = true
+                                tryAwaitRelease()
+                                isHolding = false
+                            }
+                        )
+                    }
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (isHolding) {
+                        CircularProgressIndicator(
+                            progress = { holdProgress },
+                            modifier = Modifier.size(60.dp),
+                            color = Color.White,
+                            strokeWidth = 4.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = FeatherIcons.StopCircle,
+                            contentDescription = "Exit",
+                            tint = Color.White,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = if (isHolding) {
+                    stringResource(R.string.pocket_mode_exiting)
+                } else {
+                    stringResource(R.string.pocket_mode_hold_to_exit)
+                },
+                color = Color.White.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
 
 @Composable
-private fun ColumnScope.ScreenUI(uiState: ChatScreenUIState, onEvent: (ChatScreenUIEvent) -> Unit) {
+private fun ContextWarningDialog(
+    contextUsed: Int,
+    contextMax: Int,
+    onTrimMessages: () -> Unit,
+    onNewChat: () -> Unit,
+    onContinue: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val usagePercent = if (contextMax > 0) {
+        ((contextUsed.toFloat() / contextMax.toFloat()) * 100).toInt()
+    } else 0
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.context_nearly_full_title),
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = stringResource(R.string.context_nearly_full_message, usagePercent),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Option 1: Trim old messages
+                OutlinedCard(
+                    onClick = onTrimMessages,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = stringResource(R.string.context_option_trim),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(R.string.context_option_trim_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Option 2: New chat
+                OutlinedCard(
+                    onClick = onNewChat,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = stringResource(R.string.context_option_new_chat),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(R.string.context_option_new_chat_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Option 3: Continue anyway
+                OutlinedCard(
+                    onClick = onContinue,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = stringResource(R.string.context_option_continue),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Text(
+                            text = stringResource(R.string.context_option_continue_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {}
+    )
+}
+
+@Composable
+private fun ColumnScope.ScreenUI(
+    uiState: ChatScreenUIState,
+    onEvent: (ChatScreenUIEvent) -> Unit,
+    onAutoSubmitHandled: () -> Unit,
+    onClearInputHandled: () -> Unit
+) {
+    // Context usage progress bar
+    if (uiState.chat.contextSize > 0) {
+        ContextUsageBar(
+            contextUsed = uiState.chat.contextSizeConsumed,
+            contextMax = uiState.chat.contextSize
+        )
+    }
     if (uiState.memoryUsage != null) {
         RAMUsageLabel(uiState.memoryUsage)
     }
@@ -431,7 +837,73 @@ private fun ColumnScope.ScreenUI(uiState: ChatScreenUIState, onEvent: (ChatScree
         uiState.responseGenerationTimeSecs,
         onEvent,
     )
-    MessageInput(uiState.chat, uiState.modelLoadingState, uiState.isGeneratingResponse, onEvent)
+    MessageInput(
+        uiState.chat,
+        uiState.modelLoadingState,
+        uiState.isGeneratingResponse,
+        uiState.autoSubmitEnabled,
+        uiState.autoSubmitDelayMs,
+        uiState.sttState,
+        uiState.pendingTranscribedText,
+        uiState.triggerAutoSubmit,
+        uiState.shouldClearInput,
+        uiState.isTTSSpeaking,
+        onEvent,
+        onAutoSubmitHandled,
+        onClearInputHandled
+    )
+}
+
+@Composable
+private fun ContextUsageBar(
+    contextUsed: Int,
+    contextMax: Int
+) {
+    val progress = if (contextMax > 0) {
+        (contextUsed.toFloat() / contextMax.toFloat()).coerceIn(0f, 1f)
+    } else 0f
+
+    val progressPercent = (progress * 100).toInt()
+
+    // Color changes based on usage: green -> yellow -> red
+    val progressColor = when {
+        progressPercent < 60 -> MaterialTheme.colorScheme.primary
+        progressPercent < 85 -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.error
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.context_usage, contextUsed, contextMax),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "$progressPercent%",
+                style = MaterialTheme.typography.labelSmall,
+                color = progressColor
+            )
+        }
+        Spacer(modifier = Modifier.height(2.dp))
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp)),
+            color = progressColor,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
+    }
 }
 
 @Composable
@@ -464,9 +936,11 @@ private fun ColumnScope.MessagesList(
             listState.animateScrollToItem(messages.size)
         }
     }
-    LazyColumn(state = listState, modifier = Modifier
-        .fillMaxSize()
-        .weight(1f)) {
+    LazyColumn(
+        state = listState, modifier = Modifier
+            .fillMaxSize()
+            .weight(1f)
+    ) {
         itemsIndexed(messages) { i, chatMessage ->
             MessageListItem(
                 chatMessage.renderedMessage,
@@ -481,9 +955,9 @@ private fun ColumnScope.MessagesList(
                     val clip = ClipData.newPlainText("Copied message", chatMessage.message)
                     clipboard.setPrimaryClip(clip)
                     Toast.makeText(
-                            context,
-                            context.getString(R.string.chat_message_copied),
-                            Toast.LENGTH_SHORT,
+                        context,
+                        context.getString(R.string.chat_message_copied),
+                        Toast.LENGTH_SHORT,
                     )
                         .show()
                 },
@@ -569,9 +1043,11 @@ private fun LazyItemScope.MessageListItem(
     var isEditing by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     if (!isUserMessage) {
-        Row(modifier = modifier
-            .fillMaxWidth()
-            .animateItem()) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .animateItem()
+        ) {
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 ChatMessageText(
@@ -707,7 +1183,16 @@ private fun MessageInput(
     currChat: Chat,
     modelLoadingState: ModelLoadingState,
     isGeneratingResponse: Boolean,
+    autoSubmitEnabled: Boolean,
+    autoSubmitDelayMs: Long,
+    sttState: STTState,
+    pendingTranscribedText: String?,
+    triggerAutoSubmit: Boolean,
+    shouldClearInput: Boolean,
+    isTTSSpeaking: Boolean,
     onEvent: (ChatScreenUIEvent) -> Unit,
+    onAutoSubmitHandled: () -> Unit,
+    onClearInputHandled: () -> Unit,
     defaultQuestion: String? = null,
 ) {
     if (currChat.llmModelId == -1L) {
@@ -715,6 +1200,38 @@ private fun MessageInput(
     } else {
         var questionText by rememberSaveable { mutableStateOf(defaultQuestion ?: "") }
         val keyboardController = LocalSoftwareKeyboardController.current
+
+        // Update text field with transcribed text when available (full replacement for streaming)
+        LaunchedEffect(pendingTranscribedText) {
+            if (pendingTranscribedText != null && pendingTranscribedText.isNotBlank()) {
+                // Replace with full transcription during streaming
+                questionText = pendingTranscribedText
+            }
+        }
+
+        val isRecording = sttState is STTState.Recording
+        val isTranscribing = sttState is STTState.Transcribing
+
+        // Handle auto-submit trigger from silence detection
+        LaunchedEffect(triggerAutoSubmit) {
+            if (triggerAutoSubmit && questionText.isNotBlank() && !isGeneratingResponse) {
+                Log.d("MessageInput", "Auto-submitting after silence detection: $questionText")
+                keyboardController?.hide()
+                onEvent(ChatScreenUIEvent.ChatEvents.SendUserQuery(questionText, fromVoice = true))
+                questionText = ""
+                onAutoSubmitHandled()
+            }
+        }
+
+        // Handle clear input signal from direct callback auto-submit
+        LaunchedEffect(shouldClearInput) {
+            if (shouldClearInput) {
+                Log.d("MessageInput", "Clearing input after auto-submit")
+                questionText = ""
+                onClearInputHandled()
+            }
+        }
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
@@ -734,13 +1251,70 @@ private fun MessageInput(
             }
             AnimatedVisibility(modelLoadingState == ModelLoadingState.SUCCESS) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    TextField(
+                    // Mic button - toggles recording
+                    IconButton(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
+                            .size(40.dp)
+                            .background(
+                                if (isRecording) MaterialTheme.colorScheme.error
+                                else MaterialTheme.colorScheme.primaryContainer,
+                                CircleShape
+                            ),
+                        onClick = {
+                            onEvent(ChatScreenUIEvent.ChatEvents.ToggleMicRecording)
+                        },
+                        enabled = !isTranscribing && !isTTSSpeaking
+                    ) {
+                        if (isTranscribing || isTTSSpeaking) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        } else {
+                            Icon(
+                                imageVector = if (isRecording) FeatherIcons.MicOff else FeatherIcons.Mic,
+                                contentDescription = if (isRecording) "Stop Recording" else "Start Recording",
+                                tint = if (isRecording) MaterialTheme.colorScheme.onError
+                                       else MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
+                    }
+
+                    // Pocket mode button - visible when recording
+                    AnimatedVisibility(visible = isRecording) {
+                        Row {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            IconButton(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(
+                                        MaterialTheme.colorScheme.secondaryContainer,
+                                        CircleShape
+                                    ),
+                                onClick = {
+                                    onEvent(ChatScreenUIEvent.ChatEvents.EnablePocketMode)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = FeatherIcons.Lock,
+                                    contentDescription = stringResource(R.string.pocket_mode),
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Text field takes remaining space
+                    TextField(
+                        modifier = Modifier.weight(1f),
                         value = questionText,
                         onValueChange = { questionText = it },
                         shape = RoundedCornerShape(16.dp),
@@ -751,7 +1325,15 @@ private fun MessageInput(
                                 unfocusedIndicatorColor = Color.Transparent,
                                 disabledIndicatorColor = Color.Transparent,
                             ),
-                        placeholder = { Text(text = stringResource(R.string.chat_ask_question)) },
+                        placeholder = {
+                            Text(
+                                text = when {
+                                    isRecording -> stringResource(R.string.stt_recording)
+                                    isTranscribing -> stringResource(R.string.stt_transcribing)
+                                    else -> stringResource(R.string.chat_ask_question)
+                                }
+                            )
+                        },
                         keyboardOptions =
                             KeyboardOptions.Default.copy(
                                 capitalization = KeyboardCapitalization.Sentences,
