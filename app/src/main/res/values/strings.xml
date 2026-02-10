@@ -152,4 +152,18 @@
     <string name="pocket_mode_active">Pocket Mode Active</string>
     <string name="pocket_mode_hold_to_exit">Hold for 2 seconds to exit</string>
     <string name="pocket_mode_exiting">Exiting pocket mode...</string>
+    <string name="context_usage">Context: %1$d / %2$d tokens</string>
+    <string name="context_nearly_full_title">Context Almost Full</string>
+    <string name="context_nearly_full_message">The conversation is using %1$d%% of the model\'s context window. What would you like to do?</string>
+    <string name="context_option_trim">Remove older messages</string>
+    <string name="context_option_trim_desc">Keep system prompt and recent messages</string>
+    <string name="context_option_new_chat">Start new chat</string>
+    <string name="context_option_new_chat_desc">Begin a fresh conversation</string>
+    <string name="context_option_continue">Continue anyway</string>
+    <string name="context_option_continue_desc">May cause errors if context overflows</string>
+    <string name="context_auto_trim_voice">Context nearly full. Removing older messages to continue.</string>
+    <string name="auto_context_trim_enable">Enable Auto Context Trim</string>
+    <string name="auto_context_trim_disable">Disable Auto Context Trim</string>
+    <string name="auto_context_trim_title">Auto Context Trim</string>
+    <string name="auto_context_trim_desc">Automatically remove older messages when context is nearly full, without prompting.</string>
 </resources>

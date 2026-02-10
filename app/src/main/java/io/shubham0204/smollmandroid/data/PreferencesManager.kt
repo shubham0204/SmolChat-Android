@@ -43,6 +43,10 @@ class PreferencesManager(context: Context) {
         get() = prefs.getString("stt_language", DEFAULT_STT_LANGUAGE) ?: DEFAULT_STT_LANGUAGE
         set(value) = prefs.edit().putString("stt_language", value).apply()
 
+    var autoContextTrimEnabled: Boolean
+        get() = prefs.getBoolean("auto_context_trim_enabled", false)
+        set(value) = prefs.edit().putBoolean("auto_context_trim_enabled", value).apply()
+
     companion object {
         const val DEFAULT_WHISPER_MODEL = "ggml-base.en.bin"
         const val DEFAULT_STT_LANGUAGE = "en"
