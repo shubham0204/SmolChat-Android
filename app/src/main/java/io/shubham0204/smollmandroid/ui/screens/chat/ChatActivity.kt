@@ -455,7 +455,7 @@ fun ChatActivityScreenUI(
                                 AppBarTitleText(uiState.chat.name)
                                 Text(
                                     if (uiState.chat.llmModelId != -1L) {
-                                        uiState.chat.llmModel!!.name
+                                        uiState.chat.llmModel?.name ?: ""
                                     } else {
                                         ""
                                     },
@@ -498,7 +498,7 @@ fun ChatActivityScreenUI(
                                     onEditChatSettingsClick = {
                                         onEditChatParamsClick(
                                             uiState.chat,
-                                            uiState.chat.llmModel!!.contextSize,
+                                            uiState.chat.llmModel?.contextSize ?: 0,
                                         )
                                     },
                                     onBenchmarkModelClick = { onBenchmarkModelClick() },

@@ -91,7 +91,7 @@ class DownloadWhisperModelActivity : ComponentActivity() {
                         sttManager.setSelectedModel(modelName)
                         Toast.makeText(
                             this@DownloadWhisperModelActivity,
-                            getString(R.string.whisper_model_selected, modelName),
+                            getString(R.string.whisper_model_selected, getWhisperModelDisplayName(modelName)),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -253,11 +253,12 @@ private fun DownloadedModelsList(
     onModelSelected: (String) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.Center) {
-        models.forEach { modelName ->
-            val isSelected = modelName == selectedModel
+        models.forEach { modelFileName ->
+            val isSelected = modelFileName == selectedModel
+            val displayName = getWhisperModelDisplayName(modelFileName)
             Row(
                 Modifier
-                    .clickable { onModelSelected(modelName) }
+                    .clickable { onModelSelected(modelFileName) }
                     .fillMaxWidth()
                     .background(
                         if (isSelected) {
@@ -284,7 +285,7 @@ private fun DownloadedModelsList(
                     } else {
                         MaterialTheme.colorScheme.onSurface
                     },
-                    text = modelName,
+                    text = displayName,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }

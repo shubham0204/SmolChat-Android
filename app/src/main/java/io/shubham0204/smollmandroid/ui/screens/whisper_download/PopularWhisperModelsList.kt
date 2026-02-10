@@ -103,6 +103,9 @@ fun PopularWhisperModelsList(selectedModelIndex: Int?, onModelSelected: (Int) ->
 fun getPopularWhisperModel(index: Int?): WhisperModel? =
     if (index != null) popularWhisperModelsList[index] else null
 
+fun getWhisperModelDisplayName(fileName: String): String =
+    popularWhisperModelsList.firstOrNull { it.fileName == fileName }?.name ?: fileName
+
 /**
  * A list of Whisper models for speech-to-text functionality.
  * Models are from the ggerganov/whisper.cpp repository.

@@ -355,7 +355,7 @@ class ChatScreenViewModel(
                     chat.temperature,
                     !chat.isTask,
                     chat.contextSize.toLong(),
-                    chat.chatTemplate,
+                    chat.chatTemplate.takeIf { it.isNotBlank() && ("{%" in it || "{{" in it) },
                     chat.nThreads,
                     chat.useMmap,
                     chat.useMlock,
@@ -912,6 +912,14 @@ class ChatScreenViewModel(
             },
             onError = { exception ->
                 _uiState.update { it.copy(isGeneratingResponse = false) }
+
+                // Check if the model is still loaded — if not, the error is likely
+                // due to the model being unloaded (e.g. after changing settings)
+                if (!smolLMManager.isInstanceLoaded.get()) {
+                    LOGD("Error occurred but model is not loaded, reloading...")
+                    loadModel()
+                    return@getResponse
+                }
 
                 // Check if this is a context overflow error in pocket mode
                 val isContextError = exception.message?.contains("context", ignoreCase = true) == true

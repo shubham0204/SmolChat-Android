@@ -53,7 +53,7 @@ class SmolLMManager(private val appDB: AppDB) {
     private var chat: Chat? = null
 
     // Use java.util.concurrent.atomic for better thread safety
-    private val isInstanceLoaded = AtomicBoolean(false)
+    val isInstanceLoaded = AtomicBoolean(false)
 
     @Volatile
     var isInferenceOn = false
@@ -127,21 +127,17 @@ class SmolLMManager(private val appDB: AppDB) {
             responseGenerationJob.safeCancelJobIfActive()
             modelInitJob.safeCancelJobIfActive()
 
-            // Launch a separate coroutine to wait for jobs to complete and clean up
-            // This is necessary because join() is suspending, but we can't make unload() suspend
-            CoroutineScope(Dispatchers.Default).launch {
-                responseGenerationJob?.join()
-                modelInitJob?.join()
-
-                try {
-                    instance.close()
-                } catch (e: Exception) {
-                    LOGD("Error closing instance: ${e.message}")
-                }
-            }
-
             isInstanceLoaded.set(false)
             chat = null
+
+            // Close the instance synchronously to prevent race conditions
+            // with a subsequent load() call. Deferring close() to an async
+            // coroutine caused the old close() to free the newly loaded model.
+            try {
+                instance.close()
+            } catch (e: Exception) {
+                LOGD("Error closing instance: ${e.message}")
+            }
         }
     }
 
