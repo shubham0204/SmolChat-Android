@@ -435,6 +435,7 @@ class ChatScreenViewModel(
                 val newChat = event.settings.toChat(event.existingChat)
                 _uiState.update { it.copy(chat = newChat) }
                 appDB.updateChat(newChat)
+                unloadModel()
                 loadModel()
             }
 
