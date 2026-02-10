@@ -26,4 +26,48 @@ class PreferencesManager(context: Context) {
     var ttsEnabled: Boolean
         get() = prefs.getBoolean("tts_enabled", false)
         set(value) = prefs.edit().putBoolean("tts_enabled", value).apply()
+
+    var autoSubmitEnabled: Boolean
+        get() = prefs.getBoolean("auto_submit_enabled", false)
+        set(value) = prefs.edit().putBoolean("auto_submit_enabled", value).apply()
+
+    var autoSubmitDelayMs: Long
+        get() = prefs.getLong("auto_submit_delay_ms", 2000L)
+        set(value) = prefs.edit().putLong("auto_submit_delay_ms", value).apply()
+
+    var selectedWhisperModel: String
+        get() = prefs.getString("selected_whisper_model", DEFAULT_WHISPER_MODEL) ?: DEFAULT_WHISPER_MODEL
+        set(value) = prefs.edit().putString("selected_whisper_model", value).apply()
+
+    var sttLanguage: String
+        get() = prefs.getString("stt_language", DEFAULT_STT_LANGUAGE) ?: DEFAULT_STT_LANGUAGE
+        set(value) = prefs.edit().putString("stt_language", value).apply()
+
+    companion object {
+        const val DEFAULT_WHISPER_MODEL = "ggml-base.en.bin"
+        const val DEFAULT_STT_LANGUAGE = "en"
+
+        // Whisper supported languages with their display names
+        val SUPPORTED_LANGUAGES = listOf(
+            "en" to "English",
+            "de" to "German",
+            "fr" to "French",
+            "es" to "Spanish",
+            "it" to "Italian",
+            "pt" to "Portuguese",
+            "nl" to "Dutch",
+            "pl" to "Polish",
+            "ru" to "Russian",
+            "zh" to "Chinese",
+            "ja" to "Japanese",
+            "ko" to "Korean",
+            "ar" to "Arabic",
+            "hi" to "Hindi",
+            "tr" to "Turkish",
+            "uk" to "Ukrainian",
+            "cs" to "Czech",
+            "sv" to "Swedish",
+            "auto" to "Auto-detect",
+        )
+    }
 }
