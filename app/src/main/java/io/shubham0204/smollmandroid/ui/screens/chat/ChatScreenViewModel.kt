@@ -188,7 +188,7 @@ class ChatScreenViewModel(
                     chat.temperature,
                     !chat.isTask,
                     chat.contextSize.toLong(),
-                    chat.chatTemplate,
+                    chat.chatTemplate.takeIf { it.isNotBlank() && ("{%" in it || "{{" in it) },
                     chat.nThreads,
                     chat.useMmap,
                     chat.useMlock,
