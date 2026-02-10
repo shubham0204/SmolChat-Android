@@ -144,4 +144,12 @@
     <string name="whisper_model_selected">Selected: %1$s</string>
     <string name="stt_language_title">Transcription Language</string>
     <string name="stt_language_desc">Select the language for speech-to-text transcription.</string>
+    <string name="voice_chat_notification_title">Voice Chat Active</string>
+    <string name="voice_chat_notification_text">Tap to return to chat</string>
+    <string name="voice_chat_stop">Stop</string>
+    <string name="voice_chat_channel_name">Voice Chat</string>
+    <string name="pocket_mode">Pocket Mode</string>
+    <string name="pocket_mode_active">Pocket Mode Active</string>
+    <string name="pocket_mode_hold_to_exit">Hold for 2 seconds to exit</string>
+    <string name="pocket_mode_exiting">Exiting pocket mode...</string>
 </resources>
