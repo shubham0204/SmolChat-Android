@@ -13,8 +13,12 @@ Java_io_shubham0204_smollm_SmolLM_loadModel(JNIEnv* env, jobject thiz, jstring m
     try {
         llmInference->loadModel(modelPathCstr, minP, temperature, storeChats, contextSize, chatTemplateCstr, nThreads,
                                 useMmap, useMlock);
-    } catch (std::runtime_error& error) {
+    } catch (std::exception& error) {
+        env->ReleaseStringUTFChars(modelPath, modelPathCstr);
+        env->ReleaseStringUTFChars(chatTemplate, chatTemplateCstr);
+        delete llmInference;
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
+        return 0;
     }
 
     env->ReleaseStringUTFChars(modelPath, modelPathCstr);
@@ -57,7 +61,13 @@ Java_io_shubham0204_smollm_SmolLM_startCompletion(JNIEnv* env, jobject thiz, jlo
     jboolean    isCopy       = true;
     const char* promptCstr   = env->GetStringUTFChars(prompt, &isCopy);
     auto*       llmInference = reinterpret_cast<LLMInference*>(modelPtr);
-    llmInference->startCompletion(promptCstr);
+    try {
+        llmInference->startCompletion(promptCstr);
+    } catch (std::exception& error) {
+        env->ReleaseStringUTFChars(prompt, promptCstr);
+        env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
+        return;
+    }
     env->ReleaseStringUTFChars(prompt, promptCstr);
 }
 
@@ -67,7 +77,7 @@ Java_io_shubham0204_smollm_SmolLM_completionLoop(JNIEnv* env, jobject thiz, jlon
     try {
         std::string response = llmInference->completionLoop();
         return env->NewStringUTF(response.c_str());
-    } catch (std::runtime_error& error) {
+    } catch (std::exception& error) {
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
         return nullptr;
     }
