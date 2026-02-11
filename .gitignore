@@ -11,3 +11,4 @@ local.properties
 .kotlin
 ktlint
 ktlint.bat
+whisper/build/
