@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
-    kotlin("plugin.serialization") version "2.1.0"
+    kotlin("plugin.serialization") version "2.0.0"
 }
 
 android {
@@ -92,12 +92,17 @@ dependencies {
 
     implementation(project(":smollm"))
     implementation(project(":hf-model-hub-api"))
+    implementation(project(":whisper"))
+
+    // Android Wave Recorder for speech-to-text
+    implementation("com.github.squti:Android-Wave-Recorder:2.1.0")
 
     // Koin: dependency injection
     implementation(libs.koin.android)
     implementation(libs.koin.annotations)
     implementation(libs.koin.androidx.compose)
     implementation(libs.androidx.ui.text.google.fonts)
+    implementation(libs.androidx.compose.foundation)
     ksp(libs.koin.ksp.compiler)
 
     // compose-markdown: Markdown rendering in Compose
