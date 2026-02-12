@@ -112,4 +112,8 @@
     <string name="dialog_invalid_file_title">Invalid File</string>
     <string name="dialog_invalid_file_text">The selected file is not a valid GGUF file.</string>
     <string name="chat_options_benchmark_model">Benchmark Model</string>
+    <string name="tts_enable">Enable TTS</string>
+    <string name="tts_disable">Disable TTS</string>
+    <string name="tts_settings_title">Text-to-Speech</string>
+    <string name="tts_settings_desc">Enable text-to-speech to have responses read aloud as they are generated.</string>
 </resources>
