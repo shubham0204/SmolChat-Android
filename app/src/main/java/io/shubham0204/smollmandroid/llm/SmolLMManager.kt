@@ -16,6 +16,7 @@
 
 package io.shubham0204.smollmandroid.llm
 
+import android.os.Process
 import android.util.Log
 import io.shubham0204.smollm.SmolLM
 import io.shubham0204.smollmandroid.data.AppDB
@@ -157,49 +158,72 @@ class SmolLMManager(private val appDB: AppDB) {
             responseGenerationJob?.cancel()
 
             responseGenerationJob = CoroutineScope(Dispatchers.Default).launch {
+                // Boost thread priority to reduce CPU throttling when screen is locked
+                // THREAD_PRIORITY_URGENT_AUDIO (-19) is the highest priority available
+                // to regular apps and signals to the system this is time-sensitive work
+                val originalPriority = Process.getThreadPriority(Process.myTid())
                 try {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
+                    LOGD(">>> Thread priority boosted from $originalPriority to URGENT_AUDIO")
+                } catch (e: Exception) {
+                    LOGD(">>> Failed to boost thread priority: ${e.message}")
+                }
+
+                try {
+                    LOGD(">>> getResponse coroutine started on thread: ${Thread.currentThread().name}")
                     isInferenceOn = true
                     var response = ""
 
                     val duration = measureTime {
+                        LOGD(">>> Starting response flow collection...")
                         instance.getResponseAsFlow(query).collect { piece ->
                             response += piece
-                            withContext(Dispatchers.Main) {
-                                onPartialResponseGenerated(response)
-                            }
+                            // Don't use Main dispatcher - callbacks are thread-safe
+                            // Using Main blocks when screen is locked
+                            onPartialResponseGenerated(response)
                         }
+                        LOGD(">>> Response flow collection complete")
                     }
 
                     response = responseTransform(response)
+                    LOGD(">>> Response transformed, length=${response.length}")
 
                     // Thread-safe access to chat
                     val currentChat = stateLock.withLock { chat }
 
                     if (currentChat != null) {
                         // Add response to database
+                        LOGD(">>> Adding assistant message to DB...")
                         appDB.addAssistantMessage(currentChat.id, response)
+                        LOGD(">>> Assistant message added")
                     }
 
-                    withContext(Dispatchers.Main) {
-                        isInferenceOn = false
-                        onSuccess(
-                            SmolLMResponse(
-                                response = response,
-                                generationSpeed = instance.getResponseGenerationSpeed(),
-                                generationTimeSecs = duration.inWholeSeconds.toInt(),
-                                contextLengthUsed = instance.getContextLengthUsed(),
-                            )
+                    LOGD(">>> Calling onSuccess callback...")
+                    isInferenceOn = false
+                    onSuccess(
+                        SmolLMResponse(
+                            response = response,
+                            generationSpeed = instance.getResponseGenerationSpeed(),
+                            generationTimeSecs = duration.inWholeSeconds.toInt(),
+                            contextLengthUsed = instance.getContextLengthUsed(),
                         )
-                    }
+                    )
+                    LOGD(">>> onSuccess callback returned")
                 } catch (e: CancellationException) {
+                    LOGD(">>> Response generation cancelled")
                     isInferenceOn = false
-                    withContext(Dispatchers.Main) {
-                        onCancelled()
-                    }
+                    onCancelled()
                 } catch (e: Exception) {
+                    LOGD(">>> Response generation error: ${e.message}")
                     isInferenceOn = false
-                    withContext(Dispatchers.Main) {
-                        onError(e)
+                    onError(e)
+                } finally {
+                    // Restore original thread priority
+                    try {
+                        Process.setThreadPriority(originalPriority)
+                        LOGD(">>> Thread priority restored to $originalPriority")
+                    } catch (e: Exception) {
+                        LOGD(">>> Failed to restore thread priority: ${e.message}")
                     }
                 }
             }

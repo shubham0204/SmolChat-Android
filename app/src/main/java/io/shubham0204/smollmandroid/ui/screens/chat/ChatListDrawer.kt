@@ -69,6 +69,7 @@ import compose.icons.feathericons.List
 import compose.icons.feathericons.MoreVertical
 import compose.icons.feathericons.Plus
 import compose.icons.feathericons.PlusSquare
+import compose.icons.feathericons.Trash2
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.Folder
@@ -93,6 +94,7 @@ private fun PreviewChatsAndFoldersList() {
             folders = dummyFolders.toImmutableList(),
             onManageTasksClick = {},
             onItemClick = {},
+            onDeleteChatClick = {},
             onDeleteFolderClick = {},
             onDeleteFolderWithChatsClick = {},
             onUpdateFolder = {},
@@ -166,6 +168,9 @@ fun DrawerUI(
                     onEvent(ChatScreenUIEvent.ChatEvents.SwitchChat(it))
                     onCloseDrawer()
                 },
+                onDeleteChatClick = {
+                    onEvent(ChatScreenUIEvent.ChatEvents.OnDeleteChat(it))
+                },
                 onDeleteFolderClick = { onEvent(ChatScreenUIEvent.FolderEvents.DeleteFolder(it.id)) },
                 onDeleteFolderWithChatsClick = {
                     onEvent(
@@ -189,6 +194,7 @@ private fun ChatsAndFoldersList(
     folders: ImmutableList<Folder>,
     onManageTasksClick: () -> Unit,
     onItemClick: (Chat) -> Unit,
+    onDeleteChatClick: (Chat) -> Unit,
     onDeleteFolderClick: (Folder) -> Unit,
     onDeleteFolderWithChatsClick: (Folder) -> Unit,
     onUpdateFolder: (Folder) -> Unit,
@@ -219,18 +225,24 @@ private fun ChatsAndFoldersList(
             chats,
             folders,
             onItemClick,
+            onDeleteChatClick,
             onDeleteFolderClick,
             onDeleteFolderWithChatsClick,
             onUpdateFolder,
             onAddFolder,
         )
         Spacer(modifier = Modifier.height(8.dp))
-        ChatsList(currentChat, chats, onItemClick)
+        ChatsList(currentChat, chats, onItemClick, onDeleteChatClick)
     }
 }
 
 @Composable
-private fun ChatsList(currentChat: Chat?, chats: ImmutableList<Chat>, onItemClick: (Chat) -> Unit) {
+private fun ChatsList(
+    currentChat: Chat?,
+    chats: ImmutableList<Chat>,
+    onItemClick: (Chat) -> Unit,
+    onDeleteChatClick: (Chat) -> Unit
+) {
     LazyColumn {
         item {
             Text(
@@ -239,7 +251,14 @@ private fun ChatsList(currentChat: Chat?, chats: ImmutableList<Chat>, onItemClic
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
-        items(chats) { chat -> ChatListItem(chat, onItemClick, currentChat?.id == chat.id) }
+        items(chats) { chat ->
+            ChatListItem(
+                chat = chat,
+                onItemClick = onItemClick,
+                onDeleteClick = onDeleteChatClick,
+                isCurrentlySelected = currentChat?.id == chat.id
+            )
+        }
     }
 }
 
@@ -247,6 +266,7 @@ private fun ChatsList(currentChat: Chat?, chats: ImmutableList<Chat>, onItemClic
 private fun LazyItemScope.ChatListItem(
     chat: Chat,
     onItemClick: (Chat) -> Unit,
+    onDeleteClick: (Chat) -> Unit,
     isCurrentlySelected: Boolean,
 ) {
     Row(
@@ -259,32 +279,41 @@ private fun LazyItemScope.ChatListItem(
                 .animateItem(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    if (chat.isTask) {
-                        "[Task] " + chat.name
-                    } else {
-                        chat.name
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = DateUtils.getRelativeTimeSpanString(chat.dateUsed.time).toString(),
-                    style = MaterialTheme.typography.labelSmall,
-                )
-            }
-            if (isCurrentlySelected) {
-                Box(
-                    modifier =
-                        Modifier
-                            .padding(start = 4.dp)
-                            .background(MaterialTheme.colorScheme.tertiary, CircleShape)
-                            .size(10.dp)
-                ) {}
-            }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                if (chat.isTask) {
+                    "[Task] " + chat.name
+                } else {
+                    chat.name
+                },
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = DateUtils.getRelativeTimeSpanString(chat.dateUsed.time).toString(),
+                style = MaterialTheme.typography.labelSmall,
+            )
+        }
+        if (isCurrentlySelected) {
+            Box(
+                modifier =
+                    Modifier
+                        .padding(start = 4.dp)
+                        .background(MaterialTheme.colorScheme.tertiary, CircleShape)
+                        .size(10.dp)
+            ) {}
+        }
+        IconButton(
+            onClick = { onDeleteClick(chat) },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                FeatherIcons.Trash2,
+                contentDescription = "Delete chat",
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }
@@ -294,6 +323,7 @@ private fun FoldersList(
     allChats: ImmutableList<Chat>,
     folders: ImmutableList<Folder>,
     onItemClick: (Chat) -> Unit,
+    onDeleteChatClick: (Chat) -> Unit,
     onDeleteFolderClick: (Folder) -> Unit,
     onDeleteFolderWithChatsClick: (Folder) -> Unit,
     onUpdateFolder: (Folder) -> Unit,
@@ -329,7 +359,8 @@ private fun FoldersList(
         FolderListItem(
             folder = folder,
             chatsInFolder = folder.getChats(allChats).toImmutableList(),
-            onItemClick,
+            onChatItemClick = onItemClick,
+            onDeleteChatClick = onDeleteChatClick,
             onEditFolderNameClick = { newName -> onUpdateFolder(folder.copy(name = newName)) },
             onDeleteFolderClick = { onDeleteFolderClick(folder) },
             onDeleteFolderWithChatsClick = { onDeleteFolderWithChatsClick(folder) },
@@ -342,6 +373,7 @@ private fun FolderListItem(
     folder: Folder,
     chatsInFolder: ImmutableList<Chat>,
     onChatItemClick: (Chat) -> Unit,
+    onDeleteChatClick: (Chat) -> Unit,
     onEditFolderNameClick: (String) -> Unit,
     onDeleteFolderClick: () -> Unit,
     onDeleteFolderWithChatsClick: () -> Unit,
@@ -425,6 +457,7 @@ private fun FolderListItem(
                     ChatListItem(
                         chat = it,
                         onItemClick = onChatItemClick,
+                        onDeleteClick = onDeleteChatClick,
                         isCurrentlySelected = false,
                     )
                 }
