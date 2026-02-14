@@ -32,10 +32,17 @@ import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.ChatMessage
 import io.shubham0204.smollmandroid.data.Folder
 import io.shubham0204.smollmandroid.data.LLMModel
+import io.shubham0204.smollmandroid.data.SharedPrefStore
 import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.llm.ModelsRepository
 import io.shubham0204.smollmandroid.llm.SmolLMManager
+import io.shubham0204.smollmandroid.llm.speech2text.AudioTranscriptionService
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
+import io.shubham0204.smollmandroid.ui.screens.manage_asr.SETTING_DEF_VALUE_SPEECH2TEXT_CURR_MODEL_NAME
+import io.shubham0204.smollmandroid.ui.screens.manage_asr.SETTING_DEF_VALUE_SPEECH2_TEXT_ENABLED
+import io.shubham0204.smollmandroid.ui.screens.manage_asr.SETTING_KEY_SPEECH2TEXT_CURR_MODEL_NAME
+import io.shubham0204.smollmandroid.ui.screens.manage_asr.SETTING_KEY_SPEECH2TEXT_ENABLED
+import io.shubham0204.smollmandroid.ui.screens.manage_asr.availableASRModels
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,6 +92,11 @@ sealed class ChatScreenUIEvent {
             ChatScreenUIEvent()
 
         data class StartBenchmark(val onResult: (String) -> Unit) : ChatScreenUIEvent()
+
+        data class StartAudioTranscription(val onLineComplete: (String) -> Unit) :
+            ChatScreenUIEvent()
+
+        data object StopAudioTranscription : ChatScreenUIEvent()
     }
 
     sealed class FolderEvents {
@@ -114,6 +126,11 @@ sealed class ChatScreenUIEvent {
     }
 }
 
+data class AudioTranscriptionUIState(
+    val isRecording: Boolean = false,
+    val isAvailable: Boolean = false,
+)
+
 data class ChatScreenUIState(
     val chat: Chat = Chat(),
     val isGeneratingResponse: Boolean = false,
@@ -129,6 +146,7 @@ data class ChatScreenUIState(
     val messages: ImmutableList<ChatMessage> = emptyList<ChatMessage>().toImmutableList(),
     val tasks: ImmutableList<Task> = emptyList<Task>().toImmutableList(),
     val benchmarkResult: String? = null,
+    val audioTranscriptionUIState: AudioTranscriptionUIState = AudioTranscriptionUIState(),
     val showChangeFolderDialog: Boolean = false,
     val showSelectModelListDialog: Boolean = false,
     val showMoreOptionsPopup: Boolean = false,
@@ -141,7 +159,9 @@ class ChatScreenViewModel(
     val appDB: AppDB,
     val modelsRepository: ModelsRepository,
     val smolLMManager: SmolLMManager,
+    val audioTranscriptionService: AudioTranscriptionService,
     val mdRenderer: MDRenderer,
+    val sharedPrefStore: SharedPrefStore
 ) : ViewModel() {
     enum class ModelLoadingState {
         NOT_LOADED, // model loading not started
@@ -150,7 +170,7 @@ class ChatScreenViewModel(
         FAILURE, // model loading failed
     }
 
-    private val _uiState = MutableStateFlow(ChatScreenUIState())
+    private val _uiState = MutableStateFlow(initializeUIState())
     val uiState: StateFlow<ChatScreenUIState> = _uiState
 
     // Used to pre-set a value in the query text-field of the chat screen
@@ -216,11 +236,12 @@ class ChatScreenViewModel(
                     _uiState.update {
                         it.copy(
                             modelLoadingState = ModelLoadingState.SUCCESS,
-                            memoryUsage = if (it.memoryUsage != null) {
-                                getCurrentMemoryUsage()
-                            } else {
-                                null
-                            }
+                            memoryUsage =
+                                if (it.memoryUsage != null) {
+                                    getCurrentMemoryUsage()
+                                } else {
+                                    null
+                                },
                         )
                     }
                     onComplete(ModelLoadingState.SUCCESS)
@@ -406,16 +427,18 @@ class ChatScreenViewModel(
                     onPositiveButtonClick = {
                         deleteChatMessages(event.chat)
                         unloadModel()
-                        loadModel(onComplete = {
-                            if (it == ModelLoadingState.SUCCESS) {
-                                Toast.makeText(
-                                    context,
-                                    "Chat '${event.chat.name}' cleared",
-                                    Toast.LENGTH_LONG,
-                                ).show()
+                        loadModel(
+                            onComplete = {
+                                if (it == ModelLoadingState.SUCCESS) {
+                                    Toast.makeText(
+                                        context,
+                                        "Chat '${event.chat.name}' cleared",
+                                        Toast.LENGTH_LONG,
+                                    )
+                                        .show()
+                                }
                             }
-                        })
-
+                        )
                     },
                     onNegativeButtonClick = {},
                 )
@@ -440,15 +463,74 @@ class ChatScreenViewModel(
             }
 
             is ChatScreenUIEvent.ChatEvents.StartBenchmark -> {
-                smolLMManager.benchmark { result ->
-                    event.onResult(result)
+                smolLMManager.benchmark { result -> event.onResult(result) }
+            }
+
+            is ChatScreenUIEvent.ChatEvents.StartAudioTranscription -> {
+                _uiState.update {
+                    it.copy(
+                        audioTranscriptionUIState = AudioTranscriptionUIState(
+                            true,
+                            isAvailable = true
+                        )
+                    )
                 }
+                val asrModelName = sharedPrefStore.get(
+                    SETTING_KEY_SPEECH2TEXT_CURR_MODEL_NAME,
+                    SETTING_DEF_VALUE_SPEECH2TEXT_CURR_MODEL_NAME
+                )
+                val asrModel = availableASRModels.first {
+                    it.name == asrModelName
+                }
+                val error =
+                    audioTranscriptionService.startTranscription(asrModel) { transcription ->
+                    _uiState.update {
+                        it.copy(
+                            audioTranscriptionUIState = AudioTranscriptionUIState(
+                                false,
+                                isAvailable = true
+                            )
+                        )
+                    }
+                    event.onLineComplete(transcription)
+                }
+                if (error is AudioTranscriptionService.Error.AudioRecordingPermissionNotGranted) {
+
+                }
+            }
+
+            is ChatScreenUIEvent.ChatEvents.StopAudioTranscription -> {
+                _uiState.update {
+                    it.copy(
+                        audioTranscriptionUIState = AudioTranscriptionUIState(
+                            false,
+                            isAvailable = true
+                        )
+                    )
+                }
+                audioTranscriptionService.stopTranscription()
             }
         }
     }
 
+    private fun initializeUIState(): ChatScreenUIState {
+        val defaultChat = appDB.loadDefaultChat()
+
+        val isSpeech2TextEnabled = sharedPrefStore.get(
+            SETTING_KEY_SPEECH2TEXT_ENABLED,
+            SETTING_DEF_VALUE_SPEECH2_TEXT_ENABLED
+        )
+        val audioTranscriptionUIState = AudioTranscriptionUIState(
+            isAvailable = isSpeech2TextEnabled
+        )
+
+        return ChatScreenUIState(
+            chat = defaultChat,
+            audioTranscriptionUIState = audioTranscriptionUIState
+        )
+    }
+
     private fun setupCollectors() {
-        _uiState.update { it.copy(chat = appDB.loadDefaultChat()) }
         viewModelScope.launch {
             launch {
                 appDB.getChats().collect { chats ->
@@ -519,6 +601,35 @@ class ChatScreenViewModel(
                         }
                     }
             }
+            launch {
+                sharedPrefStore.sharedPrefStoreChanges.collect { prefKey ->
+                    if (prefKey == SETTING_KEY_SPEECH2TEXT_ENABLED) {
+                        audioTranscriptionService.stopTranscription()
+                        val isSpeech2TextEnabled = sharedPrefStore.get(
+                            SETTING_KEY_SPEECH2TEXT_ENABLED,
+                            SETTING_DEF_VALUE_SPEECH2_TEXT_ENABLED
+                        )
+                        _uiState.update {
+                            it.copy(
+                                audioTranscriptionUIState = AudioTranscriptionUIState(
+                                    isAvailable = isSpeech2TextEnabled,
+                                    isRecording = false
+                                )
+                            )
+                        }
+                    } else if (prefKey == SETTING_KEY_SPEECH2TEXT_CURR_MODEL_NAME) {
+                        audioTranscriptionService.stopTranscription()
+                        _uiState.update {
+                            it.copy(
+                                audioTranscriptionUIState = AudioTranscriptionUIState(
+                                    isAvailable = true,
+                                    isRecording = false
+                                )
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -569,11 +680,12 @@ class ChatScreenViewModel(
                         isGeneratingResponse = false,
                         responseGenerationsSpeed = response.generationSpeed,
                         responseGenerationTimeSecs = response.generationTimeSecs,
-                        memoryUsage = if (it.memoryUsage != null) {
-                            getCurrentMemoryUsage()
-                        } else {
-                            null
-                        }
+                        memoryUsage =
+                            if (it.memoryUsage != null) {
+                                getCurrentMemoryUsage()
+                            } else {
+                                null
+                            },
                     )
                 }
                 appDB.updateChat(updatedChat)

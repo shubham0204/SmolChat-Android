@@ -32,8 +32,13 @@ class SmolLMTest {
     private val systemPrompt = "You are a helpful assistant"
     private val query = "How are you?"
     private val chatTemplate =
-        "{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}"
+        "{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>'  + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}"
     private val smolLM = SmolLM()
+
+    private val BENCH_PROMPT_PROCESSING_TOKENS = 512
+    private val BENCH_TOKEN_GENERATION_TOKENS = 128
+    private val BENCH_SEQUENCE = 1
+    private val BENCH_REPETITION = 3
 
     @Before
     fun setup() =
@@ -79,6 +84,19 @@ class SmolLMTest {
             ggufReader.load(modelPath)
             val contextSize = ggufReader.getContextSize()
             assert(contextSize == 8192L)
+        }
+
+    @Test
+    fun benchmarkModel_works() =
+        runTest {
+            val result = smolLM.benchModel(
+                BENCH_PROMPT_PROCESSING_TOKENS,
+                BENCH_TOKEN_GENERATION_TOKENS,
+                BENCH_SEQUENCE,
+                BENCH_REPETITION,
+            )
+            println(result)
+            assert(result.trim().isNotEmpty())
         }
 
     @After

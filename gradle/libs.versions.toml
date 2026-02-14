@@ -16,6 +16,7 @@ uiTextGoogleFonts = "1.7.7"
 composeIcons = "1.1.1"
 appcompat = "1.6.1"
 material = "1.10.0"
+moonshineVoice = "0.0.48"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +46,8 @@ androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text
 composeIcons-feather = { module = "br.com.devsrsouza.compose.icons:feather", version.ref = "composeIcons" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
+moonshine-voice = { group = "ai.moonshine", name = "moonshine-voice", version.ref = "moonshineVoice" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

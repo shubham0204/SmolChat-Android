@@ -2,7 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-sdk tools:overrideLibrary="ai.moonshine.voice" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:name=".SmolChatApplication"
@@ -11,38 +14,43 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SmolLMAndroid"
-        android:localeConfig="@xml/locales_config"
         tools:targetApi="31">
-
+        <activity
+            android:name=".ui.screens.manage_asr.ManageASRActivity"
+            android:exported="false"
+            android:label="@string/title_activity_app_settings"
+            android:theme="@style/Theme.SmolLMAndroid" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.SmolLMAndroid">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:label="💬 LLM"
             android:name=".ui.screens.chat.ChatActivity"
-            android:exported="true">
-            <!-- This intent-filter is used to receive text from other apps-->
-            <!-- The received text is then sent to a new chat-->
+            android:exported="true"
+            android:label="💬 LLM">
+
+            <!-- This intent-filter is used to receive text from other apps -->
+            <!-- The received text is then sent to a new chat -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".ui.screens.model_download.DownloadModelActivity"/>
-
-        <activity android:name=".ui.screens.manage_tasks.ManageTasksActivity"/>
+        <activity android:name=".ui.screens.model_download.DownloadModelActivity" />
+        <activity android:name=".ui.screens.manage_tasks.ManageTasksActivity" />
     </application>
 
 </manifest>

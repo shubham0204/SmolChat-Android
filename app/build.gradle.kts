@@ -133,6 +133,12 @@ dependencies {
     // Kotlin Immutable Collections
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.4.0")
 
+    // moonshine-ai for speech recognition
+    implementation(libs.moonshine.voice)
+
+    implementation("com.github.khushpanchal:Ketch:2.0.5")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
