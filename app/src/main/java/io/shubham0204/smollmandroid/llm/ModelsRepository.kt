@@ -19,6 +19,7 @@ package io.shubham0204.smollmandroid.llm
 import android.content.Context
 import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.LLMModel
+import io.shubham0204.smollmandroid.ui.screens.manage_asr.ASRModel
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.annotation.Single
 import java.io.File
@@ -55,5 +56,9 @@ class ModelsRepository(private val context: Context, private val appDB: AppDB) {
             File(it.path).delete()
             appDB.deleteModel(it.id)
         }
+    }
+
+    fun isSpeech2TextModelDownloaded(asrModel: ASRModel): Boolean {
+        return File(context.filesDir, asrModel.name).exists()
     }
 }

@@ -42,6 +42,8 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -79,6 +81,7 @@ import io.shubham0204.smollmandroid.ui.components.noRippleClickable
 import io.shubham0204.smollmandroid.ui.preview.dummyChats
 import io.shubham0204.smollmandroid.ui.preview.dummyFolders
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.createFolderOptionsDialog
+import io.shubham0204.smollmandroid.ui.screens.manage_asr.ManageASRActivity
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -97,6 +100,7 @@ private fun PreviewChatsAndFoldersList() {
             onDeleteFolderWithChatsClick = {},
             onUpdateFolder = {},
             onAddFolder = {},
+            onManageASRClick = {}
         )
     }
 }
@@ -162,6 +166,12 @@ fun DrawerUI(
                     }
                     onCloseDrawer()
                 },
+                onManageASRClick = {
+                    Intent(context, ManageASRActivity::class.java).also {
+                        context.startActivity(it)
+                    }
+                    onCloseDrawer()
+                },
                 onItemClick = {
                     onEvent(ChatScreenUIEvent.ChatEvents.SwitchChat(it))
                     onCloseDrawer()
@@ -188,6 +198,7 @@ private fun ChatsAndFoldersList(
     chats: ImmutableList<Chat>,
     folders: ImmutableList<Folder>,
     onManageTasksClick: () -> Unit,
+    onManageASRClick: () -> Unit,
     onItemClick: (Chat) -> Unit,
     onDeleteFolderClick: (Folder) -> Unit,
     onDeleteFolderWithChatsClick: (Folder) -> Unit,
@@ -208,6 +219,25 @@ private fun ChatsAndFoldersList(
             )
             Text(
                 stringResource(R.string.chat_drawer_manage_tasks),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onManageASRClick() },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Default.RecordVoiceOver,
+                contentDescription = "Manage Speech-to-Text",
+                tint = MaterialTheme.colorScheme.secondary,
+            )
+            Text(
+                "Manage Speech-to-Text",
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier
                     .fillMaxWidth()
