@@ -127,4 +127,5 @@
     <string name="dialog_invalid_file_title">文件无效</string>
     <string name="dialog_invalid_file_text">选择的文件不是有效的 GGUF 文件。</string>
     <string name="chat_options_benchmark_model">基准模型</string>
+    <string name="chat_listening">正在听……</string>
 </resources>

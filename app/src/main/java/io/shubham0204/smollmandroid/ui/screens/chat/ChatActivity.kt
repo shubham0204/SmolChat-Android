@@ -102,6 +102,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Menu
+import compose.icons.feathericons.Mic
+import compose.icons.feathericons.MicOff
 import compose.icons.feathericons.MoreVertical
 import compose.icons.feathericons.Send
 import compose.icons.feathericons.StopCircle
@@ -431,7 +433,13 @@ private fun ColumnScope.ScreenUI(uiState: ChatScreenUIState, onEvent: (ChatScree
         uiState.responseGenerationTimeSecs,
         onEvent,
     )
-    MessageInput(uiState.chat, uiState.modelLoadingState, uiState.isGeneratingResponse, onEvent)
+    MessageInput(
+        uiState.chat,
+        uiState.modelLoadingState,
+        uiState.audioTranscriptionUIState,
+        uiState.isGeneratingResponse,
+        onEvent
+    )
 }
 
 @Composable
@@ -706,6 +714,7 @@ private fun LazyItemScope.MessageListItem(
 private fun MessageInput(
     currChat: Chat,
     modelLoadingState: ModelLoadingState,
+    audioTranscriptionUIState: AudioTranscriptionUIState,
     isGeneratingResponse: Boolean,
     onEvent: (ChatScreenUIEvent) -> Unit,
     defaultQuestion: String? = null,
@@ -737,6 +746,29 @@ private fun MessageInput(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    IconButton(
+                        onClick = {
+                            if (audioTranscriptionUIState.isRecording) {
+                                onEvent(ChatScreenUIEvent.ChatEvents.StopAudioTranscription)
+                            } else {
+                                onEvent(ChatScreenUIEvent.ChatEvents.StartAudioTranscription {
+                                    questionText = it
+                                })
+                            }
+                        }
+                    ) {
+                        if (audioTranscriptionUIState.isRecording) {
+                            Icon(
+                                FeatherIcons.MicOff,
+                                contentDescription = "Stop Audio Transcription"
+                            )
+                        } else {
+                            Icon(
+                                FeatherIcons.Mic,
+                                contentDescription = "Start Audio Transcription"
+                            )
+                        }
+                    }
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -751,7 +783,16 @@ private fun MessageInput(
                                 unfocusedIndicatorColor = Color.Transparent,
                                 disabledIndicatorColor = Color.Transparent,
                             ),
-                        placeholder = { Text(text = stringResource(R.string.chat_ask_question)) },
+                        placeholder = {
+                            Text(
+                                text =
+                                    if (audioTranscriptionUIState.isRecording) {
+                                        stringResource(R.string.chat_listening)
+                                    } else {
+                                        stringResource(R.string.chat_ask_question)
+                                    }
+                            )
+                        },
                         keyboardOptions =
                             KeyboardOptions.Default.copy(
                                 capitalization = KeyboardCapitalization.Sentences,
@@ -768,7 +809,7 @@ private fun MessageInput(
                                 }
                             ),
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     if (isGeneratingResponse) {
                         Box(contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()

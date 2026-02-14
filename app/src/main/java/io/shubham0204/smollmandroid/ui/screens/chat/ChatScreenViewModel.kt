@@ -33,6 +33,7 @@ import io.shubham0204.smollmandroid.data.ChatMessage
 import io.shubham0204.smollmandroid.data.Folder
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.data.Task
+import io.shubham0204.smollmandroid.llm.AudioTranscriptionService
 import io.shubham0204.smollmandroid.llm.ModelsRepository
 import io.shubham0204.smollmandroid.llm.SmolLMManager
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
@@ -85,6 +86,11 @@ sealed class ChatScreenUIEvent {
             ChatScreenUIEvent()
 
         data class StartBenchmark(val onResult: (String) -> Unit) : ChatScreenUIEvent()
+
+        data class StartAudioTranscription(val onLineComplete: (String) -> Unit) :
+            ChatScreenUIEvent()
+
+        data object StopAudioTranscription : ChatScreenUIEvent()
     }
 
     sealed class FolderEvents {
@@ -114,6 +120,11 @@ sealed class ChatScreenUIEvent {
     }
 }
 
+data class AudioTranscriptionUIState(
+    val isRecording: Boolean = false,
+    val isAvailable: Boolean = false,
+)
+
 data class ChatScreenUIState(
     val chat: Chat = Chat(),
     val isGeneratingResponse: Boolean = false,
@@ -129,6 +140,7 @@ data class ChatScreenUIState(
     val messages: ImmutableList<ChatMessage> = emptyList<ChatMessage>().toImmutableList(),
     val tasks: ImmutableList<Task> = emptyList<Task>().toImmutableList(),
     val benchmarkResult: String? = null,
+    val audioTranscriptionUIState: AudioTranscriptionUIState = AudioTranscriptionUIState(),
     val showChangeFolderDialog: Boolean = false,
     val showSelectModelListDialog: Boolean = false,
     val showMoreOptionsPopup: Boolean = false,
@@ -141,6 +153,7 @@ class ChatScreenViewModel(
     val appDB: AppDB,
     val modelsRepository: ModelsRepository,
     val smolLMManager: SmolLMManager,
+    val audioTranscriptionService: AudioTranscriptionService,
     val mdRenderer: MDRenderer,
 ) : ViewModel() {
     enum class ModelLoadingState {
@@ -216,11 +229,12 @@ class ChatScreenViewModel(
                     _uiState.update {
                         it.copy(
                             modelLoadingState = ModelLoadingState.SUCCESS,
-                            memoryUsage = if (it.memoryUsage != null) {
-                                getCurrentMemoryUsage()
-                            } else {
-                                null
-                            }
+                            memoryUsage =
+                                if (it.memoryUsage != null) {
+                                    getCurrentMemoryUsage()
+                                } else {
+                                    null
+                                },
                         )
                     }
                     onComplete(ModelLoadingState.SUCCESS)
@@ -406,16 +420,18 @@ class ChatScreenViewModel(
                     onPositiveButtonClick = {
                         deleteChatMessages(event.chat)
                         unloadModel()
-                        loadModel(onComplete = {
-                            if (it == ModelLoadingState.SUCCESS) {
-                                Toast.makeText(
-                                    context,
-                                    "Chat '${event.chat.name}' cleared",
-                                    Toast.LENGTH_LONG,
-                                ).show()
+                        loadModel(
+                            onComplete = {
+                                if (it == ModelLoadingState.SUCCESS) {
+                                    Toast.makeText(
+                                        context,
+                                        "Chat '${event.chat.name}' cleared",
+                                        Toast.LENGTH_LONG,
+                                    )
+                                        .show()
+                                }
                             }
-                        })
-
+                        )
                     },
                     onNegativeButtonClick = {},
                 )
@@ -440,9 +456,26 @@ class ChatScreenViewModel(
             }
 
             is ChatScreenUIEvent.ChatEvents.StartBenchmark -> {
-                smolLMManager.benchmark { result ->
-                    event.onResult(result)
+                smolLMManager.benchmark { result -> event.onResult(result) }
+            }
+
+            is ChatScreenUIEvent.ChatEvents.StartAudioTranscription -> {
+                _uiState.update {
+                    it.copy(audioTranscriptionUIState = AudioTranscriptionUIState(true))
                 }
+                audioTranscriptionService.startTranscription { transcription ->
+                    _uiState.update {
+                        it.copy(audioTranscriptionUIState = AudioTranscriptionUIState(false))
+                    }
+                    event.onLineComplete(transcription)
+                }
+            }
+
+            is ChatScreenUIEvent.ChatEvents.StopAudioTranscription -> {
+                _uiState.update {
+                    it.copy(audioTranscriptionUIState = AudioTranscriptionUIState(false))
+                }
+                audioTranscriptionService.stopTranscription()
             }
         }
     }
@@ -569,11 +602,12 @@ class ChatScreenViewModel(
                         isGeneratingResponse = false,
                         responseGenerationsSpeed = response.generationSpeed,
                         responseGenerationTimeSecs = response.generationTimeSecs,
-                        memoryUsage = if (it.memoryUsage != null) {
-                            getCurrentMemoryUsage()
-                        } else {
-                            null
-                        }
+                        memoryUsage =
+                            if (it.memoryUsage != null) {
+                                getCurrentMemoryUsage()
+                            } else {
+                                null
+                            },
                     )
                 }
                 appDB.updateChat(updatedChat)

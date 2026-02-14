@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <uses-sdk tools:overrideLibrary="ai.moonshine.voice" />
 
     <application
         android:name=".SmolChatApplication"

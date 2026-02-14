@@ -112,4 +112,5 @@
     <string name="dialog_invalid_file_title">Ficheiro Inválido</string>
     <string name="dialog_invalid_file_text">O ficheiro selecionado não é um ficheiro GGUF válido.</string>
     <string name="chat_options_benchmark_model">Modelo de referência</string>
+    <string name="chat_listening">Escuta...</string>
 </resources>
