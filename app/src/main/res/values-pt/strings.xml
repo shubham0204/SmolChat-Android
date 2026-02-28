@@ -42,6 +42,8 @@
     <string name="chat_settings_title_num_tokens">Nº de tokens</string>
     <string name="chat_settings_err_min_ctx_size">O tamanho do contexto deve ser de pelo menos 200 tokens</string>
     <string name="chat_settings_err_load_llm">Erro: Não foi possível carregar o modelo LLM para o chat</string>
+    <string name="chat_options_show_ram">Mostrar uso de RAM</string>
+    <string name="chat_options_hide_ram">Ocultar uso de RAM</string>
     <string name="chat_model_list_screen_title">Escolher Modelo</string>
     <string name="chat_model_list_desc">Selecione um modelo descarregado abaixo para usar como modelo \'predefinido\' para este chat.</string>
     <string name="chat_model_list_sort_date">Ordenar por Data de Adição</string>

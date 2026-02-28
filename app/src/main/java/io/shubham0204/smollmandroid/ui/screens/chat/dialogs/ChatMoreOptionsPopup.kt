@@ -110,12 +110,14 @@ fun ChatMoreOptionsPopup(
             PopupMenuItem(
                 icon = FeatherIcons.Delete,
                 text = stringResource(R.string.dialog_title_delete_chat),
+                isDestructive = true,
             ) {
                 onEvent(ChatScreenUIEvent.ChatEvents.OnDeleteChat(chat))
             }
             PopupMenuItem(
                 icon = FeatherIcons.XCircle,
                 text = stringResource(R.string.chat_options_clear_messages),
+                isDestructive = true,
             ) {
                 onEvent(ChatScreenUIEvent.ChatEvents.OnDeleteChatMessages(chat))
             }
@@ -130,7 +132,10 @@ fun ChatMoreOptionsPopup(
             }
             PopupMenuItem(
                 icon = FeatherIcons.Cpu,
-                text = if (showRAMUsageLabel) "Hide RAM usage" else "Show RAM usage",
+                text = stringResource(
+                    if (showRAMUsageLabel) R.string.chat_options_hide_ram
+                    else R.string.chat_options_show_ram
+                ),
             ) {
                 onEvent(ChatScreenUIEvent.DialogEvents.ToggleRAMUsageLabel)
             }
@@ -143,12 +148,27 @@ private interface EventScope {
 }
 
 @Composable
-private fun EventScope.PopupMenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
+private fun EventScope.PopupMenuItem(
+    icon: ImageVector,
+    text: String,
+    isDestructive: Boolean = false,
+    onClick: () -> Unit
+) {
     DropdownMenuItem(
         leadingIcon = {
-            Icon(icon, contentDescription = text, tint = MaterialTheme.colorScheme.secondary)
+            Icon(
+                icon,
+                contentDescription = text,
+                tint = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary
+            )
         },
-        text = { Text(text, style = MaterialTheme.typography.labelMedium) },
+        text = {
+            Text(
+                text,
+                style = MaterialTheme.typography.labelMedium,
+                color = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+            )
+        },
         onClick = {
             onClick()
             onEvent(ChatScreenUIEvent.DialogEvents.ToggleMoreOptionsPopup(visible = false))

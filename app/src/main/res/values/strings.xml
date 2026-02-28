@@ -112,4 +112,6 @@
     <string name="dialog_invalid_file_title">Invalid File</string>
     <string name="dialog_invalid_file_text">The selected file is not a valid GGUF file.</string>
     <string name="chat_options_benchmark_model">Benchmark Model</string>
+    <string name="chat_options_show_ram">Show RAM usage</string>
+    <string name="chat_options_hide_ram">Hide RAM usage</string>
 </resources>

@@ -22,12 +22,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Delete
 import compose.icons.feathericons.Edit
 import io.shubham0204.smollmandroid.R
+import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 
 private lateinit var onEditFolderNameClick: (() -> Unit)
 private lateinit var onDeleteFolderClick: (() -> Unit)
@@ -39,86 +41,101 @@ fun FolderOptionsDialog() {
     var visible by remember { textFieldDialogShowStatus }
     if (visible) {
         Surface {
-            Dialog(onDismissRequest = { visible = false }) {
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .background(
-                                MaterialTheme.colorScheme.surfaceContainer,
-                                RoundedCornerShape(8.dp),
-                            )
-                            .padding(16.dp)
-                ) {
-                    Row(
-                        modifier =
-                            Modifier
-                                .padding(8.dp)
-                                .clickable {
-                                    visible = false
-                                    onEditFolderNameClick()
-                                },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            FeatherIcons.Edit,
-                            contentDescription = "Edit Folder Name",
-                            tint = MaterialTheme.colorScheme.surfaceTint,
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            stringResource(R.string.dialog_folder_opts_edit),
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier =
-                            Modifier
-                                .padding(8.dp)
-                                .clickable {
-                                    visible = false
-                                    onDeleteFolderClick()
-                                },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            FeatherIcons.Delete,
-                            contentDescription = "Delete Folder",
-                            tint = MaterialTheme.colorScheme.surfaceTint,
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            stringResource(R.string.dialog_folder_opts_delete_folder),
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier =
-                            Modifier
-                                .padding(8.dp)
-                                .clickable {
-                                    visible = false
-                                    onDeleteFolderWithChatsClick()
-                                },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            FeatherIcons.Delete,
-                            contentDescription = "Delete Folder With Chats",
-                            tint = MaterialTheme.colorScheme.surfaceTint,
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            stringResource(R.string.dialog_folder_opts_delete_folder_chats),
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
-                }
+            FolderOptionsDialogUI(
+                onDismissRequest = { visible = false },
+                onEditClick = {
+                    visible = false
+                    onEditFolderNameClick()
+                },
+                onDeleteClick = {
+                    visible = false
+                    onDeleteFolderClick()
+                },
+                onDeleteWithChatsClick = {
+                    visible = false
+                    onDeleteFolderWithChatsClick()
+                },
+            )
+        }
+    }
+}
+
+@Composable
+fun FolderOptionsDialogUI(
+    onDismissRequest: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onDeleteWithChatsClick: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.surfaceContainer,
+                        RoundedCornerShape(8.dp),
+                    )
+                    .padding(16.dp),
+        ) {
+            Row(
+                modifier =
+                    Modifier
+                        .padding(8.dp)
+                        .clickable { onEditClick() },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    FeatherIcons.Edit,
+                    contentDescription = "Edit Folder Name",
+                    tint = MaterialTheme.colorScheme.surfaceTint,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    stringResource(R.string.dialog_folder_opts_edit),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier =
+                    Modifier
+                        .padding(8.dp)
+                        .clickable { onDeleteClick() },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    FeatherIcons.Delete,
+                    contentDescription = "Delete Folder",
+                    tint = MaterialTheme.colorScheme.surfaceTint,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    stringResource(R.string.dialog_folder_opts_delete_folder),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier =
+                    Modifier
+                        .padding(8.dp)
+                        .clickable { onDeleteWithChatsClick() },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    FeatherIcons.Delete,
+                    contentDescription = "Delete Folder With Chats",
+                    tint = MaterialTheme.colorScheme.surfaceTint,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    stringResource(R.string.dialog_folder_opts_delete_folder_chats),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                )
             }
         }
     }
@@ -133,4 +150,17 @@ fun createFolderOptionsDialog(
     onDeleteFolderClick = deleteFolderClick
     onDeleteFolderWithChatsClick = deleteFolderWithChatsClick
     textFieldDialogShowStatus.value = true
+}
+
+@Preview
+@Composable
+private fun FolderOptionsDialogPreview() {
+    SmolLMAndroidTheme {
+        FolderOptionsDialogUI(
+            onDismissRequest = {},
+            onEditClick = {},
+            onDeleteClick = {},
+            onDeleteWithChatsClick = {},
+        )
+    }
 }
