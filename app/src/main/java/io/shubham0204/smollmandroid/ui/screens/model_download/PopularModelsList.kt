@@ -1,6 +1,6 @@
 package io.shubham0204.smollmandroid.ui.screens.model_download
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,42 +32,41 @@ fun PreviewPopularModelsList() {
 
 @Composable
 fun PopularModelsList(selectedModelIndex: Int?, onModelSelected: (Int) -> Unit) {
-    Column(verticalArrangement = Arrangement.Center) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         popularModelsList.forEachIndexed { idx, model ->
-            Row(
-                Modifier
-                    .clickable { onModelSelected(idx) }
+            val isSelected = idx == selectedModelIndex
+            Surface(
+                modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        if (idx == selectedModelIndex) {
-                            MaterialTheme.colorScheme.surfaceContainer
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        },
-                        RoundedCornerShape(8.dp),
-                    )
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
+                    .clickable { onModelSelected(idx) },
+                shape = RoundedCornerShape(12.dp),
+                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(
+                    alpha = 0.3f
+                ),
+                border = if (isSelected) BorderStroke(
+                    2.dp,
+                    MaterialTheme.colorScheme.primary
+                ) else null
             ) {
-                if (idx == selectedModelIndex) {
-                    Icon(
-                        FeatherIcons.Check,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
+                Row(
+                    Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (isSelected) {
+                        Icon(
+                            FeatherIcons.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                    }
+                    Text(
+                        text = model.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
                 }
-                Text(
-                    color =
-                        if (idx == selectedModelIndex) {
-                            MaterialTheme.colorScheme.onSurface
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                    text = model.name,
-                    style = MaterialTheme.typography.bodySmall,
-                )
             }
         }
     }

@@ -20,25 +20,31 @@ import android.content.Intent
 import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -47,23 +53,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Clock
 import compose.icons.feathericons.Download
-import compose.icons.feathericons.Folder
+import compose.icons.feathericons.File
 import compose.icons.feathericons.Globe
 import compose.icons.feathericons.Share
 import compose.icons.feathericons.ThumbsUp
+import compose.icons.feathericons.User
 import io.shubham0204.hf_model_hub_api.HFModelInfo
 import io.shubham0204.hf_model_hub_api.HFModelTree
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.ui.components.AppAlertDialog
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
-import io.shubham0204.smollmandroid.ui.components.LargeLabelText
 import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
 import java.time.LocalDateTime
@@ -89,7 +97,7 @@ private fun ViewHFModelScreenPreview() {
                 createdAt = LocalDateTime.now(),
             ),
         modelFileTree =
-            listOf(HFModelTree.HFModelFile(type = "", oid = "", size = 1200, path = "file")),
+            listOf(HFModelTree.HFModelFile(type = "", oid = "", size = 1200, path = "file.gguf")),
         onDownloadModel = {},
         onBackClicked = {},
     )
@@ -118,7 +126,6 @@ fun ViewHFModelScreen(
                             Icon(
                                 FeatherIcons.ArrowLeft,
                                 contentDescription = "Navigate Back",
-                                tint = MaterialTheme.colorScheme.secondary,
                             )
                         }
                     },
@@ -159,18 +166,14 @@ fun ViewHFModelScreen(
                         .padding(innerPadding)
             ) {
                 ModelInfoCard(modelInfo)
-                Row(
-                    modifier = Modifier.padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        imageVector = FeatherIcons.Folder,
-                        contentDescription = "Files",
-                        tint = MaterialTheme.colorScheme.secondary,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    LargeLabelText(text = "Files")
-                }
+
+                Text(
+                    text = "GGUF Files",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(16.dp)
+                )
+
                 GGUFModelsList(
                     modelFileTree,
                     onModelClick = { modelFile ->
@@ -202,7 +205,14 @@ private fun GGUFModelsList(
     modelFiles: List<HFModelTree.HFModelFile>,
     onModelClick: (HFModelTree.HFModelFile) -> Unit,
 ) {
-    LazyColumn { items(modelFiles) { modelFile -> GGUFModelListItem(modelFile, onModelClick) } }
+    LazyColumn(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(modelFiles) { modelFile ->
+            GGUFModelListItem(modelFile, onModelClick)
+        }
+    }
 }
 
 @Composable
@@ -211,53 +221,107 @@ private fun GGUFModelListItem(
     onModelFileClick: (HFModelTree.HFModelFile) -> Unit,
 ) {
     val fileSizeGB = modelFile.size / 1e+9
-    Column(
+    Card(
         modifier = Modifier
-            .clickable { onModelFileClick(modelFile) }
-            .padding(8.dp)
             .fillMaxWidth()
-    ) {
-        Text(text = modelFile.path, style = MaterialTheme.typography.labelLarge)
-        Text(
-            text =
-                if (fileSizeGB < 1) {
-                    "${(fileSizeGB * 1000).toInt()} MB"
-                } else {
-                    "%.2f GB".format(fileSizeGB)
-                },
-            style = MaterialTheme.typography.labelLarge,
+            .clickable { onModelFileClick(modelFile) },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Icon(
+                    FeatherIcons.File,
+                    contentDescription = null,
+                    modifier = Modifier.padding(10.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = modelFile.path,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text =
+                        if (fileSizeGB < 1) {
+                            "${(fileSizeGB * 1000).toInt()} MB"
+                        } else {
+                            "%.2f GB".format(fileSizeGB)
+                        },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Icon(
+                FeatherIcons.Download,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
-    HorizontalDivider(modifier = Modifier.fillMaxWidth())
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ModelInfoCard(modelInfo: HFModelInfo.ModelInfo) {
     Card(
-        colors =
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.padding(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+        ),
+        modifier = Modifier.padding(16.dp),
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            val modelAuthor = modelInfo.modelId.split("/")[0]
-            val modelName = modelInfo.modelId.split("/")[1]
-            Text(
-                text = modelAuthor,
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            val parts = modelInfo.modelId.split("/")
+            val modelAuthor = if (parts.size > 1) parts[0] else "Hugging Face"
+            val modelName = if (parts.size > 1) parts[1] else parts[0]
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    FeatherIcons.User,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = modelAuthor,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = modelName,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
             )
-            Row {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 ModelInfoIconBubble(
                     icon = FeatherIcons.Download,
                     contentDescription = "Number of downloads",
                     text = modelInfo.numDownloads.toString(),
                 )
-                Spacer(modifier = Modifier.width(8.dp))
                 ModelInfoIconBubble(
                     icon = FeatherIcons.ThumbsUp,
                     contentDescription = "Number of likes",
@@ -276,6 +340,30 @@ private fun ModelInfoCard(modelInfo: HFModelInfo.ModelInfo) {
                             .toString(),
                 )
             }
+
+            if (modelInfo.tags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    modelInfo.tags.filter { !listOf("GGUF", "conversational").contains(it) }.take(8)
+                        .forEach { tag ->
+                            Surface(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    text = tag,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                }
+            }
         }
     }
 }
@@ -286,20 +374,23 @@ private fun ModelInfoIconBubble(icon: ImageVector, contentDescription: String, t
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             Modifier
-                .padding(4.dp)
                 .background(
-                    MaterialTheme.colorScheme.surfaceContainerHighest,
-                    RoundedCornerShape(4.dp),
+                    MaterialTheme.colorScheme.surface,
+                    RoundedCornerShape(8.dp),
                 )
-                .padding(4.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
         Icon(
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(14.dp),
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.secondary,
+            tint = MaterialTheme.colorScheme.primary,
         )
-        Spacer(modifier = Modifier.width(2.dp))
-        Text(text = text, style = MaterialTheme.typography.labelSmall)
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
