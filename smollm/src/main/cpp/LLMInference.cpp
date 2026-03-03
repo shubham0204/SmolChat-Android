@@ -101,6 +101,10 @@ LLMInference::startCompletion(const char *query) {
     common_chat_templates_inputs inputs;
     inputs.use_jinja      = true;
     inputs.messages       = messages;
+    // Pass empty tools array so that 'tools' is defined (not undefined) in the Jinja context.
+    // Some model templates (e.g. Qwen3) reference 'tools' with filters like tojson which crash
+    // on undefined values in llama.cpp's Jinja engine (minja).
+    inputs.chat_template_kwargs["tools"] = "[]";
     auto        templates = common_chat_templates_init(_model, _chatTemplate);
     std::string prompt    = common_chat_templates_apply(templates.get(), inputs).prompt;
     _promptTokens = common_tokenize(llama_model_get_vocab(_model), prompt, true, true);
