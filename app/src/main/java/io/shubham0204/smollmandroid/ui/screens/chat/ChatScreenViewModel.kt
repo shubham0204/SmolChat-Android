@@ -689,6 +689,13 @@ class ChatScreenViewModel(
                     )
                 }
                 appDB.updateChat(updatedChat)
+                if (!response.usedJinjaTemplate) {
+                    Toast.makeText(
+                        context,
+                        "Model's Jinja chat template not fully supported, using legacy renderer",
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
             },
             onCancelled = {
                 // ignore CancellationException, as it was called because

@@ -56,19 +56,21 @@ Java_io_shubham0204_smollm_SmolLM_close(JNIEnv* env, jobject thiz, jlong modelPt
     delete llmInference;
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT jboolean JNICALL
 Java_io_shubham0204_smollm_SmolLM_startCompletion(JNIEnv* env, jobject thiz, jlong modelPtr, jstring prompt) {
     jboolean    isCopy       = true;
     const char* promptCstr   = env->GetStringUTFChars(prompt, &isCopy);
     auto*       llmInference = reinterpret_cast<LLMInference*>(modelPtr);
+    bool usedJinja;
     try {
-        llmInference->startCompletion(promptCstr);
+        usedJinja = llmInference->startCompletion(promptCstr);
     } catch (std::exception& error) {
         env->ReleaseStringUTFChars(prompt, promptCstr);
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
-        return;
+        return JNI_TRUE;
     }
     env->ReleaseStringUTFChars(prompt, promptCstr);
+    return usedJinja ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C" JNIEXPORT jstring JNICALL

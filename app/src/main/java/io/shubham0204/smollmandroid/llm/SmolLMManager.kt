@@ -63,6 +63,7 @@ class SmolLMManager(private val appDB: AppDB) {
         val generationSpeed: Float,
         val generationTimeSecs: Int,
         val contextLengthUsed: Int,
+        val usedJinjaTemplate: Boolean = true,
     )
 
     fun load(
@@ -188,6 +189,7 @@ class SmolLMManager(private val appDB: AppDB) {
                                 generationSpeed = instance.getResponseGenerationSpeed(),
                                 generationTimeSecs = duration.inWholeSeconds.toInt(),
                                 contextLengthUsed = instance.getContextLengthUsed(),
+                                usedJinjaTemplate = instance.usedJinjaTemplate,
                             )
                         )
                     }

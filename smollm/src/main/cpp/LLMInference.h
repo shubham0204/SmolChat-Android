@@ -52,7 +52,8 @@ class LLMInference {
 
     int getContextSizeUsed() const;
 
-    void startCompletion(const char* query);
+    // Returns true if Jinja template was used, false if legacy fallback was needed.
+    bool startCompletion(const char* query);
 
     std::string completionLoop();
 
