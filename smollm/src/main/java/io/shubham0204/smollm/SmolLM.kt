@@ -252,9 +252,13 @@ class SmolLM {
      *   Generation) indicates the end of the response.
      * @throws IllegalStateException if the model is not loaded.
      */
+    /** Whether the last `startCompletion` call used the Jinja template or fell back to legacy. */
+    var usedJinjaTemplate: Boolean = true
+        private set
+
     fun getResponseAsFlow(query: String): Flow<String> = flow {
         verifyHandle()
-        startCompletion(nativePtr, query)
+        usedJinjaTemplate = startCompletion(nativePtr, query)
         var piece = completionLoop(nativePtr)
         while (piece != "[EOG]") {
             emit(piece)
@@ -273,7 +277,7 @@ class SmolLM {
      */
     fun getResponse(query: String): String {
         verifyHandle()
-        startCompletion(nativePtr, query)
+        usedJinjaTemplate = startCompletion(nativePtr, query)
         var piece = completionLoop(nativePtr)
         var response = ""
         while (piece != "[EOG]") {
@@ -335,7 +339,8 @@ class SmolLM {
 
     private external fun close(modelPtr: Long)
 
-    private external fun startCompletion(modelPtr: Long, prompt: String)
+    // Returns true if Jinja template was used, false if legacy fallback was needed.
+    private external fun startCompletion(modelPtr: Long, prompt: String): Boolean
 
     private external fun completionLoop(modelPtr: Long): String
 
