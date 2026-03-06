@@ -18,7 +18,10 @@ package io.shubham0204.hf_model_hub_api
 
 class HFEndpoints {
     companion object {
-        private const val HF_BASE_ENDPOINT = "https://huggingface.co/api/models"
+        private const val HF_BASE_URL = "https://huggingface.co"
+        private const val HF_BASE_ENDPOINT = "${HF_BASE_URL}/api/models"
+
+        val getHFBaseURL: (() -> String) = { HF_BASE_URL }
 
         val getHFModelsListEndpoint: (() -> String) = { HF_BASE_ENDPOINT }
 

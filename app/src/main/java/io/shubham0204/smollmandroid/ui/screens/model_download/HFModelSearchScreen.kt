@@ -143,14 +143,18 @@ private fun ModelList(
     viewModel: DownloadModelsViewModel,
     onModelClick: (String) -> Unit,
 ) {
-    val models = viewModel.getModels(query).collectAsLazyPagingItems()
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(count = models.itemCount) { index ->
-            models[index]?.let { model -> ModelListItem(model, onModelClick = onModelClick) }
+    if (!viewModel.checkConnectivity()) {
+        Text("Connection check to huggingface.co failed.")
+    } else {
+        val models = viewModel.getModels(query).collectAsLazyPagingItems()
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(count = models.itemCount) { index ->
+                models[index]?.let { model -> ModelListItem(model, onModelClick = onModelClick) }
+            }
         }
     }
 }
