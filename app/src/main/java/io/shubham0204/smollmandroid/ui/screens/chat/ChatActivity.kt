@@ -486,7 +486,13 @@ private fun ColumnScope.MessagesList(
                 onCopyClicked = {
                     val clipboard =
                         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("Copied message", chatMessage.message)
+                    val plain =
+                        if (chatMessage.isUserMessage) {
+                            chatMessage.message
+                        } else {
+                            chatMessage.message.stripThinkingForClipboard()
+                        }
+                    val clip = ClipData.newPlainText("Copied message", plain)
                     clipboard.setPrimaryClip(clip)
                     Toast.makeText(
                             context,
@@ -496,10 +502,16 @@ private fun ColumnScope.MessagesList(
                         .show()
                 },
                 onShareClicked = {
+                    val plain =
+                        if (chatMessage.isUserMessage) {
+                            chatMessage.message
+                        } else {
+                            chatMessage.message.stripThinkingForClipboard()
+                        }
                     context.startActivity(
                         Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, chatMessage.message)
+                            putExtra(Intent.EXTRA_TEXT, plain)
                         }
                     )
                 },
