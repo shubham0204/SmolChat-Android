@@ -59,6 +59,9 @@ import kotlin.math.pow
 private const val LOGTAG = "[SmolLMAndroid-Kt]"
 private val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
 
+private val findThinkHtmlBlockRegex = Regex("<blockquote><i><h6>[\\s\\S]*?</i></h6></blockquote>")
+internal fun String.stripThinkingForClipboard() = findThinkHtmlBlockRegex.replace(this, "").trim()
+
 sealed class ChatScreenUIEvent {
     sealed class ChatEvents {
         data class UpdateChatModel(val model: LLMModel) : ChatScreenUIEvent()
