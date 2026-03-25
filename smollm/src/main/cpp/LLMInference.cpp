@@ -81,7 +81,7 @@ LLMInference::getContextSizeUsed() const {
     return _nCtxUsed;
 }
 
-void
+bool
 LLMInference::startCompletion(const char *query) {
     if (!_storeChats) {
         _formattedMessages.clear();
@@ -98,11 +98,27 @@ LLMInference::startCompletion(const char *query) {
         msg.content = message.content;
         messages.push_back(msg);
     }
+    auto templates = common_chat_templates_init(_model, _chatTemplate ? _chatTemplate : "");
+
     common_chat_templates_inputs inputs;
-    inputs.use_jinja      = true;
-    inputs.messages       = messages;
-    auto        templates = common_chat_templates_init(_model, _chatTemplate);
-    std::string prompt    = common_chat_templates_apply(templates.get(), inputs).prompt;
+    inputs.messages = messages;
+
+    // Try Jinja rendering first with tools defined to prevent "tojson on Undefined" errors.
+    // If Jinja fails (e.g. unsupported filters like lstrip), fall back to legacy rendering.
+    inputs.use_jinja = true;
+    inputs.chat_template_kwargs["tools"] = "[]";
+
+    std::string prompt;
+    bool usedJinja = true;
+    try {
+        prompt = common_chat_templates_apply(templates.get(), inputs).prompt;
+    } catch (const std::exception &e) {
+        LOGe("Jinja template failed: %s — retrying with legacy renderer", e.what());
+        inputs.use_jinja = false;
+        inputs.chat_template_kwargs.clear();
+        prompt = common_chat_templates_apply(templates.get(), inputs).prompt;
+        usedJinja = false;
+    }
     _promptTokens = common_tokenize(llama_model_get_vocab(_model), prompt, true, true);
 
     // create a llama_batch containing a single sequence
@@ -110,6 +126,8 @@ LLMInference::startCompletion(const char *query) {
     _batch = new llama_batch();
     _batch->token = _promptTokens.data();
     _batch->n_tokens = _promptTokens.size();
+
+    return usedJinja;
 }
 
 // taken from:
