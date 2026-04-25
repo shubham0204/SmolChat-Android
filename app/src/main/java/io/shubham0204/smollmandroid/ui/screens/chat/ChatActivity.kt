@@ -55,8 +55,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -88,8 +86,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -806,22 +802,7 @@ private fun MessageInput(
                                         stringResource(R.string.chat_ask_question)
                                     }
                             )
-                        },
-                        keyboardOptions =
-                            KeyboardOptions.Default.copy(
-                                capitalization = KeyboardCapitalization.Sentences,
-                                imeAction = ImeAction.Go,
-                            ),
-                        keyboardActions =
-                            KeyboardActions(
-                                onGo = {
-                                    keyboardController?.hide()
-                                    onEvent(
-                                        ChatScreenUIEvent.ChatEvents.SendUserQuery(questionText)
-                                    )
-                                    questionText = ""
-                                }
-                            ),
+                        }
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     if (isGeneratingResponse) {
