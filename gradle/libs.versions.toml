@@ -16,7 +16,7 @@ uiTextGoogleFonts = "1.7.7"
 composeIcons = "1.1.1"
 appcompat = "1.6.1"
 material = "1.10.0"
-moonshineVoice = "0.0.48"
+moonshineVoice = "0.0.56"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
