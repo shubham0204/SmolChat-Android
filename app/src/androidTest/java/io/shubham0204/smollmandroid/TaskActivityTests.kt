@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.TasksActivityScreenUI
 import org.junit.Rule
 import org.junit.Test
@@ -16,7 +17,17 @@ class TaskActivityTests {
 
     @Test
     fun clickAddTask_showsNewTask() {
-        rule.setContent { TasksActivityScreenUI() }
+        val dummyModel = LLMModel(id = 1, name = "Test Model")
+        rule.setContent {
+            TasksActivityScreenUI(
+                tasks = emptyList(),
+                availableModelsList = listOf(dummyModel),
+                getModelFromId = { dummyModel },
+                onAddTask = { _, _, _ -> },
+                onUpdateTask = {},
+                onDeleteTask = {},
+            )
+        }
 
         val taskName = "[taskName]"
         val taskSystemPrompt = "[systemPrompt]"

@@ -105,7 +105,7 @@ private fun PreviewTasksActivityScreenUI() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TasksActivityScreenUI(
+internal fun TasksActivityScreenUI(
     tasks: List<Task>,
     availableModelsList: List<LLMModel>,
     getModelFromId: (Long) -> LLMModel,
