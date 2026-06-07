@@ -27,15 +27,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Clipboard
+import compose.icons.feathericons.Code
 import compose.icons.feathericons.Edit2
 import compose.icons.feathericons.Share
 import io.shubham0204.smollmandroid.R
 
 private lateinit var onDialogCopyClick: (() -> Unit)
+private lateinit var onDialogCodeSnippetCopyClick: () -> Unit
 private lateinit var onDialogShareClick: (() -> Unit)
 private lateinit var onDialogEditClick: (() -> Unit)
 private val dialogVisibleStatus = mutableStateOf(false)
 private var dialogShowChatMessageEditOption = false
+private var dialogShowCopyCodeSnippetOption = false
 
 @Composable
 fun ChatMessageOptionsDialog() {
@@ -81,6 +84,17 @@ fun ChatMessageOptionsDialog() {
                             },
                         )
                     }
+                    if (dialogShowCopyCodeSnippetOption) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ChatMessageOption(
+                            titleStringResId = R.string.dialog_chat_message_options_copy_snippet,
+                            icon = FeatherIcons.Code,
+                            onClick = {
+                                visible = false
+                                onDialogCodeSnippetCopyClick()
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -109,11 +123,15 @@ fun createChatMessageOptionsDialog(
     onCopyClick: (() -> Unit),
     onShareClick: (() -> Unit),
     showEditOption: Boolean,
+    showCopyCodeSnippetOption: Boolean,
     onEditClick: (() -> Unit) = {},
+    onCodeSnippetCopyClick: () -> Unit = {},
 ) {
     onDialogCopyClick = onCopyClick
+    onDialogCodeSnippetCopyClick = onCodeSnippetCopyClick
     onDialogShareClick = onShareClick
     onDialogEditClick = onEditClick
     dialogShowChatMessageEditOption = showEditOption
+    dialogShowCopyCodeSnippetOption = showCopyCodeSnippetOption
     dialogVisibleStatus.value = true
 }

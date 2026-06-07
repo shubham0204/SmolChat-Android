@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.shubham0204.smollmandroid.ui.screens.chat
+package io.shubham0204.smollmandroid.ui.screens.chat.messages
 
 import android.graphics.Color
 import android.text.Spanned
