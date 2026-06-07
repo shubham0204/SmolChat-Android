@@ -20,7 +20,6 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
-import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
@@ -38,6 +37,7 @@ import io.shubham0204.smollmandroid.ui.components.hideProgressDialog
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogText
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogTitle
 import io.shubham0204.smollmandroid.ui.components.showProgressDialog
+import io.shubham0204.smollmandroid.utils.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -46,10 +46,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 import java.io.File
-import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import java.nio.file.Paths
 
 @Single
 class DownloadModelsViewModel(
@@ -109,43 +107,42 @@ class DownloadModelsViewModel(
      * add a new LLMModel entity with modelName=fileName where fileName is the name of the model
      * file.
      */
-    fun copyModelFile(uri: Uri, onComplete: () -> Unit) {
-        var fileName = ""
-        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            cursor.moveToFirst()
-            fileName = cursor.getString(nameIndex)
-        }
-        if (fileName.isNotEmpty()) {
-            setProgressDialogTitle(context.getString(R.string.dialog_progress_copy_model_title))
-            setProgressDialogText(
-                context.getString(R.string.dialog_progress_copy_model_text, fileName)
-            )
-            showProgressDialog()
-            CoroutineScope(Dispatchers.IO).launch {
-                context.contentResolver.openInputStream(uri).use { inputStream ->
-                    FileOutputStream(File(context.filesDir, fileName)).use { outputStream ->
-                        inputStream?.copyTo(outputStream)
-                    }
-                }
-                val ggufReader = GGUFReader()
-                ggufReader.load(File(context.filesDir, fileName).absolutePath)
-                val contextSize =
-                    ggufReader.getContextSize() ?: SmolLM.DefaultInferenceParams.contextSize
-                val chatTemplate =
-                    ggufReader.getChatTemplate() ?: SmolLM.DefaultInferenceParams.chatTemplate
-                appDB.addModel(
-                    fileName,
-                    "",
-                    Paths.get(context.filesDir.absolutePath, fileName).toString(),
-                    contextSize.toInt(),
-                    chatTemplate,
+    fun processModelFile(fileUri: Uri, isUriPersisted: Boolean, onComplete: () -> Unit) {
+        val fileName = FileUtils.getFileNameFromUri(context, fileUri)
+        if (!fileName.isNullOrBlank()) {
+            var modelPath = ""
+            if (!isUriPersisted) {
+                setProgressDialogTitle(context.getString(R.string.dialog_progress_copy_model_title))
+                setProgressDialogText(
+                    context.getString(R.string.dialog_progress_copy_model_text, fileName)
                 )
-                withContext(Dispatchers.Main) {
-                    hideProgressDialog()
-                    onComplete()
+                showProgressDialog()
+                runBlocking(Dispatchers.IO) {
+                    FileUtils.copyFile(context, fileUri, fileName)
+                }
+                modelPath = File(context.filesDir, fileName).absolutePath
+                hideProgressDialog()
+            } else {
+                modelPath = FileUtils.getFilePathFromUri(context, fileUri) ?: ""
+            }
+            runBlocking(Dispatchers.IO) {
+                val ggufReader = GGUFReader()
+                if (modelPath.isNotEmpty()) {
+                    ggufReader.load(modelPath)
+                    val contextSize =
+                        ggufReader.getContextSize() ?: SmolLM.DefaultInferenceParams.contextSize
+                    val chatTemplate =
+                        ggufReader.getChatTemplate() ?: SmolLM.DefaultInferenceParams.chatTemplate
+                    appDB.addModel(
+                        fileName,
+                        "",
+                        modelPath,
+                        contextSize.toInt(),
+                        chatTemplate,
+                    )
                 }
             }
+            onComplete()
         } else {
             Toast.makeText(
                     context,

@@ -181,9 +181,10 @@ class DownloadModelActivity : ComponentActivity() {
                                     addNewModelStep = AddNewModelStep.DownloadModel
                                 },
                                 checkGGUFFile = ::checkGGUFFile,
-                                copyModelFile = { modelFileUri ->
-                                    viewModel.copyModelFile(
+                                processModelFile = { modelFileUri, isUriPersisted ->
+                                    viewModel.processModelFile(
                                         modelFileUri,
+                                        isUriPersisted,
                                         onComplete = { openChatActivity() },
                                     )
                                 },
