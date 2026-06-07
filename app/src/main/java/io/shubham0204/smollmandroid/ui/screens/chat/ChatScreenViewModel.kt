@@ -33,6 +33,8 @@ import io.shubham0204.smollmandroid.data.ChatMessage
 import io.shubham0204.smollmandroid.data.Folder
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.data.SharedPrefStore
+import io.shubham0204.smollmandroid.data.SystemPrompt
+import io.shubham0204.smollmandroid.data.SystemPromptsStore
 import io.shubham0204.smollmandroid.data.Task
 import io.shubham0204.smollmandroid.llm.ModelsRepository
 import io.shubham0204.smollmandroid.llm.SmolLMManager
@@ -102,6 +104,12 @@ sealed class ChatScreenUIEvent {
         data object StopAudioTranscription : ChatScreenUIEvent()
     }
 
+    sealed class SystemPromptEvents {
+        data class AddSystemPrompt(val name: String, val body: String) : ChatScreenUIEvent()
+
+        data class DeleteSystemPrompt(val id: Long) : ChatScreenUIEvent()
+    }
+
     sealed class FolderEvents {
         data class UpdateChatFolder(val newFolderId: Long) : ChatScreenUIEvent()
 
@@ -148,6 +156,7 @@ data class ChatScreenUIState(
     val models: ImmutableList<LLMModel> = emptyList<LLMModel>().toImmutableList(),
     val messages: ImmutableList<ChatMessage> = emptyList<ChatMessage>().toImmutableList(),
     val tasks: ImmutableList<Task> = emptyList<Task>().toImmutableList(),
+    val systemPrompts: ImmutableList<SystemPrompt> = emptyList<SystemPrompt>().toImmutableList(),
     val benchmarkResult: String? = null,
     val audioTranscriptionUIState: AudioTranscriptionUIState = AudioTranscriptionUIState(),
     val showChangeFolderDialog: Boolean = false,
@@ -164,7 +173,8 @@ class ChatScreenViewModel(
     val smolLMManager: SmolLMManager,
     val audioTranscriptionService: AudioTranscriptionService,
     val mdRenderer: MDRenderer,
-    val sharedPrefStore: SharedPrefStore
+    val sharedPrefStore: SharedPrefStore,
+    val systemPromptsStore: SystemPromptsStore
 ) : ViewModel() {
     enum class ModelLoadingState {
         NOT_LOADED, // model loading not started
@@ -329,6 +339,14 @@ class ChatScreenViewModel(
 
             is ChatScreenUIEvent.FolderEvents.DeleteFolderWithChats -> {
                 appDB.deleteFolderWithChats(event.folderId)
+            }
+
+            is ChatScreenUIEvent.SystemPromptEvents.AddSystemPrompt -> {
+                systemPromptsStore.addPrompt(event.name, event.body)
+            }
+
+            is ChatScreenUIEvent.SystemPromptEvents.DeleteSystemPrompt -> {
+                systemPromptsStore.deletePrompt(event.id)
             }
 
             is ChatScreenUIEvent.ChatEvents.UpdateChatModel -> {
@@ -565,6 +583,11 @@ class ChatScreenViewModel(
             launch {
                 appDB.getModels().collect { models ->
                     _uiState.update { it.copy(models = models.toImmutableList()) }
+                }
+            }
+            launch {
+                systemPromptsStore.systemPrompts.collect { prompts ->
+                    _uiState.update { it.copy(systemPrompts = prompts.toImmutableList()) }
                 }
             }
             launch {

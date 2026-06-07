@@ -18,6 +18,7 @@ package io.shubham0204.smollmandroid.ui.screens.chat
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,17 +26,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -56,10 +62,16 @@ import androidx.compose.ui.unit.dp
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Check
+import compose.icons.feathericons.Plus
+import compose.icons.feathericons.Search
+import compose.icons.feathericons.Trash2
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
+import io.shubham0204.smollmandroid.data.SystemPrompt
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -112,7 +124,10 @@ private fun PreviewEditChatSettingsScreen() {
     EditChatSettingsScreen(
         settings = EditableChatSettings.fromChat(Chat()),
         llmModelContextSize = 2048,
+        systemPrompts = persistentListOf(),
         onUpdateChat = {},
+        onAddSystemPrompt = { _, _ -> },
+        onDeleteSystemPrompt = {},
         onBackClicked = {},
     )
 }
@@ -122,7 +137,10 @@ private fun PreviewEditChatSettingsScreen() {
 fun EditChatSettingsScreen(
     settings: EditableChatSettings,
     llmModelContextSize: Int,
+    systemPrompts: ImmutableList<SystemPrompt>,
     onUpdateChat: (EditableChatSettings) -> Unit,
+    onAddSystemPrompt: (String, String) -> Unit,
+    onDeleteSystemPrompt: (Long) -> Unit,
     onBackClicked: () -> Unit,
 ) {
     var chatName by remember { mutableStateOf(settings.name) }
@@ -135,6 +153,10 @@ fun EditChatSettingsScreen(
     var chatTemplate by remember { mutableStateOf(settings.chatTemplate) }
     var useMmap by remember { mutableStateOf(settings.useMmap) }
     var useMlock by remember { mutableStateOf(settings.useMlock) }
+
+    var showSystemPromptsDialog by remember { mutableStateOf(false) }
+    var showAddSystemPromptDialog by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     val totalThreads = Runtime.getRuntime().availableProcessors()
 
@@ -214,6 +236,19 @@ fun EditChatSettingsScreen(
                             capitalization = KeyboardCapitalization.Sentences
                         ),
                     maxLines = 5,
+                    trailingIcon = {
+                        Row {
+                            IconButton(onClick = { showSystemPromptsDialog = true }) {
+                                Icon(
+                                    FeatherIcons.Search,
+                                    contentDescription = "Choose System Prompt"
+                                )
+                            }
+                            IconButton(onClick = { showAddSystemPromptDialog = true }) {
+                                Icon(FeatherIcons.Plus, contentDescription = "Add System Prompt")
+                            }
+                        }
+                    },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -375,5 +410,89 @@ fun EditChatSettingsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+
+        if (showSystemPromptsDialog) {
+            SystemPromptsDialog(
+                systemPrompts = systemPrompts,
+                onPromptSelected = {
+                    systemPrompt = it
+                    showSystemPromptsDialog = false
+                },
+                onDeletePrompt = onDeleteSystemPrompt,
+                onDismissRequest = { showSystemPromptsDialog = false },
+            )
+        }
+
+        if (showAddSystemPromptDialog) {
+            var promptName by remember { mutableStateOf("") }
+            AlertDialog(
+                onDismissRequest = { showAddSystemPromptDialog = false },
+                title = { Text("Save System Prompt") },
+                text = {
+                    Column {
+                        Text("Enter a name for this system prompt:")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextField(
+                            value = promptName,
+                            onValueChange = { promptName = it },
+                            placeholder = { Text("Prompt Name") },
+                            singleLine = true,
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (promptName.isNotBlank()) {
+                                onAddSystemPrompt(promptName, systemPrompt)
+                                showAddSystemPromptDialog = false
+                            }
+                        }
+                    ) {
+                        Text("Save")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddSystemPromptDialog = false }) { Text("Cancel") }
+                },
+            )
+        }
     }
+}
+
+@Composable
+private fun SystemPromptsDialog(
+    systemPrompts: ImmutableList<SystemPrompt>,
+    onPromptSelected: (String) -> Unit,
+    onDeletePrompt: (Long) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Choose System Prompt") },
+        text = {
+            if (systemPrompts.isEmpty()) {
+                Text("No system prompts saved.")
+            } else {
+                LazyColumn {
+                    items(systemPrompts) { prompt ->
+                        ListItem(
+                            headlineContent = { Text(prompt.name) },
+                            supportingContent = { Text(prompt.body, maxLines = 1) },
+                            trailingContent = {
+                                IconButton(onClick = { onDeletePrompt(prompt.id) }) {
+                                    Icon(FeatherIcons.Trash2, contentDescription = "Delete Prompt")
+                                }
+                            },
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onPromptSelected(prompt.body) }
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismissRequest) { Text("Close") } },
+    )
 }

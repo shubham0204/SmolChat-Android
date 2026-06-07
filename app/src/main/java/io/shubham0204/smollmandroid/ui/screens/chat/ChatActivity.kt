@@ -163,15 +163,30 @@ class ChatActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val route: EditChatSettingsRoute = backStackEntry.toRoute()
                         val settings = EditableChatSettings.fromChat(route.chat)
+                        val uiState by
+                        viewModel.uiState.collectAsStateWithLifecycle(
+                            LocalLifecycleOwner.current
+                        )
                         EditChatSettingsScreen(
                             settings,
                             route.modelContextSize,
+                            uiState.systemPrompts,
                             onUpdateChat = { editableChatSettings ->
                                 viewModel.onEvent(
                                     ChatScreenUIEvent.ChatEvents.UpdateChatSettings(
                                         editableChatSettings,
                                         route.chat,
                                     )
+                                )
+                            },
+                            onAddSystemPrompt = { name, body ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.SystemPromptEvents.AddSystemPrompt(name, body)
+                                )
+                            },
+                            onDeleteSystemPrompt = { id ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.SystemPromptEvents.DeleteSystemPrompt(id)
                                 )
                             },
                             onBackClicked = { navController.navigateUp() },
