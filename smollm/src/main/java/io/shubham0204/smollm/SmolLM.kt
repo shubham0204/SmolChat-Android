@@ -179,10 +179,19 @@ class SmolLM {
     suspend fun load(modelPath: String, params: InferenceParams = InferenceParams()) =
         withContext(Dispatchers.IO) {
             val ggufReader = GGUFReader()
-            ggufReader.load(modelPath)
-            val modelContextSize = ggufReader.getContextSize() ?: DefaultInferenceParams.contextSize
+            val isLoaded = ggufReader.load(modelPath)
+            val modelContextSize =
+                if (isLoaded) {
+                    ggufReader.getContextSize() ?: DefaultInferenceParams.contextSize
+                } else {
+                    DefaultInferenceParams.contextSize
+                }
             val modelChatTemplate =
-                ggufReader.getChatTemplate() ?: DefaultInferenceParams.chatTemplate
+                if (isLoaded) {
+                    ggufReader.getChatTemplate() ?: DefaultInferenceParams.chatTemplate
+                } else {
+                    DefaultInferenceParams.chatTemplate
+                }
             nativePtr =
                 loadModel(
                     modelPath,
