@@ -51,39 +51,75 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.file.Paths
 
+import io.shubham0204.smollmandroid.ui.screens.manage_asr.DownloadService
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
 @Single
 class DownloadModelsViewModel(
     val context: Context,
     val appDB: AppDB,
     val hfModelsAPI: HFModelsAPI,
+    val downloadService: DownloadService,
 ) : ViewModel() {
-    private val downloadManager =
-        context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
-    fun downloadModelFromIndex(selectedPopularModelIndex: Int) {
-        // Downloading files in Android with the DownloadManager API
-        // Ref: https://youtu.be/4t8EevQSYK4?feature=shared
+    private val _downloadProgress = MutableStateFlow<Int?>(null)
+    val downloadProgress = _downloadProgress.asStateFlow()
+
+    fun downloadModelFromIndex(selectedPopularModelIndex: Int, onComplete: () -> Unit) {
         val modelUrl = getPopularModel(selectedPopularModelIndex)!!.url
-        downloadModelFromUrl(modelUrl)
+        downloadModelFromUrl(modelUrl, onComplete)
     }
 
-    fun downloadModelFromUrl(modelUrl: String) {
+    fun downloadModelFromUrl(modelUrl: String, onComplete: () -> Unit) {
         val fileName = modelUrl.substring(modelUrl.lastIndexOf('/') + 1)
-        val request =
-            DownloadManager.Request(modelUrl.toUri())
-                .setTitle(fileName)
-                .setDescription(
-                    "The GGUF model will be downloaded on your device for use with SmolChat."
-                )
-                .setMimeType("application/octet-stream")
-                .setAllowedNetworkTypes(
-                    DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE
-                )
-                .setNotificationVisibility(
-                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
-                )
-                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-        downloadManager.enqueue(request)
+        val destDir = context.filesDir.absolutePath
+        
+        downloadService.startDownload(
+            url = modelUrl,
+            destDir = destDir,
+            destFileName = fileName,
+            onStart = {
+                Toast.makeText(context, "Starting direct download...", Toast.LENGTH_SHORT).show()
+                setProgressDialogTitle("Downloading Model")
+                setProgressDialogText("Connecting...")
+                showProgressDialog()
+                _downloadProgress.update { 0 }
+            },
+            onProgress = { progress ->
+                _downloadProgress.update { progress }
+                setProgressDialogText("Downloading: $progress%")
+            },
+            onSuccess = {
+                _downloadProgress.update { null }
+                setProgressDialogTitle("Registering Model")
+                setProgressDialogText("Analyzing GGUF metadata...")
+                CoroutineScope(Dispatchers.IO).launch {
+                    val ggufReader = GGUFReader()
+                    ggufReader.load(File(destDir, fileName).absolutePath)
+                    val contextSize = ggufReader.getContextSize() ?: SmolLM.DefaultInferenceParams.contextSize
+                    val chatTemplate = ggufReader.getChatTemplate() ?: SmolLM.DefaultInferenceParams.chatTemplate
+                    appDB.addModel(
+                        fileName,
+                        "",
+                        Paths.get(destDir, fileName).toString(),
+                        contextSize.toInt(),
+                        chatTemplate,
+                    )
+                    withContext(Dispatchers.Main) {
+                        hideProgressDialog()
+                        Toast.makeText(context, "Model ready!", Toast.LENGTH_SHORT).show()
+                        onComplete()
+                    }
+                }
+            },
+            onFailure = { error ->
+                _downloadProgress.update { null }
+                hideProgressDialog()
+                Toast.makeText(context, "Download failed: $error", Toast.LENGTH_LONG).show()
+            }
+        )
     }
 
     fun getModels(query: String): Flow<PagingData<HFModelSearch.ModelSearchResult>> =

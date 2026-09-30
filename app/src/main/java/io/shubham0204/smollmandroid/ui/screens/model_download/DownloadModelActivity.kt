@@ -105,7 +105,7 @@ class DownloadModelActivity : ComponentActivity() {
                             route.modelInfo,
                             route.modelFiles,
                             onDownloadModel = { modelUrl ->
-                                viewModel.downloadModelFromUrl(modelUrl)
+                                viewModel.downloadModelFromUrl(modelUrl, onComplete = { openChatActivity() })
                             },
                             onBackClicked = { navController.navigateUp() },
                         )
@@ -200,7 +200,7 @@ class DownloadModelActivity : ComponentActivity() {
                                     addNewModelStep = AddNewModelStep.ImportModel
                                 },
                                 onDownloadModelClick = { selectedPopularModelIndex ->
-                                    viewModel.downloadModelFromIndex(selectedPopularModelIndex)
+                                    viewModel.downloadModelFromIndex(selectedPopularModelIndex, onComplete = { openChatActivity() })
                                 },
                                 modifier = Modifier
                                     .fillMaxSize()
