@@ -24,12 +24,46 @@ import kotlinx.coroutines.flow.Flow
 import org.koin.core.annotation.Single
 import java.io.File
 
+import io.shubham0204.smollm.GGUFReader
+import io.shubham0204.smollm.SmolLM
+
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
 @Single
 class ModelsRepository(private val context: Context, private val appDB: AppDB) {
     init {
+        val registeredPaths = mutableSetOf<String>()
+        // 1. Delete DB entries if file doesn't exist
         for (model in appDB.getModelsList()) {
             if (!File(model.path).exists()) {
-                deleteModel(model.id)
+                appDB.deleteModel(model.id)
+            } else {
+                registeredPaths.add(model.path)
+            }
+        }
+        
+        // 2. Auto-register orphaned .gguf files (e.g. from background downloads)
+        CoroutineScope(Dispatchers.IO).launch {
+            context.filesDir.listFiles()?.forEach { file ->
+                if (file.isFile && file.name.endsWith(".gguf") && !registeredPaths.contains(file.absolutePath)) {
+                    try {
+                        val ggufReader = GGUFReader()
+                        ggufReader.load(file.absolutePath)
+                        val contextSize = ggufReader.getContextSize() ?: SmolLM.DefaultInferenceParams.contextSize
+                        val chatTemplate = ggufReader.getChatTemplate() ?: SmolLM.DefaultInferenceParams.chatTemplate
+                        appDB.addModel(
+                            file.name,
+                            "",
+                            file.absolutePath,
+                            contextSize.toInt(),
+                            chatTemplate
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
             }
         }
     }

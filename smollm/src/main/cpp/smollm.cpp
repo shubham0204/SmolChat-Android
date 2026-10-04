@@ -1,5 +1,47 @@
 #include "LLMInference.h"
 #include <jni.h>
+#include <string>
+
+// Convert a std::string (UTF-8) to a Java String via NewString (UTF-16),
+// which correctly handles 4-byte emoji that NewStringUTF cannot encode.
+static jstring utf8_to_jstring(JNIEnv* env, const std::string& utf8) {
+    // Fast path: delegate to NewStringUTF only when there are no 4-byte sequences.
+    for (size_t i = 0; i < utf8.size(); ) {
+        unsigned char c = (unsigned char)utf8[i];
+        size_t len = c < 0x80 ? 1 : (c & 0xE0) == 0xC0 ? 2 :
+                     (c & 0xF0) == 0xE0 ? 3 : (c & 0xF8) == 0xF0 ? 4 : 1;
+        if (len == 4) goto use_utf16;
+        i += len;
+    }
+    return env->NewStringUTF(utf8.c_str());
+
+use_utf16:
+    // Convert UTF-8 -> jchar array (UTF-16) manually.
+    std::vector<jchar> utf16;
+    utf16.reserve(utf8.size());
+    size_t i = 0;
+    while (i < utf8.size()) {
+        unsigned char c = (unsigned char)utf8[i];
+        uint32_t cp = 0;
+        size_t len = 1;
+        if      (c < 0x80)             { cp = c; len = 1; }
+        else if ((c & 0xE0) == 0xC0)   { cp = c & 0x1F; len = 2; }
+        else if ((c & 0xF0) == 0xE0)   { cp = c & 0x0F; len = 3; }
+        else if ((c & 0xF8) == 0xF0)   { cp = c & 0x07; len = 4; }
+        for (size_t k = 1; k < len && i + k < utf8.size(); ++k)
+            cp = (cp << 6) | ((unsigned char)utf8[i + k] & 0x3F);
+        i += len;
+        if (cp < 0x10000) {
+            utf16.push_back((jchar)cp);
+        } else {
+            // Surrogate pair
+            cp -= 0x10000;
+            utf16.push_back((jchar)(0xD800 + (cp >> 10)));
+            utf16.push_back((jchar)(0xDC00 + (cp & 0x3FF)));
+        }
+    }
+    return env->NewString(utf16.data(), (jsize)utf16.size());
+}
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_io_shubham0204_smollm_SmolLM_loadModel(JNIEnv* env, jobject thiz, jstring modelPath, jfloat minP,
@@ -78,7 +120,7 @@ Java_io_shubham0204_smollm_SmolLM_completionLoop(JNIEnv* env, jobject thiz, jlon
     auto* llmInference = reinterpret_cast<LLMInference*>(modelPtr);
     try {
         std::string response = llmInference->completionLoop();
-        return env->NewStringUTF(response.c_str());
+        return utf8_to_jstring(env, response);
     } catch (std::exception& error) {
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
         return nullptr;
@@ -96,5 +138,5 @@ Java_io_shubham0204_smollm_SmolLM_benchModel(JNIEnv* env, jobject /*unused*/, jl
                                              jint nr) {
     auto*       llmInference = reinterpret_cast<LLMInference*>(modelPtr);
     std::string result       = llmInference->benchModel(pp, tg, pl, nr);
-    return env->NewStringUTF(result.c_str());
+    return utf8_to_jstring(env, result);
 }

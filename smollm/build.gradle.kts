@@ -42,11 +42,16 @@ android {
                 arguments += "-DLLAMA_BUILD_COMMON=ON"
                 arguments += "-DLLAMA_CURL=OFF"
                 arguments += "-DGGML_LLAMAFILE=OFF"
+                arguments += "-DGGML_CPU_KLEIDIAI=ON"
+                arguments += "-DLLAMA_RUNNER_BACKEND=llama.cpp"
                 // (debugging) uncomment the following line to enable debug builds
                 // and attach hardware-assisted address sanitizer
                 // arguments += "-DCMAKE_BUILD_TYPE=Debug"
                 // arguments += listOf("-DANDROID_SANITIZE=hwaddress")
             }
+        }
+        ndk {
+            abiFilters.add("arm64-v8a")
         }
     }
 
