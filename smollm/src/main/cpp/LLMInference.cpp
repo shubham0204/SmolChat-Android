@@ -215,7 +215,7 @@ LLMInference::completionLoop() {
 
 void
 LLMInference::stopCompletion() {
-    if (_storeChats) {
+    if (_storeChats && !_response.empty()) {
         addChatMessage(_response.c_str(), "assistant");
     }
     _response.clear();
