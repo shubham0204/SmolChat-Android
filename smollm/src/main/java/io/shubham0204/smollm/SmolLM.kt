@@ -22,7 +22,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.io.FileNotFoundException
 
 /** This class interacts with the JNI binding and provides a Kotlin API to infer a GGUF LLM model */
@@ -30,6 +29,8 @@ class SmolLM {
     companion object {
         init {
             val logTag = SmolLM::class.java.simpleName
+
+            System.loadLibrary("smollm_cpu_features")
 
             // check if the following CPU features are available,
             // and load the native library accordingly
@@ -100,20 +101,11 @@ class SmolLM {
         }
 
         /**
-         * Reads the /proc/cpuinfo file and returns the line starting with 'Features :' that
-         * containing the available CPU features
+         * Returns a space-separated string of available CPU features detected by the native
+         * cpu_features library.
          */
-        private fun getCPUFeatures(): String {
-            val cpuInfo =
-                try {
-                    File("/proc/cpuinfo").readText()
-                } catch (e: FileNotFoundException) {
-                    ""
-                }
-            val cpuFeatures =
-                cpuInfo.substringAfter("Features").substringAfter(":").substringBefore("\n").trim()
-            return cpuFeatures
-        }
+        @JvmStatic
+        external fun getCPUFeatures(): String
 
         private fun supportsArm64V8a(): Boolean = Build.SUPPORTED_ABIS[0].equals("arm64-v8a")
     }

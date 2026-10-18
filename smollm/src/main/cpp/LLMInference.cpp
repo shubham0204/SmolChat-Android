@@ -83,6 +83,10 @@ LLMInference::getContextSizeUsed() const {
 
 bool
 LLMInference::startCompletion(const char *query) {
+    llama_memory_clear(llama_get_memory(_ctx), false);
+    llama_sampler_reset(_sampler);
+    _cacheResponseTokens.clear();
+
     if (!_storeChats) {
         _formattedMessages.clear();
         _formattedMessages = std::vector<char>(llama_n_ctx(_ctx));

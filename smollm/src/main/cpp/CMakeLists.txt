@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.22.1)
 project("smollm")
 
-add_subdirectory(../../../../llama.cpp llama.cpp)
-set(LLAMA_DIR_RELATIVE "../../../../llama.cpp")
+add_subdirectory(../../../../external/llama.cpp llama.cpp)
+add_subdirectory(../../../../external/cpu_features cpu_features)
+
+set(LLAMA_DIR_RELATIVE "../../../../external/llama.cpp")
 get_filename_component(LLAMA_DIR ${LLAMA_DIR_RELATIVE} ABSOLUTE)
 
 set(GGML_DIR ${LLAMA_DIR}/ggml)
@@ -151,6 +153,25 @@ target_link_libraries(
 )
 target_link_options(
         ${TARGET_NAME_GGUF_READER}
+        PRIVATE
+        -Wl,--gc-sections -flto
+        -Wl,--exclude-libs,ALL
+)
+
+# library target for CPU features detection
+set(TARGET_NAME_CPU_FEATURES smollm_cpu_features)
+add_library(${TARGET_NAME_CPU_FEATURES} SHARED CPUFeatures.cpp)
+target_compile_options(
+        ${TARGET_NAME_CPU_FEATURES}
+        PUBLIC
+        -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections
+)
+target_link_libraries(
+        ${TARGET_NAME_CPU_FEATURES}
+        cpu_features android log
+)
+target_link_options(
+        ${TARGET_NAME_CPU_FEATURES}
         PRIVATE
         -Wl,--gc-sections -flto
         -Wl,--exclude-libs,ALL
