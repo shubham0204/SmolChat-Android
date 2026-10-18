@@ -22,6 +22,7 @@ import android.app.ActivityManager.MemoryInfo
 import android.content.Context
 import android.text.Spanned
 import android.util.Log
+import android.util.LruCache
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -47,6 +48,7 @@ import io.shubham0204.smollmandroid.ui.screens.manage_asr.SETTING_KEY_SPEECH2TEX
 import io.shubham0204.smollmandroid.ui.screens.manage_asr.availableASRModels
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -54,6 +56,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.android.annotation.KoinViewModel
 import java.util.Date
 import kotlin.math.pow
@@ -185,6 +188,9 @@ class ChatScreenViewModel(
 
     private val _uiState = MutableStateFlow(initializeUIState())
     val uiState: StateFlow<ChatScreenUIState> = _uiState
+
+    // Cache size of 500 messages (stores Pair<rawText, renderedSpanned>)
+    private val renderedMessageCache = LruCache<Long, Pair<String, Spanned>>(500)
 
     // Used to pre-set a value in the query text-field of the chat screen
     // It is set when a query comes from a 'share-text' intent in ChatActivity
@@ -597,18 +603,31 @@ class ChatScreenViewModel(
                     .distinctUntilChanged()
                     .collectLatest { chat ->
                         appDB.getMessages(chat.id).collect { chatMessages ->
-                            _uiState.update {
-                                it.copy(
-                                    messages =
-                                        chatMessages
-                                            .map { chatMessage ->
-                                                chatMessage.renderedMessage =
+                            // Offload Markdown rendering to background thread
+                            val renderedMessages =
+                                withContext(Dispatchers.Default) {
+                                    chatMessages
+                                        .map { chatMessage ->
+                                            val cached = renderedMessageCache.get(chatMessage.id)
+                                            if (cached != null && cached.first == chatMessage.message) {
+                                                // Cache hit: reuse existing Spanned instance
+                                                chatMessage.renderedMessage = cached.second
+                                            } else {
+                                                // Cache miss or message edited: parse Markdown and update cache
+                                                val rendered =
                                                     mdRenderer.render(chatMessage.message)
-                                                chatMessage
+                                                renderedMessageCache.put(
+                                                    chatMessage.id,
+                                                    chatMessage.message to rendered,
+                                                )
+                                                chatMessage.renderedMessage = rendered
                                             }
-                                            .toImmutableList()
-                                )
-                            }
+                                            chatMessage
+                                        }
+                                        .toImmutableList()
+                                }
+                            // Update UI state with the rendered list
+                            _uiState.update { it.copy(messages = renderedMessages) }
                         }
                     }
             }
@@ -667,6 +686,7 @@ class ChatScreenViewModel(
     }
 
     private fun deleteMessage(messageId: Long) {
+        renderedMessageCache.remove(messageId)
         appDB.deleteMessage(messageId)
     }
 
