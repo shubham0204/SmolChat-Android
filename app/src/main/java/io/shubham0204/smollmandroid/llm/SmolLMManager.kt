@@ -23,13 +23,17 @@ import io.shubham0204.smollmandroid.data.Chat
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime
 
 private const val LOGTAG = "[SmolLMManager-Kt]"
@@ -139,6 +143,7 @@ class SmolLMManager(private val appDB: AppDB) {
         }
     }
 
+    @OptIn(FlowPreview::class)
     fun getResponse(
         query: String,
         responseTransform: (String) -> String,
@@ -160,14 +165,29 @@ class SmolLMManager(private val appDB: AppDB) {
             responseGenerationJob = CoroutineScope(Dispatchers.Default).launch {
                 try {
                     isInferenceOn = true
-                    var response = ""
+                    val responseBuilder = StringBuilder()
+                    var lastDispatchedResponse = ""
 
                     val duration = measureTime {
-                        instance.getResponseAsFlow(query).collect { piece ->
-                            response += piece
-                            withContext(Dispatchers.Main) {
-                                onPartialResponseGenerated(response)
+                        instance
+                            .getResponseAsFlow(query)
+                            .map { piece ->
+                                responseBuilder.append(piece)
+                                responseBuilder.toString()
                             }
+                            .sample(50.milliseconds)
+                            .collect { sampledResponse ->
+                                lastDispatchedResponse = sampledResponse
+                                withContext(Dispatchers.Main) {
+                                    onPartialResponseGenerated(sampledResponse)
+                                }
+                            }
+                    }
+
+                    var response = responseBuilder.toString()
+                    if (response.isNotEmpty() && response != lastDispatchedResponse) {
+                        withContext(Dispatchers.Main) {
+                            onPartialResponseGenerated(response)
                         }
                     }
 
