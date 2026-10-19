@@ -28,8 +28,11 @@ class GGUFReader {
 
     private var nativeHandle: Long = 0L
 
-    suspend fun load(modelPath: String) =
-        withContext(Dispatchers.IO) { nativeHandle = getGGUFContextNativeHandle(modelPath) }
+    suspend fun load(modelPath: String): Boolean =
+        withContext(Dispatchers.IO) {
+            nativeHandle = getGGUFContextNativeHandle(modelPath)
+            nativeHandle != 0L
+        }
 
     fun getContextSize(): Long? {
         assert(nativeHandle != 0L) { "Use GGUFReader.load() to initialize the reader" }
