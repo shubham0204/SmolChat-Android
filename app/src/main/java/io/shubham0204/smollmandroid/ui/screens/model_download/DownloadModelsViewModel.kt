@@ -16,13 +16,10 @@
 
 package io.shubham0204.smollmandroid.ui.screens.model_download
 
-import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
 import android.provider.OpenableColumns
 import android.widget.Toast
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
 import io.shubham0204.hf_model_hub_api.HFEndpoints
@@ -38,9 +35,13 @@ import io.shubham0204.smollmandroid.ui.components.hideProgressDialog
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogText
 import io.shubham0204.smollmandroid.ui.components.setProgressDialogTitle
 import io.shubham0204.smollmandroid.ui.components.showProgressDialog
+import io.shubham0204.smollmandroid.ui.screens.manage_asr.DownloadService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -50,11 +51,6 @@ import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.file.Paths
-
-import io.shubham0204.smollmandroid.ui.screens.manage_asr.DownloadService
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 
 @Single
 class DownloadModelsViewModel(
@@ -67,12 +63,12 @@ class DownloadModelsViewModel(
     private val _downloadProgress = MutableStateFlow<Int?>(null)
     val downloadProgress = _downloadProgress.asStateFlow()
 
-    fun downloadModelFromIndex(selectedPopularModelIndex: Int, onComplete: () -> Unit) {
+    fun downloadModelFromIndex(selectedPopularModelIndex: Int, onComplete: () -> Unit = {}) {
         val modelUrl = getPopularModel(selectedPopularModelIndex)!!.url
         downloadModelFromUrl(modelUrl, onComplete)
     }
 
-    fun downloadModelFromUrl(modelUrl: String, onComplete: () -> Unit) {
+    fun downloadModelFromUrl(modelUrl: String, onComplete: () -> Unit = {}) {
         val fileName = modelUrl.substring(modelUrl.lastIndexOf('/') + 1)
         val destDir = context.filesDir.absolutePath
         

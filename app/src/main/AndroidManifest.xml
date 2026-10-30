@@ -6,6 +6,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".SmolChatApplication"
@@ -51,6 +55,19 @@
         </activity>
         <activity android:name=".ui.screens.model_download.DownloadModelActivity" />
         <activity android:name=".ui.screens.manage_tasks.ManageTasksActivity" />
+        <activity
+            android:name=".ui.screens.manage_server.ManageServerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SmolLMAndroid" />
+
+        <service
+            android:name=".server.OpenAIServerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Local OpenAI/OpenAPI compatible LLM HTTP inference server" />
+        </service>
     </application>
 
 </manifest>

@@ -7,11 +7,11 @@
 
 class LLMInference {
     // llama.cpp-specific types
-    llama_context* _ctx;
-    llama_model*   _model;
-    llama_sampler* _sampler;
-    llama_token    _currToken;
-    llama_batch*   _batch;
+    llama_context* _ctx       = nullptr;
+    llama_model*   _model     = nullptr;
+    llama_sampler* _sampler   = nullptr;
+    llama_token    _currToken = 0;
+    llama_batch*   _batch     = nullptr;
 
     llama_batch g_batch;
 
@@ -47,6 +47,8 @@ class LLMInference {
     std::string benchModel(int pp, int tg, int pl, int nr);
 
     void addChatMessage(const char* message, const char* role);
+
+    void clearMessages();
 
     float getResponseGenerationTime() const;
 

@@ -74,6 +74,20 @@ LLMInference::addChatMessage(const char *message, const char *role) {
     _messages.push_back({strdup(role), strdup(message)});
 }
 
+void
+LLMInference::clearMessages() {
+    for (llama_chat_message& message : _messages) {
+        free(const_cast<char*>(message.role));
+        free(const_cast<char*>(message.content));
+    }
+    _messages.clear();
+    _response.clear();
+    _cacheResponseTokens.clear();
+    if (_ctx) {
+        llama_memory_clear(llama_get_memory(_ctx), false);
+    }
+}
+
 float
 LLMInference::getResponseGenerationTime() const {
     return (float) _responseNumTokens / (_responseGenerationTime / 1e6);
@@ -130,6 +144,7 @@ LLMInference::startCompletion(const char *query) {
 
     // create a llama_batch containing a single sequence
     // see llama_batch_init for more details
+    delete _batch;
     _batch = new llama_batch();
     _batch->token = _promptTokens.data();
     _batch->n_tokens = _promptTokens.size();

@@ -57,6 +57,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/io.netty.versions.properties"
         }
     }
     applicationVariants.configureEach {
@@ -138,6 +140,14 @@ dependencies {
 
     implementation("com.github.khushpanchal:Ketch:2.0.5")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Ktor Server for OpenAI compatible local server
+    val ktorVersion = "3.0.2"
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-server-cio:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-server-cors:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
