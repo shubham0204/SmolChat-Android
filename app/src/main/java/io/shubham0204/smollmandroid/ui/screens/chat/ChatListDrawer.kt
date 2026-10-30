@@ -71,6 +71,7 @@ import compose.icons.feathericons.List
 import compose.icons.feathericons.MoreVertical
 import compose.icons.feathericons.Plus
 import compose.icons.feathericons.PlusSquare
+import compose.icons.feathericons.Server
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.Folder
@@ -82,6 +83,7 @@ import io.shubham0204.smollmandroid.ui.preview.dummyChats
 import io.shubham0204.smollmandroid.ui.preview.dummyFolders
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.createFolderOptionsDialog
 import io.shubham0204.smollmandroid.ui.screens.manage_asr.ManageASRActivity
+import io.shubham0204.smollmandroid.ui.screens.manage_server.ManageServerActivity
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -95,6 +97,7 @@ private fun PreviewChatsAndFoldersList() {
             chats = dummyChats.toImmutableList(),
             folders = dummyFolders.toImmutableList(),
             onManageTasksClick = {},
+            onManageServerClick = {},
             onItemClick = {},
             onDeleteFolderClick = {},
             onDeleteFolderWithChatsClick = {},
@@ -172,6 +175,12 @@ fun DrawerUI(
                     }
                     onCloseDrawer()
                 },
+                onManageServerClick = {
+                    Intent(context, ManageServerActivity::class.java).also {
+                        context.startActivity(it)
+                    }
+                    onCloseDrawer()
+                },
                 onItemClick = {
                     onEvent(ChatScreenUIEvent.ChatEvents.SwitchChat(it))
                     onCloseDrawer()
@@ -199,6 +208,7 @@ private fun ChatsAndFoldersList(
     folders: ImmutableList<Folder>,
     onManageTasksClick: () -> Unit,
     onManageASRClick: () -> Unit,
+    onManageServerClick: () -> Unit,
     onItemClick: (Chat) -> Unit,
     onDeleteFolderClick: (Folder) -> Unit,
     onDeleteFolderWithChatsClick: (Folder) -> Unit,
@@ -238,6 +248,25 @@ private fun ChatsAndFoldersList(
             )
             Text(
                 "Manage Speech-to-Text",
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onManageServerClick() },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                FeatherIcons.Server,
+                contentDescription = stringResource(R.string.chat_drawer_openai_server),
+                tint = MaterialTheme.colorScheme.secondary,
+            )
+            Text(
+                stringResource(R.string.chat_drawer_openai_server),
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier
                     .fillMaxWidth()

@@ -38,6 +38,12 @@ Java_io_shubham0204_smollm_SmolLM_addChatMessage(JNIEnv* env, jobject thiz, jlon
     env->ReleaseStringUTFChars(role, roleCstr);
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_io_shubham0204_smollm_SmolLM_clearMessages(JNIEnv* env, jobject thiz, jlong modelPtr) {
+    auto* llmInference = reinterpret_cast<LLMInference*>(modelPtr);
+    llmInference->clearMessages();
+}
+
 extern "C" JNIEXPORT jfloat JNICALL
 Java_io_shubham0204_smollm_SmolLM_getResponseGenerationSpeed(JNIEnv* env, jobject thiz, jlong modelPtr) {
     auto* llmInference = reinterpret_cast<LLMInference*>(modelPtr);

@@ -217,6 +217,14 @@ class SmolLM {
     }
 
     /**
+     * Clears all stored chat messages and resets the KV cache for the loaded model.
+     */
+    fun clearMessages() {
+        verifyHandle()
+        clearMessages(nativePtr)
+    }
+
+    /**
      * Returns the rate (in tokens per second) at which the LLM generated its last response via
      * `getResponse()`
      */
@@ -251,12 +259,15 @@ class SmolLM {
     fun getResponseAsFlow(query: String): Flow<String> = flow {
         verifyHandle()
         usedJinjaTemplate = startCompletion(nativePtr, query)
-        var piece = completionLoop(nativePtr)
-        while (piece != "[EOG]") {
-            emit(piece)
-            piece = completionLoop(nativePtr)
+        try {
+            var piece = completionLoop(nativePtr)
+            while (piece != "[EOG]") {
+                emit(piece)
+                piece = completionLoop(nativePtr)
+            }
+        } finally {
+            stopCompletion(nativePtr)
         }
-        stopCompletion(nativePtr)
     }
 
     /**
@@ -324,6 +335,8 @@ class SmolLM {
     ): Long
 
     private external fun addChatMessage(modelPtr: Long, message: String, role: String)
+
+    private external fun clearMessages(modelPtr: Long)
 
     private external fun getResponseGenerationSpeed(modelPtr: Long): Float
 
