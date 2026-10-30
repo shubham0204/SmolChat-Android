@@ -126,8 +126,8 @@ class SmolLM {
     /**
      * Data class to hold the inference parameters for the LLM.
      *
-     * @property minP The minimum probability for a token to be considered. Also known as top-P
-     *   sampling. (Default: 0.1f)
+     * @property minP The minimum probability for a token to be considered, relative to the
+     *   probability of the most likely token (min-P sampling). (Default: 0.1f)
      * @property temperature The temperature for sampling. Higher values make the output more
      *   random. (Default: 0.8f)
      * @property storeChats Whether to store the chat history in memory. If true, the LLM will

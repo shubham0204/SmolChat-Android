@@ -52,6 +52,9 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
     llama_sampler_chain_params sampler_params = llama_sampler_chain_default_params();
     sampler_params.no_perf = true; // disable performance metrics
     _sampler = llama_sampler_chain_init(sampler_params);
+    if (minP >= 0.01f) {
+        llama_sampler_chain_add(_sampler, llama_sampler_init_min_p(minP, 1));
+    }
     llama_sampler_chain_add(_sampler, llama_sampler_init_temp(temperature));
     llama_sampler_chain_add(_sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
 
