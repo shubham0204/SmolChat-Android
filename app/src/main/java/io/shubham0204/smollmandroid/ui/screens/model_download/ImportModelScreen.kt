@@ -6,6 +6,7 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,14 +21,20 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
@@ -39,23 +46,39 @@ import io.shubham0204.smollmandroid.ui.components.createAlertDialog
 @Preview
 @Composable
 private fun PreviewImportModelScreen() {
-    ImportModelScreen(onPrevSectionClick = {}, checkGGUFFile = { false }, copyModelFile = {})
+    ImportModelScreen(
+        onPrevSectionClick = {},
+        checkGGUFFile = { false },
+        processModelFile = { _, _ -> })
 }
+
+private val MAKE_PERSISTENT_URI_KEY: String = "persist"
 
 @Composable
 fun ImportModelScreen(
     onPrevSectionClick: () -> Unit,
     checkGGUFFile: (Uri) -> Boolean,
-    copyModelFile: (Uri) -> Unit,
+    processModelFile: (Uri, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var isDialogVisible by remember { mutableStateOf(false) }
+    var shouldPersistUri by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
             activityResult.data?.let {
                 it.data?.let { uri ->
+                    if (shouldPersistUri) {
+                        val takeFlags: Int =
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        val contentResolver = context.contentResolver
+                        contentResolver.takePersistableUriPermission(uri, takeFlags)
+                    }
+
                     if (checkGGUFFile(uri)) {
-                        copyModelFile(uri)
+                        processModelFile(uri, shouldPersistUri)
                     } else {
                         createAlertDialog(
                             dialogTitle = context.getString(R.string.dialog_invalid_file_title),
@@ -71,57 +94,46 @@ fun ImportModelScreen(
         }
     Column(
         modifier = modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Column {
             Text(
                 text = stringResource(R.string.import_model_step_title),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 text = stringResource(R.string.import_model_step_des),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
         Surface(
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
             shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Icon(
                     FeatherIcons.FilePlus,
                     contentDescription = null,
                     modifier = Modifier.padding(12.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(
                     text = "Select a .gguf file from your storage to import it into SmolChat.",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Button(
                     onClick = {
-                        val intent =
-                            Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                                setType("application/octet-stream")
-                                putExtra(
-                                    DocumentsContract.EXTRA_INITIAL_URI,
-                                    Environment.getExternalStoragePublicDirectory(
-                                        Environment.DIRECTORY_DOWNLOADS
-                                    )
-                                        .toUri(),
-                                )
-                            }
-                        launcher.launch(intent)
+                        isDialogVisible = true
                     },
                     shape = RoundedCornerShape(12.dp),
                 ) {
@@ -134,16 +146,55 @@ fun ImportModelScreen(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
         ) {
             OutlinedButton(
                 onClick = onPrevSectionClick,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
             ) {
                 Icon(FeatherIcons.ArrowLeft, contentDescription = null)
                 AppSpacer4W()
                 Text(stringResource(R.string.button_text_back))
             }
         }
+
+        if (isDialogVisible) {
+            Dialog(
+                onDismissRequest = { isDialogVisible = false }
+            ) {
+                Column(modifier = Modifier.background(Color.White)) {
+                    Text("Do you want to refer the file or copy it?")
+                    Button(
+                        onClick = {
+                            isDialogVisible = false
+                            shouldPersistUri = true
+                            launcher.launch(makeIntent())
+                        }
+                    ) {
+                        Text("Refer File")
+                    }
+
+                    Button(
+                        onClick = {
+                            isDialogVisible = false
+                            shouldPersistUri = false
+                            launcher.launch(makeIntent())
+                        }
+                    ) {
+                        Text("Copy File")
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun makeIntent(): Intent {
+    return Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+        setType("application/octet-stream")
+        putExtra(
+            DocumentsContract.EXTRA_INITIAL_URI,
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toUri(),
+        )
     }
 }
