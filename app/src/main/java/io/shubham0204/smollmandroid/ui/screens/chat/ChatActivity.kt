@@ -109,6 +109,9 @@ private object BenchmarkModelRoute
 @Serializable
 private data class EditChatSettingsRoute(val chat: Chat, val modelContextSize: Int)
 
+@Serializable
+private object GlobalChatSettingsRoute
+
 class ChatActivity : ComponentActivity() {
 
     private val viewModel: ChatScreenViewModel by viewModel()
@@ -190,6 +193,35 @@ class ChatActivity : ComponentActivity() {
                                 )
                             },
                             onBackClicked = { navController.navigateUp() },
+                            globalSettings = uiState.globalChatSettings,
+                        )
+                    }
+                    composable<GlobalChatSettingsRoute> {
+                        val uiState by
+                        viewModel.uiState.collectAsStateWithLifecycle(
+                            LocalLifecycleOwner.current
+                        )
+                        GlobalChatSettingsScreen(
+                            settings = uiState.globalChatSettings,
+                            systemPrompts = uiState.systemPrompts,
+                            onUpdateGlobalSettings = { globalSettings ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.ChatEvents.UpdateGlobalChatSettings(
+                                        globalSettings
+                                    )
+                                )
+                            },
+                            onAddSystemPrompt = { name, body ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.SystemPromptEvents.AddSystemPrompt(name, body)
+                                )
+                            },
+                            onDeleteSystemPrompt = { id ->
+                                viewModel.onEvent(
+                                    ChatScreenUIEvent.SystemPromptEvents.DeleteSystemPrompt(id)
+                                )
+                            },
+                            onBackClicked = { navController.navigateUp() },
                         )
                     }
                     composable<ChatRoute> {
@@ -205,7 +237,10 @@ class ChatActivity : ComponentActivity() {
                                 )
                             },
                             onBenchmarkModelClick = { navController.navigate(BenchmarkModelRoute) },
-                            viewModel::onEvent,
+                            onGlobalSettingsClick = {
+                                navController.navigate(GlobalChatSettingsRoute)
+                            },
+                            onEvent = viewModel::onEvent,
                         )
                     }
                 }
@@ -259,6 +294,7 @@ fun ChatActivityScreenUI(
     uiState: ChatScreenUIState,
     onEditChatParamsClick: (Chat, Int) -> Unit,
     onBenchmarkModelClick: () -> Unit,
+    onGlobalSettingsClick: () -> Unit = {},
     onEvent: (ChatScreenUIEvent) -> Unit,
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -273,6 +309,7 @@ fun ChatActivityScreenUI(
                     uiState.folders,
                     onCloseDrawer = { scope.launch { drawerState.close() } },
                     onEvent = onEvent,
+                    onGlobalSettingsClick = onGlobalSettingsClick,
                 )
                 BackHandler(drawerState.isOpen) { scope.launch { drawerState.close() } }
             },

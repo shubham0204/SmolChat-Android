@@ -72,6 +72,7 @@ import compose.icons.feathericons.MoreVertical
 import compose.icons.feathericons.Plus
 import compose.icons.feathericons.PlusSquare
 import compose.icons.feathericons.Server
+import compose.icons.feathericons.Settings
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.Folder
@@ -98,6 +99,7 @@ private fun PreviewChatsAndFoldersList() {
             folders = dummyFolders.toImmutableList(),
             onManageTasksClick = {},
             onManageServerClick = {},
+            onGlobalSettingsClick = {},
             onItemClick = {},
             onDeleteFolderClick = {},
             onDeleteFolderWithChatsClick = {},
@@ -115,6 +117,7 @@ fun DrawerUI(
     folders: ImmutableList<Folder>,
     onCloseDrawer: () -> Unit,
     onEvent: (ChatScreenUIEvent) -> Unit,
+    onGlobalSettingsClick: () -> Unit = {},
 ) {
     Surface {
         Column(
@@ -181,6 +184,10 @@ fun DrawerUI(
                     }
                     onCloseDrawer()
                 },
+                onGlobalSettingsClick = {
+                    onCloseDrawer()
+                    onGlobalSettingsClick()
+                },
                 onItemClick = {
                     onEvent(ChatScreenUIEvent.ChatEvents.SwitchChat(it))
                     onCloseDrawer()
@@ -209,6 +216,7 @@ private fun ChatsAndFoldersList(
     onManageTasksClick: () -> Unit,
     onManageASRClick: () -> Unit,
     onManageServerClick: () -> Unit,
+    onGlobalSettingsClick: () -> Unit,
     onItemClick: (Chat) -> Unit,
     onDeleteFolderClick: (Folder) -> Unit,
     onDeleteFolderWithChatsClick: (Folder) -> Unit,
@@ -216,6 +224,25 @@ private fun ChatsAndFoldersList(
     onAddFolder: (String) -> Unit,
 ) {
     Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onGlobalSettingsClick() },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                FeatherIcons.Settings,
+                contentDescription = stringResource(R.string.chat_drawer_global_settings),
+                tint = MaterialTheme.colorScheme.secondary,
+            )
+            Text(
+                stringResource(R.string.chat_drawer_global_settings),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+            )
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()

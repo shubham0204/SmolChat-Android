@@ -139,4 +139,7 @@ interface ChatsDao {
 
     @Query("SELECT * FROM Chat WHERE id = :chatId")
     fun getChat(chatId: Long): Chat
+
+    @Query("SELECT * FROM Chat")
+    suspend fun getAllChatsList(): List<Chat>
 }

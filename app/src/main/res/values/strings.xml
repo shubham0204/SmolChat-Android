@@ -152,4 +152,10 @@
     <string name="server_notification_channel_desc">Shows the status of the local OpenAI/OpenAPI compatible server</string>
     <string name="server_notification_starting">Starting server on %1$s ...</string>
     <string name="server_notification_listening">Listening on %1$s (%2$s)</string>
+    <string name="chat_drawer_global_settings">Global Chat Settings</string>
+    <string name="global_chat_settings_screen_title">Global Chat Settings</string>
+    <string name="global_chat_settings_desc">Default settings applied across all chats unless overridden by chat-specific settings.</string>
+    <string name="global_chat_settings_applied">Global chat settings have been updated.</string>
+    <string name="chat_settings_reset_to_global">Reset to Global Settings</string>
+    <string name="chat_settings_reset_to_global_toast">Reset to global settings. Tap the checkmark to save.</string>
 </resources>

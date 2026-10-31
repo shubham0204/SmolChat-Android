@@ -6,7 +6,35 @@ import androidx.core.content.edit
 import io.shubham0204.smollmandroid.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
+
+const val KEY_GLOBAL_SYSTEM_PROMPT = "global_chat_system_prompt"
+const val KEY_GLOBAL_MIN_P = "global_chat_min_p"
+const val KEY_GLOBAL_TEMPERATURE = "global_chat_temperature"
+const val KEY_GLOBAL_CONTEXT_SIZE = "global_chat_context_size"
+const val KEY_GLOBAL_N_THREADS = "global_chat_n_threads"
+const val KEY_GLOBAL_USE_MMAP = "global_chat_use_mmap"
+const val KEY_GLOBAL_USE_MLOCK = "global_chat_use_mlock"
+
+const val DEFAULT_GLOBAL_SYSTEM_PROMPT = "You are a helpful assistant."
+const val DEFAULT_GLOBAL_MIN_P = 0.1f
+const val DEFAULT_GLOBAL_TEMPERATURE = 0.8f
+const val DEFAULT_GLOBAL_CONTEXT_SIZE = 2048
+const val DEFAULT_GLOBAL_N_THREADS = 4
+const val DEFAULT_GLOBAL_USE_MMAP = true
+const val DEFAULT_GLOBAL_USE_MLOCK = false
+
+@Serializable
+data class GlobalChatSettings(
+    val systemPrompt: String = DEFAULT_GLOBAL_SYSTEM_PROMPT,
+    val minP: Float = DEFAULT_GLOBAL_MIN_P,
+    val temperature: Float = DEFAULT_GLOBAL_TEMPERATURE,
+    val contextSize: Int = DEFAULT_GLOBAL_CONTEXT_SIZE,
+    val nThreads: Int = DEFAULT_GLOBAL_N_THREADS,
+    val useMmap: Boolean = DEFAULT_GLOBAL_USE_MMAP,
+    val useMlock: Boolean = DEFAULT_GLOBAL_USE_MLOCK,
+)
 
 @Single
 class SharedPrefStore(context: Context) {
@@ -44,6 +72,27 @@ class SharedPrefStore(context: Context) {
                 else -> throw Exception("Unsupported type")
             }
         }
+    }
+
+    fun getGlobalChatSettings(): GlobalChatSettings =
+        GlobalChatSettings(
+            systemPrompt = get(KEY_GLOBAL_SYSTEM_PROMPT, DEFAULT_GLOBAL_SYSTEM_PROMPT),
+            minP = get(KEY_GLOBAL_MIN_P, DEFAULT_GLOBAL_MIN_P),
+            temperature = get(KEY_GLOBAL_TEMPERATURE, DEFAULT_GLOBAL_TEMPERATURE),
+            contextSize = get(KEY_GLOBAL_CONTEXT_SIZE, DEFAULT_GLOBAL_CONTEXT_SIZE),
+            nThreads = get(KEY_GLOBAL_N_THREADS, DEFAULT_GLOBAL_N_THREADS),
+            useMmap = get(KEY_GLOBAL_USE_MMAP, DEFAULT_GLOBAL_USE_MMAP),
+            useMlock = get(KEY_GLOBAL_USE_MLOCK, DEFAULT_GLOBAL_USE_MLOCK),
+        )
+
+    fun saveGlobalChatSettings(settings: GlobalChatSettings) {
+        put(KEY_GLOBAL_SYSTEM_PROMPT, settings.systemPrompt)
+        put(KEY_GLOBAL_MIN_P, settings.minP)
+        put(KEY_GLOBAL_TEMPERATURE, settings.temperature)
+        put(KEY_GLOBAL_CONTEXT_SIZE, settings.contextSize)
+        put(KEY_GLOBAL_N_THREADS, settings.nThreads)
+        put(KEY_GLOBAL_USE_MMAP, settings.useMmap)
+        put(KEY_GLOBAL_USE_MLOCK, settings.useMlock)
     }
 
     fun setupChangeListener(key: String, onChange: (String, String) -> Unit) {

@@ -29,12 +29,15 @@ abstract class AppRoomDatabase : RoomDatabase() {
 }
 
 @Single
-class AppDB(context: Context) {
+class AppDB(context: Context, private val sharedPrefStore: SharedPrefStore) {
     private val db =
         Room.databaseBuilder(context, AppRoomDatabase::class.java, "app-database").build()
 
     /** Get all chats from the database sorted by dateUsed in descending order. */
     fun getChats(): Flow<List<Chat>> = db.chatsDao().getChats()
+
+    fun getChat(chatId: Long): Chat =
+        runBlocking(Dispatchers.IO) { db.chatsDao().getChat(chatId) }
 
     fun loadDefaultChat(): Chat {
         val defaultChat =
@@ -63,24 +66,87 @@ class AppDB(context: Context) {
     fun addChat(
         chatName: String,
         chatTemplate: String = "",
-        systemPrompt: String = "You are a helpful assistant.",
+        systemPrompt: String? = null,
         llmModelId: Long = -1,
         isTask: Boolean = false,
     ): Chat =
         runBlocking(Dispatchers.IO) {
+            val globalSettings = sharedPrefStore.getGlobalChatSettings()
             val newChat =
                 Chat(
                     name = chatName,
-                    systemPrompt = systemPrompt,
+                    systemPrompt = systemPrompt ?: globalSettings.systemPrompt,
                     dateCreated = Date(),
                     dateUsed = Date(),
                     llmModelId = llmModelId,
-                    contextSize = 2048,
+                    minP = globalSettings.minP,
+                    temperature = globalSettings.temperature,
+                    nThreads = globalSettings.nThreads,
+                    useMmap = globalSettings.useMmap,
+                    useMlock = globalSettings.useMlock,
+                    contextSize = globalSettings.contextSize,
                     chatTemplate = chatTemplate,
                     isTask = isTask,
                 )
             val newChatId = db.chatsDao().insertChat(newChat)
             newChat.copy(id = newChatId)
+        }
+
+    fun applyGlobalSettingsToChats(
+        oldSettings: GlobalChatSettings,
+        newSettings: GlobalChatSettings,
+    ) =
+        runBlocking(Dispatchers.IO) {
+            db.chatsDao().getAllChatsList().forEach { chat ->
+                val updatedChat =
+                    chat.copy(
+                        systemPrompt =
+                            if (!chat.isTask && chat.systemPrompt == oldSettings.systemPrompt) {
+                                newSettings.systemPrompt
+                            } else {
+                                chat.systemPrompt
+                            },
+                        minP =
+                            if (chat.minP == oldSettings.minP) {
+                                newSettings.minP
+                            } else {
+                                chat.minP
+                            },
+                        temperature =
+                            if (chat.temperature == oldSettings.temperature) {
+                                newSettings.temperature
+                            } else {
+                                chat.temperature
+                            },
+                        contextSize =
+                            if (chat.contextSize == oldSettings.contextSize) {
+                                newSettings.contextSize
+                            } else {
+                                chat.contextSize
+                            },
+                        nThreads =
+                            if (chat.nThreads == oldSettings.nThreads) {
+                                newSettings.nThreads
+                            } else {
+                                chat.nThreads
+                            },
+                        useMmap =
+                            if (chat.useMmap == oldSettings.useMmap) {
+                                newSettings.useMmap
+                            } else {
+                                chat.useMmap
+                            },
+                        useMlock =
+                            if (chat.useMlock == oldSettings.useMlock) {
+                                newSettings.useMlock
+                            } else {
+                                chat.useMlock
+                            },
+                    )
+                if (updatedChat != chat) {
+                    db.chatsDao().updateChat(updatedChat)
+                }
+            }
         }
 
     /** Update the chat in the database. */

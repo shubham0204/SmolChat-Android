@@ -38,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -67,6 +68,7 @@ import compose.icons.feathericons.Search
 import compose.icons.feathericons.Trash2
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.Chat
+import io.shubham0204.smollmandroid.data.GlobalChatSettings
 import io.shubham0204.smollmandroid.data.SystemPrompt
 import io.shubham0204.smollmandroid.ui.components.AppBarTitleText
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
@@ -142,6 +144,7 @@ fun EditChatSettingsScreen(
     onAddSystemPrompt: (String, String) -> Unit,
     onDeleteSystemPrompt: (Long) -> Unit,
     onBackClicked: () -> Unit,
+    globalSettings: GlobalChatSettings = GlobalChatSettings(),
 ) {
     var chatName by remember { mutableStateOf(settings.name) }
     var systemPrompt by remember { mutableStateOf(settings.systemPrompt) }
@@ -408,6 +411,29 @@ fun EditChatSettingsScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        systemPrompt = globalSettings.systemPrompt
+                        minP = globalSettings.minP
+                        temperature = globalSettings.temperature
+                        contextSize = globalSettings.contextSize
+                        nThreads = globalSettings.nThreads
+                        useMmap = globalSettings.useMmap
+                        useMlock = globalSettings.useMlock
+                        takeContextSizeFromModel = false
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.chat_settings_reset_to_global_toast),
+                            Toast.LENGTH_SHORT,
+                        )
+                            .show()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.chat_settings_reset_to_global))
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
 
@@ -424,40 +450,298 @@ fun EditChatSettingsScreen(
         }
 
         if (showAddSystemPromptDialog) {
-            var promptName by remember { mutableStateOf("") }
-            AlertDialog(
+            AddSystemPromptDialog(
+                systemPrompt = systemPrompt,
+                onAddSystemPrompt = onAddSystemPrompt,
                 onDismissRequest = { showAddSystemPromptDialog = false },
-                title = { Text("Save System Prompt") },
-                text = {
-                    Column {
-                        Text("Enter a name for this system prompt:")
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TextField(
-                            value = promptName,
-                            onValueChange = { promptName = it },
-                            placeholder = { Text("Prompt Name") },
-                            singleLine = true,
-                        )
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            if (promptName.isNotBlank()) {
-                                onAddSystemPrompt(promptName, systemPrompt)
-                                showAddSystemPromptDialog = false
-                            }
-                        }
-                    ) {
-                        Text("Save")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showAddSystemPromptDialog = false }) { Text("Cancel") }
-                },
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GlobalChatSettingsScreen(
+    settings: GlobalChatSettings,
+    systemPrompts: ImmutableList<SystemPrompt>,
+    onUpdateGlobalSettings: (GlobalChatSettings) -> Unit,
+    onAddSystemPrompt: (String, String) -> Unit,
+    onDeleteSystemPrompt: (Long) -> Unit,
+    onBackClicked: () -> Unit,
+) {
+    var systemPrompt by remember { mutableStateOf(settings.systemPrompt) }
+    var minP by remember { mutableFloatStateOf(settings.minP) }
+    var temperature by remember { mutableFloatStateOf(settings.temperature) }
+    var contextSize by remember { mutableIntStateOf(settings.contextSize) }
+    var nThreads by remember { mutableIntStateOf(settings.nThreads) }
+    var useMmap by remember { mutableStateOf(settings.useMmap) }
+    var useMlock by remember { mutableStateOf(settings.useMlock) }
+
+    var showSystemPromptsDialog by remember { mutableStateOf(false) }
+    var showAddSystemPromptDialog by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val totalThreads = Runtime.getRuntime().availableProcessors()
+
+    SmolLMAndroidTheme {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        AppBarTitleText(stringResource(R.string.global_chat_settings_screen_title))
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { onBackClicked() }) {
+                            Icon(FeatherIcons.ArrowLeft, contentDescription = "Navigate Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                val updatedSettings =
+                                    settings.copy(
+                                        systemPrompt = systemPrompt,
+                                        minP = minP,
+                                        temperature = temperature,
+                                        contextSize = contextSize,
+                                        nThreads = nThreads,
+                                        useMmap = useMmap,
+                                        useMlock = useMlock,
+                                    )
+                                if (settings != updatedSettings) {
+                                    onUpdateGlobalSettings(updatedSettings)
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.global_chat_settings_applied),
+                                        Toast.LENGTH_LONG,
+                                    )
+                                        .show()
+                                }
+                                onBackClicked()
+                            }
+                        ) {
+                            Icon(FeatherIcons.Check, contentDescription = "Save global settings")
+                        }
+                    },
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier =
+                    Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                        .padding(paddingValues)
+                        .verticalScroll(rememberScrollState())
+            ) {
+                Text(
+                    text = stringResource(R.string.global_chat_settings_desc),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = systemPrompt,
+                    onValueChange = { systemPrompt = it },
+                    label = { Text(stringResource(R.string.chat_settings_label_sys_prompt)) },
+                    keyboardOptions =
+                        KeyboardOptions.Default.copy(
+                            capitalization = KeyboardCapitalization.Sentences
+                        ),
+                    maxLines = 5,
+                    trailingIcon = {
+                        Row {
+                            IconButton(onClick = { showSystemPromptsDialog = true }) {
+                                Icon(
+                                    FeatherIcons.Search,
+                                    contentDescription = "Choose System Prompt"
+                                )
+                            }
+                            IconButton(onClick = { showAddSystemPromptDialog = true }) {
+                                Icon(FeatherIcons.Plus, contentDescription = "Add System Prompt")
+                            }
+                        }
+                    },
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    stringResource(R.string.chat_settings_label_minp),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    stringResource(R.string.chat_settings_desc_minp),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Slider(
+                    value = minP,
+                    onValueChange = { minP = it },
+                    valueRange = 0.0f..1.0f,
+                    steps = 100,
+                )
+                Text(text = "%.2f".format(minP), style = MaterialTheme.typography.labelSmall)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    stringResource(R.string.chat_settings_label_temp),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    stringResource(R.string.chat_settings_desc_temp),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Slider(
+                    value = temperature,
+                    onValueChange = { temperature = it },
+                    valueRange = 0.0f..5.0f,
+                    steps = 50,
+                )
+                Text(text = "%.1f".format(temperature), style = MaterialTheme.typography.labelSmall)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    stringResource(R.string.chat_settings_label_ctx_size),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    stringResource(R.string.chat_settings_desc_ctx_length),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = contextSize.toString(),
+                    onValueChange = {
+                        contextSize =
+                            if (it.isNotEmpty()) {
+                                it.toIntOrNull() ?: 0
+                            } else {
+                                0
+                            }
+                    },
+                    isError = contextSize == 0,
+                    label = {
+                        if (contextSize == 0) {
+                            Text(stringResource(R.string.chat_settings_err_min_ctx_size))
+                        } else {
+                            Text(stringResource(R.string.chat_settings_title_num_tokens))
+                        }
+                    },
+                    keyboardOptions =
+                        KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            capitalization = KeyboardCapitalization.Sentences,
+                        ),
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(text = "Number of Threads", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(R.string.chat_settings_desc_n_threads),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Slider(
+                    value = nThreads.toFloat(),
+                    onValueChange = { nThreads = it.toInt() },
+                    valueRange = 0.0f..(totalThreads).toFloat(),
+                    steps = totalThreads,
+                )
+                Text(text = "$nThreads", style = MaterialTheme.typography.labelSmall)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Checkbox(checked = useMmap, onCheckedChange = { useMmap = it })
+                    Column {
+                        Text(text = "Use mmap", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text =
+                                "Disable memory mapping (mmap) for potentially fewer pageouts and better performance on low-memory systems, but with slower load times and a risk of preventing loading large models.",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Checkbox(checked = useMlock, onCheckedChange = { useMlock = it })
+                    Column {
+                        Text(text = "Use mlock", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text =
+                                "Keep the model loaded in RAM for faster performance, but uses more memory and may load slower.",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        if (showSystemPromptsDialog) {
+            SystemPromptsDialog(
+                systemPrompts = systemPrompts,
+                onPromptSelected = {
+                    systemPrompt = it
+                    showSystemPromptsDialog = false
+                },
+                onDeletePrompt = onDeleteSystemPrompt,
+                onDismissRequest = { showSystemPromptsDialog = false },
+            )
+        }
+
+        if (showAddSystemPromptDialog) {
+            AddSystemPromptDialog(
+                systemPrompt = systemPrompt,
+                onAddSystemPrompt = onAddSystemPrompt,
+                onDismissRequest = { showAddSystemPromptDialog = false },
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddSystemPromptDialog(
+    systemPrompt: String,
+    onAddSystemPrompt: (String, String) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    var promptName by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Save System Prompt") },
+        text = {
+            Column {
+                Text("Enter a name for this system prompt:")
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = promptName,
+                    onValueChange = { promptName = it },
+                    placeholder = { Text("Prompt Name") },
+                    singleLine = true,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (promptName.isNotBlank()) {
+                        onAddSystemPrompt(promptName, systemPrompt)
+                        onDismissRequest()
+                    }
+                }
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismissRequest) { Text("Cancel") } },
+    )
 }
 
 @Composable

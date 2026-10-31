@@ -32,6 +32,7 @@ import io.shubham0204.smollmandroid.data.AppDB
 import io.shubham0204.smollmandroid.data.Chat
 import io.shubham0204.smollmandroid.data.ChatMessage
 import io.shubham0204.smollmandroid.data.Folder
+import io.shubham0204.smollmandroid.data.GlobalChatSettings
 import io.shubham0204.smollmandroid.data.LLMModel
 import io.shubham0204.smollmandroid.data.SharedPrefStore
 import io.shubham0204.smollmandroid.data.SystemPrompt
@@ -99,6 +100,9 @@ sealed class ChatScreenUIEvent {
         data class UpdateChatSettings(val settings: EditableChatSettings, val existingChat: Chat) :
             ChatScreenUIEvent()
 
+        data class UpdateGlobalChatSettings(val settings: GlobalChatSettings) :
+            ChatScreenUIEvent()
+
         data class StartBenchmark(val onResult: (String) -> Unit) : ChatScreenUIEvent()
 
         data class StartAudioTranscription(val onLineComplete: (String) -> Unit) :
@@ -160,6 +164,7 @@ data class ChatScreenUIState(
     val messages: ImmutableList<ChatMessage> = emptyList<ChatMessage>().toImmutableList(),
     val tasks: ImmutableList<Task> = emptyList<Task>().toImmutableList(),
     val systemPrompts: ImmutableList<SystemPrompt> = emptyList<SystemPrompt>().toImmutableList(),
+    val globalChatSettings: GlobalChatSettings = GlobalChatSettings(),
     val benchmarkResult: String? = null,
     val audioTranscriptionUIState: AudioTranscriptionUIState = AudioTranscriptionUIState(),
     val showChangeFolderDialog: Boolean = false,
@@ -495,6 +500,25 @@ class ChatScreenViewModel(
                 loadModel()
             }
 
+            is ChatScreenUIEvent.ChatEvents.UpdateGlobalChatSettings -> {
+                val oldSettings = sharedPrefStore.getGlobalChatSettings()
+                sharedPrefStore.saveGlobalChatSettings(event.settings)
+                appDB.applyGlobalSettingsToChats(oldSettings, event.settings)
+                val currentChat = _uiState.value.chat
+                val updatedCurrentChat =
+                    appDB.getChat(currentChat.id).copy(llmModel = currentChat.llmModel)
+                _uiState.update {
+                    it.copy(
+                        globalChatSettings = event.settings,
+                        chat = updatedCurrentChat,
+                    )
+                }
+                if (updatedCurrentChat != currentChat) {
+                    unloadModel()
+                    loadModel()
+                }
+            }
+
             is ChatScreenUIEvent.ChatEvents.StartBenchmark -> {
                 smolLMManager.benchmark { result -> event.onResult(result) }
             }
@@ -559,6 +583,7 @@ class ChatScreenViewModel(
 
         return ChatScreenUIState(
             chat = defaultChat,
+            globalChatSettings = sharedPrefStore.getGlobalChatSettings(),
             audioTranscriptionUIState = audioTranscriptionUIState
         )
     }
