@@ -148,7 +148,7 @@ data class AudioTranscriptionUIState(
 data class ChatScreenUIState(
     val chat: Chat = Chat(),
     val isGeneratingResponse: Boolean = false,
-    val renderedPartialResponse: Spanned? = null,
+    val renderedPartialResponse: List<MessageSegment>? = null,
     val modelLoadingState: ChatScreenViewModel.ModelLoadingState =
         ChatScreenViewModel.ModelLoadingState.NOT_LOADED,
     val responseGenerationsSpeed: Float? = null,
@@ -186,11 +186,17 @@ class ChatScreenViewModel(
         FAILURE, // model loading failed
     }
 
+    private data class RenderedMessageEntry(
+        val rawText: String,
+        val spanned: Spanned,
+        val segments: List<MessageSegment>,
+    )
+
     private val _uiState = MutableStateFlow(initializeUIState())
     val uiState: StateFlow<ChatScreenUIState> = _uiState
 
-    // Cache size of 500 messages (stores Pair<rawText, renderedSpanned>)
-    private val renderedMessageCache = LruCache<Long, Pair<String, Spanned>>(500)
+    // Cache size of 500 messages (stores rawText, renderedSpanned, and renderedSegments)
+    private val renderedMessageCache = LruCache<Long, RenderedMessageEntry>(500)
 
     // Used to pre-set a value in the query text-field of the chat screen
     // It is set when a query comes from a 'share-text' intent in ChatActivity
@@ -608,18 +614,26 @@ class ChatScreenViewModel(
                                     chatMessages
                                         .map { chatMessage ->
                                             val cached = renderedMessageCache.get(chatMessage.id)
-                                            if (cached != null && cached.first == chatMessage.message) {
-                                                // Cache hit: reuse existing Spanned instance
-                                                chatMessage.renderedMessage = cached.second
+                                            if (cached != null && cached.rawText == chatMessage.message) {
+                                                // Cache hit: reuse existing Spanned and segments
+                                                chatMessage.renderedMessage = cached.spanned
+                                                chatMessage.renderedSegments = cached.segments
                                             } else {
                                                 // Cache miss or message edited: parse Markdown and update cache
                                                 val rendered =
                                                     mdRenderer.render(chatMessage.message)
+                                                val segments =
+                                                    mdRenderer.renderSegments(chatMessage.message)
                                                 renderedMessageCache.put(
                                                     chatMessage.id,
-                                                    chatMessage.message to rendered,
+                                                    RenderedMessageEntry(
+                                                        chatMessage.message,
+                                                        rendered,
+                                                        segments,
+                                                    ),
                                                 )
                                                 chatMessage.renderedMessage = rendered
+                                                chatMessage.renderedSegments = segments
                                             }
                                             chatMessage
                                         }
@@ -716,7 +730,9 @@ class ChatScreenViewModel(
                 }
             },
             onPartialResponseGenerated = { resp ->
-                _uiState.update { it.copy(renderedPartialResponse = mdRenderer.render(resp)) }
+                _uiState.update {
+                    it.copy(renderedPartialResponse = mdRenderer.renderSegments(resp))
+                }
             },
             onSuccess = { response ->
                 val updatedChat = chat.copy(contextSizeConsumed = response.contextLengthUsed)

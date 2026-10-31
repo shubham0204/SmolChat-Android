@@ -4,7 +4,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.text.Spanned
 import android.widget.Toast
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -31,6 +30,7 @@ import compose.icons.feathericons.User
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.ChatMessage
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatScreenUIEvent
+import io.shubham0204.smollmandroid.ui.screens.chat.MessageSegment
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.showCodeSnippetsListDialog
 import io.shubham0204.smollmandroid.ui.screens.chat.stripThinkingForClipboard
 import kotlinx.collections.immutable.ImmutableList
@@ -40,7 +40,7 @@ import kotlinx.collections.immutable.ImmutableList
 fun ColumnScope.MessagesList(
     messages: ImmutableList<ChatMessage>,
     isGeneratingResponse: Boolean,
-    renderedPartialResponse: Spanned?,
+    renderedPartialResponse: List<MessageSegment>?,
     chatId: Long,
     responseGenerationsSpeed: Float? = null,
     responseGenerationTimeSecs: Int? = null,
@@ -78,7 +78,7 @@ fun ColumnScope.MessagesList(
             item(key = "generating_response") {
                 if (renderedPartialResponse != null) {
                     MessageListItem(
-                        ChatMessage(renderedMessage = renderedPartialResponse),
+                        ChatMessage(renderedSegments = renderedPartialResponse),
                         responseGenerationSpeed = null,
                         responseGenerationTimeSecs = null,
                         false,

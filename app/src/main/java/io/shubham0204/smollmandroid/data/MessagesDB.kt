@@ -25,6 +25,7 @@ import androidx.room.Ignore
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import io.shubham0204.smollmandroid.ui.screens.chat.MessageSegment
 import kotlinx.coroutines.flow.Flow
 
 @Entity(tableName = "ChatMessage")
@@ -35,7 +36,9 @@ data class ChatMessage(
     var message: String = "",
     var isUserMessage: Boolean = false,
     @Ignore
-    var renderedMessage: Spanned = "".toSpanned()
+    var renderedMessage: Spanned = "".toSpanned(),
+    @Ignore
+    var renderedSegments: List<MessageSegment> = emptyList(),
 )
 
 @Dao

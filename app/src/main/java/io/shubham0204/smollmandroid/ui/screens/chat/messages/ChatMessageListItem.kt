@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.shubham0204.smollmandroid.R
 import io.shubham0204.smollmandroid.data.ChatMessage
+import io.shubham0204.smollmandroid.ui.screens.chat.MessageSegment
 import io.shubham0204.smollmandroid.ui.screens.chat.dialogs.createChatMessageOptionsDialog
 
 data class ChatMessageProperties(
@@ -191,40 +192,58 @@ private fun LazyItemScope.LLMMessageListItem(
     responseGenerationSpeed: Float?,
     responseGenerationTimeSecs: Int?
 ) {
+    val onLongClickOption = {
+        val messageProperties = buildMessageProperties(message.message)
+        createChatMessageOptionsDialog(
+            showEditOption = false,
+            onEditClick = {
+                /** Not applicable as showEditOption is set to false * */
+            },
+            onCopyClick = { onCopyClicked() },
+            onShareClick = { onShareClicked() },
+            onCodeSnippetCopyClick = {
+                onCodeSnippetCopyClicked(messageProperties.codeSnippets)
+            },
+            showCopyCodeSnippetOption = messageProperties.codeSnippets.isNotEmpty()
+        )
+    }
+    val segments =
+        message.renderedSegments.ifEmpty {
+            listOf(MessageSegment.TextSegment(message.renderedMessage))
+        }
     Row(
         modifier = modifier
             .fillMaxWidth()
     ) {
         Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            ChatMessageText(
-                // to make pointerInput work in MarkdownText use disableLinkMovementMethod
-                // https://github.com/jeziellago/compose-markdown/issues/85#issuecomment-2184040304
-                modifier =
-                    Modifier
-                        .padding(4.dp)
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(4.dp)
-                        .fillMaxSize(),
-                textColor = MaterialTheme.colorScheme.onBackground.toArgb(),
-                textSize = 16f,
-                message = message.renderedMessage,
-                onLongClick = {
-                    val messageProperties = buildMessageProperties(message.message)
-                    createChatMessageOptionsDialog(
-                        showEditOption = false,
-                        onEditClick = {
-                            /** Not applicable as showEditOption is set to false * */
-                        },
-                        onCopyClick = { onCopyClicked() },
-                        onShareClick = { onShareClicked() },
-                        onCodeSnippetCopyClick = {
-                            onCodeSnippetCopyClicked(messageProperties.codeSnippets)
-                        },
-                        showCopyCodeSnippetOption = messageProperties.codeSnippets.isNotEmpty()
-                    )
-                },
-            )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            segments.forEach { segment ->
+                when (segment) {
+                    is MessageSegment.TextSegment -> {
+                        ChatMessageText(
+                            // to make pointerInput work in MarkdownText use disableLinkMovementMethod
+                            // https://github.com/jeziellago/compose-markdown/issues/85#issuecomment-2184040304
+                            modifier =
+                                Modifier
+                                    .padding(4.dp)
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .padding(4.dp)
+                                    .fillMaxSize(),
+                            textColor = MaterialTheme.colorScheme.onBackground.toArgb(),
+                            textSize = 16f,
+                            message = segment.spanned,
+                            onLongClick = onLongClickOption,
+                        )
+                    }
+
+                    is MessageSegment.CodeSegment -> {
+                        CodeBlockMessageText(
+                            segment = segment,
+                            onLongClick = onLongClickOption,
+                        )
+                    }
+                }
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 responseGenerationSpeed?.let {
                     Spacer(modifier = Modifier.width(6.dp))
