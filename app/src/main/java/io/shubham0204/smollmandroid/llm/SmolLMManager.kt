@@ -254,6 +254,14 @@ class SmolLMManager(private val appDB: AppDB) {
         }
     }
 
+    fun setEnableThinking(enabled: Boolean) {
+        stateLock.withLock {
+            if (isInstanceLoaded.get()) {
+                instance.setEnableThinking(enabled)
+            }
+        }
+    }
+
     private fun Job?.safeCancelJobIfActive() {
         this?.cancel()
     }

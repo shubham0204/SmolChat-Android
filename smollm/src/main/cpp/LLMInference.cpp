@@ -1,4 +1,5 @@
 #include "LLMInference.h"
+#include "reasoning-budget.h"
 #include <android/log.h>
 #include <cstring>
 #include <iomanip>
@@ -9,8 +10,31 @@
 #define LOGe(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
 void
+LLMInference::_rebuildSampler(llama_sampler* reasoningBudgetSampler) {
+    if (_sampler) {
+        llama_sampler_free(_sampler);
+    }
+    llama_sampler_chain_params sampler_params = llama_sampler_chain_default_params();
+    sampler_params.no_perf                    = true; // disable performance metrics
+    _sampler                                  = llama_sampler_chain_init(sampler_params);
+    if (reasoningBudgetSampler) {
+        llama_sampler_chain_add(_sampler, reasoningBudgetSampler);
+    }
+    if (_minP >= 0.01f) {
+        llama_sampler_chain_add(_sampler, llama_sampler_init_min_p(_minP, 1));
+    }
+    llama_sampler_chain_add(_sampler, llama_sampler_init_temp(_temperature));
+    llama_sampler_chain_add(_sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
+}
+
+void
+LLMInference::setReasoningBudget(int reasoningBudget) {
+    _reasoningBudget = reasoningBudget;
+}
+
+void
 LLMInference::loadModel(const char *model_path, float minP, float temperature, bool storeChats, long contextSize,
-                        const char *chatTemplate, int nThreads, bool useMmap, bool useMlock) {
+                        const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int reasoningBudget) {
     LOGi("loading model with"
          "\n\tmodel_path = %s"
          "\n\tminP = %f"
@@ -20,8 +44,10 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
          "\n\tchatTemplate = %s"
          "\n\tnThreads = %d"
          "\n\tuseMmap = %d"
-         "\n\tuseMlock = %d",
-         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap, useMlock);
+         "\n\tuseMlock = %d"
+         "\n\treasoningBudget = %d",
+         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap, useMlock,
+         reasoningBudget);
 
     // load dynamic backends
     ggml_backend_load_all();
@@ -48,15 +74,10 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
         throw std::runtime_error("llama_new_context_with_model() returned null");
     }
 
-    // create an instance of llama_sampler
-    llama_sampler_chain_params sampler_params = llama_sampler_chain_default_params();
-    sampler_params.no_perf = true; // disable performance metrics
-    _sampler = llama_sampler_chain_init(sampler_params);
-    if (minP >= 0.01f) {
-        llama_sampler_chain_add(_sampler, llama_sampler_init_min_p(minP, 1));
-    }
-    llama_sampler_chain_add(_sampler, llama_sampler_init_temp(temperature));
-    llama_sampler_chain_add(_sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
+    _minP            = minP;
+    _temperature     = temperature;
+    _reasoningBudget = reasoningBudget;
+    _rebuildSampler(nullptr);
 
     _formattedMessages = std::vector<char>(llama_n_ctx(_ctx));
     _messages.clear();
@@ -101,7 +122,6 @@ LLMInference::getContextSizeUsed() const {
 bool
 LLMInference::startCompletion(const char *query) {
     llama_memory_clear(llama_get_memory(_ctx), false);
-    llama_sampler_reset(_sampler);
     _cacheResponseTokens.clear();
 
     if (!_storeChats) {
@@ -127,20 +147,60 @@ LLMInference::startCompletion(const char *query) {
     // Try Jinja rendering first with tools defined to prevent "tojson on Undefined" errors.
     // If Jinja fails (e.g. unsupported filters like lstrip), fall back to legacy rendering.
     inputs.use_jinja = true;
+    inputs.enable_thinking               = (_reasoningBudget != 0);
     inputs.chat_template_kwargs["tools"] = "[]";
 
-    std::string prompt;
+    common_chat_params chatParams;
     bool usedJinja = true;
     try {
-        prompt = common_chat_templates_apply(templates.get(), inputs).prompt;
+        chatParams = common_chat_templates_apply(templates.get(), inputs);
     } catch (const std::exception &e) {
         LOGe("Jinja template failed: %s — retrying with legacy renderer", e.what());
         inputs.use_jinja = false;
         inputs.chat_template_kwargs.clear();
-        prompt = common_chat_templates_apply(templates.get(), inputs).prompt;
+        chatParams = common_chat_templates_apply(templates.get(), inputs);
         usedJinja = false;
     }
-    _promptTokens = common_tokenize(llama_model_get_vocab(_model), prompt, true, true);
+
+    std::string        prompt = chatParams.prompt;
+    const llama_vocab* vocab  = llama_model_get_vocab(_model);
+
+    llama_sampler* rbudgetSampler = nullptr;
+    if (_reasoningBudget >= 0) {
+        std::string startTag = chatParams.thinking_start_tag.empty() ? "<think>" : chatParams.thinking_start_tag;
+        std::string endTag   = chatParams.thinking_end_tag.empty() ? "</think>" : chatParams.thinking_end_tag;
+
+        // Check if the generation prompt (or prompt tail) already opened a thinking block without closing it
+        const std::string& checkRegion = !chatParams.generation_prompt.empty() ? chatParams.generation_prompt : prompt;
+        size_t             lastStart   = checkRegion.rfind(startTag);
+        size_t             lastEnd     = checkRegion.rfind(endTag);
+        bool               unclosedThinkingInPrompt
+            = (lastStart != std::string::npos) && (lastEnd == std::string::npos || lastEnd < lastStart);
+
+        if (_reasoningBudget == 0 && unclosedThinkingInPrompt) {
+            // Template hardcoded an unclosed thinking start tag (e.g., DeepSeek-R1-Distill).
+            // Immediately close the thinking block in the prompt so 0 thinking tokens are generated.
+            prompt += "\n" + endTag + "\n\n";
+            unclosedThinkingInPrompt = false;
+        }
+
+        std::vector<llama_token> startTokens  = common_tokenize(vocab, startTag, false, true);
+        std::vector<llama_token> endTokens    = common_tokenize(vocab, endTag, false, true);
+        std::vector<llama_token> forcedTokens = common_tokenize(vocab, "\n" + endTag + "\n\n", false, true);
+        if (forcedTokens.empty()) {
+            forcedTokens = endTokens;
+        }
+        common_reasoning_budget_state initialState
+            = unclosedThinkingInPrompt ? REASONING_BUDGET_COUNTING : REASONING_BUDGET_IDLE;
+
+        if (!startTokens.empty() && !endTokens.empty()) {
+            rbudgetSampler = common_reasoning_budget_init(vocab, startTokens, endTokens, forcedTokens, _reasoningBudget,
+                                                          initialState);
+        }
+    }
+    _rebuildSampler(rbudgetSampler);
+
+    _promptTokens = common_tokenize(vocab, prompt, true, true);
 
     // create a llama_batch containing a single sequence
     // see llama_batch_init for more details

@@ -16,6 +16,7 @@ const val KEY_GLOBAL_CONTEXT_SIZE = "global_chat_context_size"
 const val KEY_GLOBAL_N_THREADS = "global_chat_n_threads"
 const val KEY_GLOBAL_USE_MMAP = "global_chat_use_mmap"
 const val KEY_GLOBAL_USE_MLOCK = "global_chat_use_mlock"
+const val KEY_GLOBAL_ENABLE_THINKING = "global_chat_enable_thinking"
 
 const val DEFAULT_GLOBAL_SYSTEM_PROMPT = "You are a helpful assistant."
 const val DEFAULT_GLOBAL_MIN_P = 0.1f
@@ -24,6 +25,7 @@ const val DEFAULT_GLOBAL_CONTEXT_SIZE = 2048
 const val DEFAULT_GLOBAL_N_THREADS = 4
 const val DEFAULT_GLOBAL_USE_MMAP = true
 const val DEFAULT_GLOBAL_USE_MLOCK = false
+const val DEFAULT_GLOBAL_ENABLE_THINKING = true
 
 @Serializable
 data class GlobalChatSettings(
@@ -34,6 +36,7 @@ data class GlobalChatSettings(
     val nThreads: Int = DEFAULT_GLOBAL_N_THREADS,
     val useMmap: Boolean = DEFAULT_GLOBAL_USE_MMAP,
     val useMlock: Boolean = DEFAULT_GLOBAL_USE_MLOCK,
+    val enableThinking: Boolean = DEFAULT_GLOBAL_ENABLE_THINKING,
 )
 
 @Single
@@ -83,6 +86,7 @@ class SharedPrefStore(context: Context) {
             nThreads = get(KEY_GLOBAL_N_THREADS, DEFAULT_GLOBAL_N_THREADS),
             useMmap = get(KEY_GLOBAL_USE_MMAP, DEFAULT_GLOBAL_USE_MMAP),
             useMlock = get(KEY_GLOBAL_USE_MLOCK, DEFAULT_GLOBAL_USE_MLOCK),
+            enableThinking = get(KEY_GLOBAL_ENABLE_THINKING, DEFAULT_GLOBAL_ENABLE_THINKING),
         )
 
     fun saveGlobalChatSettings(settings: GlobalChatSettings) {
@@ -93,6 +97,7 @@ class SharedPrefStore(context: Context) {
         put(KEY_GLOBAL_N_THREADS, settings.nThreads)
         put(KEY_GLOBAL_USE_MMAP, settings.useMmap)
         put(KEY_GLOBAL_USE_MLOCK, settings.useMlock)
+        put(KEY_GLOBAL_ENABLE_THINKING, settings.enableThinking)
     }
 
     fun setupChangeListener(key: String, onChange: (String, String) -> Unit) {

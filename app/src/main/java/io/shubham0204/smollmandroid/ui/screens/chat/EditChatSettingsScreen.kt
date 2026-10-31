@@ -88,6 +88,7 @@ data class EditableChatSettings(
     val useMmap: Boolean,
     val useMlock: Boolean,
     val isTask: Boolean,
+    val enableThinking: Boolean = true,
 ) {
     companion object {
         fun fromChat(chat: Chat): EditableChatSettings {
@@ -102,6 +103,7 @@ data class EditableChatSettings(
                 useMmap = chat.useMmap,
                 useMlock = chat.useMlock,
                 isTask = chat.isTask,
+                enableThinking = chat.enableThinking,
             )
         }
     }
@@ -116,6 +118,7 @@ data class EditableChatSettings(
         existingChat.chatTemplate = chatTemplate
         existingChat.useMmap = useMmap
         existingChat.useMlock = useMlock
+        existingChat.enableThinking = enableThinking
         return existingChat
     }
 }
@@ -156,6 +159,7 @@ fun EditChatSettingsScreen(
     var chatTemplate by remember { mutableStateOf(settings.chatTemplate) }
     var useMmap by remember { mutableStateOf(settings.useMmap) }
     var useMlock by remember { mutableStateOf(settings.useMlock) }
+    var enableThinking by remember { mutableStateOf(settings.enableThinking) }
 
     var showSystemPromptsDialog by remember { mutableStateOf(false) }
     var showAddSystemPromptDialog by remember { mutableStateOf(false) }
@@ -187,6 +191,7 @@ fun EditChatSettingsScreen(
                                         nThreads = nThreads,
                                         useMmap = useMmap,
                                         useMlock = useMlock,
+                                        enableThinking = enableThinking,
                                     )
                                 if (settings != updatedChat) {
                                     onUpdateChat(updatedChat)
@@ -412,6 +417,19 @@ fun EditChatSettingsScreen(
                 }
                 Spacer(modifier = Modifier.height(24.dp))
 
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Checkbox(checked = enableThinking, onCheckedChange = { enableThinking = it })
+                    Column {
+                        Text(text = "Enable thinking", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text =
+                                "Allow reasoning models (e.g. Qwen3, SmolLM3, DeepSeek-R1) to generate intermediate thinking steps before answering.",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+
                 OutlinedButton(
                     onClick = {
                         systemPrompt = globalSettings.systemPrompt
@@ -421,6 +439,7 @@ fun EditChatSettingsScreen(
                         nThreads = globalSettings.nThreads
                         useMmap = globalSettings.useMmap
                         useMlock = globalSettings.useMlock
+                        enableThinking = globalSettings.enableThinking
                         takeContextSizeFromModel = false
                         Toast.makeText(
                             context,
@@ -476,6 +495,7 @@ fun GlobalChatSettingsScreen(
     var nThreads by remember { mutableIntStateOf(settings.nThreads) }
     var useMmap by remember { mutableStateOf(settings.useMmap) }
     var useMlock by remember { mutableStateOf(settings.useMlock) }
+    var enableThinking by remember { mutableStateOf(settings.enableThinking) }
 
     var showSystemPromptsDialog by remember { mutableStateOf(false) }
     var showAddSystemPromptDialog by remember { mutableStateOf(false) }
@@ -507,6 +527,7 @@ fun GlobalChatSettingsScreen(
                                         nThreads = nThreads,
                                         useMmap = useMmap,
                                         useMlock = useMlock,
+                                        enableThinking = enableThinking,
                                     )
                                 if (settings != updatedSettings) {
                                     onUpdateGlobalSettings(updatedSettings)
@@ -676,6 +697,19 @@ fun GlobalChatSettingsScreen(
                         Text(
                             text =
                                 "Keep the model loaded in RAM for faster performance, but uses more memory and may load slower.",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Checkbox(checked = enableThinking, onCheckedChange = { enableThinking = it })
+                    Column {
+                        Text(text = "Enable thinking", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text =
+                                "Allow reasoning models (e.g. Qwen3, SmolLM3, DeepSeek-R1) to generate intermediate thinking steps before answering.",
                             style = MaterialTheme.typography.labelSmall,
                         )
                     }
