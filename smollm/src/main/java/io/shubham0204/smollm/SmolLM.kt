@@ -143,6 +143,11 @@ class SmolLM {
      *   improve loading times and reduce memory usage. (Default: true)
      * @property useMlock Whether to lock the model in memory. This can prevent the model from being
      *   swapped out to disk, potentially improving performance. (Default: false)
+     * @property enableThinking Whether thinking/reasoning mode is enabled for models that support it.
+     *   When false, thinking is disabled via the chat template (`enable_thinking = false`) and a
+     *   0-token reasoning budget sampler (`reasoningBudget = 0`). (Default: true)
+     * @property reasoningBudget Maximum number of thinking tokens allowed (-1 for unrestricted when
+     *   [enableThinking] is true, 0 to disable thinking immediately, or > 0 for a custom token budget).
      */
     data class InferenceParams(
         val minP: Float = 0.1f,
@@ -153,6 +158,8 @@ class SmolLM {
         val numThreads: Int = 4,
         val useMmap: Boolean = true,
         val useMlock: Boolean = false,
+        val enableThinking: Boolean = true,
+        val reasoningBudget: Int = if (enableThinking) -1 else 0,
     )
 
     /**
@@ -175,6 +182,8 @@ class SmolLM {
             val modelContextSize = ggufReader.getContextSize() ?: DefaultInferenceParams.contextSize
             val modelChatTemplate =
                 ggufReader.getChatTemplate() ?: DefaultInferenceParams.chatTemplate
+            val effectiveReasoningBudget =
+                if (!params.enableThinking && params.reasoningBudget < 0) 0 else params.reasoningBudget
             nativePtr =
                 loadModel(
                     modelPath,
@@ -186,8 +195,26 @@ class SmolLM {
                     params.numThreads,
                     params.useMmap,
                     params.useMlock,
+                    effectiveReasoningBudget,
                 )
         }
+
+    /**
+     * Updates the reasoning/thinking token budget at runtime without reloading the model.
+     *
+     * @param reasoningBudget -1 for unrestricted thinking, 0 to disable thinking, > 0 for token limit.
+     */
+    fun setReasoningBudget(reasoningBudget: Int) {
+        verifyHandle()
+        setReasoningBudget(nativePtr, reasoningBudget)
+    }
+
+    /**
+     * Enables or disables thinking/reasoning mode at runtime without reloading the model.
+     */
+    fun setEnableThinking(enabled: Boolean) {
+        setReasoningBudget(if (enabled) -1 else 0)
+    }
 
     /**
      * Adds a user message to the chat history. This message will be considered as part of the
@@ -332,7 +359,10 @@ class SmolLM {
         nThreads: Int,
         useMmap: Boolean,
         useMlock: Boolean,
+        reasoningBudget: Int,
     ): Long
+
+    private external fun setReasoningBudget(modelPtr: Long, reasoningBudget: Int)
 
     private external fun addChatMessage(modelPtr: Long, message: String, role: String)
 

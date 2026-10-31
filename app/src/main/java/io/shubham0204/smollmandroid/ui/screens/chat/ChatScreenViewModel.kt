@@ -242,6 +242,7 @@ class ChatScreenViewModel(
                     chat.nThreads,
                     chat.useMmap,
                     chat.useMlock,
+                    chat.enableThinking,
                 ),
                 onError = { e ->
                     _uiState.update { it.copy(modelLoadingState = ModelLoadingState.FAILURE) }
@@ -749,10 +750,15 @@ class ChatScreenViewModel(
             query,
             responseTransform = {
                 // Replace <think> tags with <blockquote> tags
-                // to get a neat Markdown rendering
+                // to get a neat Markdown rendering, or strip if empty (e.g. when thinking is disabled)
                 findThinkTagRegex.replace(it) { matchResult ->
-                    "<blockquote><i><h6>${matchResult.groupValues[1].trim()}</i></h6></blockquote>"
-                }
+                    val thinkingContent = matchResult.groupValues[1].trim()
+                    if (thinkingContent.isEmpty()) {
+                        ""
+                    } else {
+                        "<blockquote><i><h6>$thinkingContent</i></h6></blockquote>"
+                    }
+                }.trim()
             },
             onPartialResponseGenerated = { resp ->
                 _uiState.update {

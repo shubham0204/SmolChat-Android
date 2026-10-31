@@ -29,7 +29,12 @@ class LLMInference {
     std::string _response;
     std::string _cacheResponseTokens;
     // whether to cache previous messages in `_messages`
-    bool _storeChats;
+    bool _storeChats = true;
+
+    // sampling & reasoning parameters
+    float _minP            = 0.1f;
+    float _temperature     = 0.8f;
+    int   _reasoningBudget = -1; // -1 = unrestricted, 0 = thinking disabled, >0 = token budget
 
     // response generation metrics
     int64_t _responseGenerationTime = 0;
@@ -39,10 +44,13 @@ class LLMInference {
     int _nCtxUsed = 0;
 
     bool _isValidUtf8(const char* response);
+    void _rebuildSampler(llama_sampler* reasoningBudgetSampler = nullptr);
 
   public:
     void loadModel(const char* modelPath, float minP, float temperature, bool storeChats, long contextSize,
-                   const char* chatTemplate, int nThreads, bool useMmap, bool useMlock);
+                   const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int reasoningBudget = -1);
+
+    void setReasoningBudget(int reasoningBudget);
 
     std::string benchModel(int pp, int tg, int pl, int nr);
 
