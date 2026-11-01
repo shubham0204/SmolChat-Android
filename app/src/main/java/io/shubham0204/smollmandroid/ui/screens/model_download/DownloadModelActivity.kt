@@ -105,7 +105,10 @@ class DownloadModelActivity : ComponentActivity() {
                             route.modelInfo,
                             route.modelFiles,
                             onDownloadModel = { modelUrl ->
-                                viewModel.downloadModelFromUrl(modelUrl)
+                                viewModel.downloadModelFromUrl(
+                                    modelUrl,
+                                    onComplete = { openChatActivity() },
+                                )
                             },
                             onBackClicked = { navController.navigateUp() },
                         )
@@ -141,6 +144,8 @@ class DownloadModelActivity : ComponentActivity() {
     }
 
     private fun openChatActivity() {
+        // the download/copy callbacks may complete after this activity has been destroyed
+        if (isFinishing || isDestroyed) return
         if (openChatScreen) {
             Intent(this, ChatActivity::class.java).apply {
                 startActivity(this)
@@ -200,7 +205,10 @@ class DownloadModelActivity : ComponentActivity() {
                                     addNewModelStep = AddNewModelStep.ImportModel
                                 },
                                 onDownloadModelClick = { selectedPopularModelIndex ->
-                                    viewModel.downloadModelFromIndex(selectedPopularModelIndex)
+                                    viewModel.downloadModelFromIndex(
+                                        selectedPopularModelIndex,
+                                        onComplete = { openChatActivity() },
+                                    )
                                 },
                                 modifier = Modifier
                                     .fillMaxSize()
