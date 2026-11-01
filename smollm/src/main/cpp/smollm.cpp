@@ -47,7 +47,7 @@ Java_io_shubham0204_smollm_SmolLM_clearMessages(JNIEnv* env, jobject thiz, jlong
 extern "C" JNIEXPORT jfloat JNICALL
 Java_io_shubham0204_smollm_SmolLM_getResponseGenerationSpeed(JNIEnv* env, jobject thiz, jlong modelPtr) {
     auto* llmInference = reinterpret_cast<LLMInference*>(modelPtr);
-    return llmInference->getResponseGenerationTime();
+    return llmInference->getResponseGenerationSpeed();
 }
 
 extern "C" JNIEXPORT jint JNICALL

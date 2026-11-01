@@ -96,8 +96,11 @@ LLMInference::clearMessages() {
 }
 
 float
-LLMInference::getResponseGenerationTime() const {
-    return (float) _responseNumTokens / (_responseGenerationTime / 1e6);
+LLMInference::getResponseGenerationSpeed() const {
+    if (_responseNumTokens == 0 || _responseGenerationTime <= 0) {
+        return 0.0f;
+    }
+    return (float)_responseNumTokens / ((float)_responseGenerationTime / 1e6f);
 }
 
 int
@@ -117,6 +120,7 @@ LLMInference::startCompletion(const char *query) {
     }
     _responseGenerationTime = 0;
     _responseNumTokens = 0;
+    _isPrefill              = true;
     addChatMessage(query, "user");
     // apply the chat-template
     std::vector<common_chat_msg> messages;
@@ -212,18 +216,28 @@ LLMInference::completionLoop() {
         throw std::runtime_error("llama_decode() failed");
     }
 
-    // sample a token and check if it is an EOG (end of generation token)
-    // convert the integer token to its corresponding word-piece
+    // sample a token
     _currToken = llama_sampler_sample(_sampler, _ctx, -1);
+    auto end   = ggml_time_us();
+
+    // the first decode processes the entire prompt (prefill), so its time is
+    // excluded from the generation speed metric; only subsequent single-token
+    // decode steps are counted towards tokens/sec
+    if (_isPrefill) {
+        _isPrefill = false;
+    } else {
+        _responseGenerationTime += (end - start);
+        _responseNumTokens += 1;
+    }
+
+    // check if the sampled token is an EOG (end of generation token)
     if (llama_vocab_is_eog(llama_model_get_vocab(_model), _currToken)) {
         addChatMessage(strdup(_response.data()), "assistant");
         _response.clear();
         return "[EOG]";
     }
+    // convert the integer token to its corresponding word-piece
     std::string piece = common_token_to_piece(_ctx, _currToken, true);
-    auto end = ggml_time_us();
-    _responseGenerationTime += (end - start);
-    _responseNumTokens += 1;
     _cacheResponseTokens += piece;
 
     // re-init the batch with the newly predicted token

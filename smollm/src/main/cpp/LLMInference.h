@@ -34,6 +34,9 @@ class LLMInference {
     // response generation metrics
     int64_t _responseGenerationTime = 0;
     long    _responseNumTokens      = 0;
+    // true until the prompt tokens have been decoded (prefill step),
+    // used to exclude prompt-processing time from the tokens/sec metric
+    bool _isPrefill = false;
 
     // length of context window consumed during the conversation
     int _nCtxUsed = 0;
@@ -50,7 +53,8 @@ class LLMInference {
 
     void clearMessages();
 
-    float getResponseGenerationTime() const;
+    // returns the response generation speed in tokens/sec (excludes prompt processing)
+    float getResponseGenerationSpeed() const;
 
     int getContextSizeUsed() const;
 
