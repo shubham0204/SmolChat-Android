@@ -28,8 +28,15 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
 
     // create an instance of llama_model
     llama_model_params model_params = llama_model_default_params();
-    model_params.use_mmap = useMmap;
-    model_params.use_mlock = useMlock;
+    if (useMmap && useMlock) {
+        model_params.load_mode = LLAMA_LOAD_MODE_MMAP_MLOCK;
+    } else if (useMmap) {
+        model_params.load_mode = LLAMA_LOAD_MODE_MMAP;
+    } else if (useMlock) {
+        model_params.load_mode = LLAMA_LOAD_MODE_MLOCK;
+    } else {
+        model_params.load_mode = LLAMA_LOAD_MODE_NONE;
+    }
     _model = llama_model_load_from_file(model_path, model_params);
     if (!_model) {
         LOGe("failed to load model from %s", model_path);
@@ -132,12 +139,12 @@ LLMInference::startCompletion(const char *query) {
     std::string prompt;
     bool usedJinja = true;
     try {
-        prompt = common_chat_templates_apply(templates.get(), inputs).prompt;
+        prompt = common_chat_templates_apply(templates.get(), inputs).prompt.str();
     } catch (const std::exception &e) {
         LOGe("Jinja template failed: %s — retrying with legacy renderer", e.what());
         inputs.use_jinja = false;
         inputs.chat_template_kwargs.clear();
-        prompt = common_chat_templates_apply(templates.get(), inputs).prompt;
+        prompt    = common_chat_templates_apply(templates.get(), inputs).prompt.str();
         usedJinja = false;
     }
     _promptTokens = common_tokenize(llama_model_get_vocab(_model), prompt, true, true);
@@ -258,7 +265,7 @@ LLMInference::~LLMInference() {
 
 std::string
 LLMInference::benchModel(int pp, int tg, int pl, int nr) {
-    g_batch     = llama_batch_init(pp, 0, pl);
+    llama_batch_ext* batch  = llama_batch_ext_init(this->_ctx);
     auto pp_avg = 0.0;
     auto tg_avg = 0.0;
     auto pp_std = 0.0;
@@ -272,18 +279,20 @@ LLMInference::benchModel(int pp, int tg, int pl, int nr) {
     for (nri = 0; nri < nr; nri++) {
         LOGi("Benchmark prompt processing (pp = %d)", pp);
 
-        common_batch_clear(g_batch);
+        llama_batch_ext_clear(batch);
 
         const int n_tokens = pp;
         for (i = 0; i < n_tokens; i++) {
-            common_batch_add(g_batch, 1, i, { 0 }, false);
+            const int32_t   idx = llama_batch_ext_add_token(batch, 0, 1);
+            const llama_pos pos = i;
+            llama_batch_ext_set_pos(batch, idx, &pos);
         }
 
-        g_batch.logits[g_batch.n_tokens - 1] = true;
+        llama_batch_ext_set_output_logits(batch, n_tokens - 1, true);
         llama_memory_clear(llama_get_memory(this->_ctx), false);
 
         const auto t_pp_start = ggml_time_us();
-        if (llama_decode(this->_ctx, g_batch) != 0) {
+        if (llama_process(this->_ctx, LLAMA_PROCESS_TYPE_DECODE, batch) != 0) {
             LOGe("llama_decode() failed during prompt processing");
         }
         const auto t_pp_end = ggml_time_us();
@@ -295,12 +304,15 @@ LLMInference::benchModel(int pp, int tg, int pl, int nr) {
         llama_memory_clear(llama_get_memory(this->_ctx), false);
         const auto t_tg_start = ggml_time_us();
         for (i = 0; i < tg; i++) {
-            common_batch_clear(g_batch);
+            llama_batch_ext_clear(batch);
             for (j = 0; j < pl; j++) {
-                common_batch_add(g_batch, 0, i, { j }, true);
+                const int32_t   idx = llama_batch_ext_add_token(batch, j, 0);
+                const llama_pos pos = i;
+                llama_batch_ext_set_pos(batch, idx, &pos);
+                llama_batch_ext_set_output_logits(batch, idx, true);
             }
 
-            if (llama_decode(this->_ctx, g_batch) != 0) {
+            if (llama_process(this->_ctx, LLAMA_PROCESS_TYPE_DECODE, batch) != 0) {
                 LOGe("llama_decode() failed during text generation");
             }
         }
@@ -323,7 +335,7 @@ LLMInference::benchModel(int pp, int tg, int pl, int nr) {
         LOGi("pp %f t/s, tg %f t/s", speed_pp, speed_tg);
     }
 
-    llama_batch_free(g_batch);
+    llama_batch_ext_free(batch);
 
     pp_avg /= double(nr);
     tg_avg /= double(nr);

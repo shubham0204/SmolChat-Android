@@ -39,6 +39,12 @@ android {
                 arguments += "-DCMAKE_VERBOSE_MAKEFILE=ON"
 
                 arguments += "-DBUILD_SHARED_LIBS=ON"
+                // libllama.so and libllama-common.so are separate shared libraries that both
+                // use the C++ STL, so they must share a single libc++ runtime. With the default
+                // c++_static, each .so gets its own copy of libc++ globals (e.g. std::locale),
+                // and objects created in one library but destroyed in the other crash.
+                // https://developer.android.com/ndk/guides/cpp-support#one_stl_per_app
+                arguments += "-DANDROID_STL=c++_shared"
                 arguments += "-DLLAMA_BUILD_COMMON=ON"
                 arguments += "-DLLAMA_CURL=OFF"
                 arguments += "-DGGML_LLAMAFILE=OFF"
