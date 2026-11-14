@@ -416,11 +416,15 @@ class OpenAIServerManager(private val appDB: AppDB) {
                             flush()
 
                             val speed = smolLM.getResponseGenerationSpeed()
+                            val ttft = smolLM.getTimeToFirstToken()
                             appendLog(
                                 "POST",
                                 "/v1/chat/completions",
                                 200,
-                                "stream=true, tokens=$generatedTokens, %.1f tok/s".format(speed),
+                                "stream=true, tokens=$generatedTokens, %.1f tok/s, ttft=%.2fs".format(
+                                    speed,
+                                    ttft
+                                ),
                             )
                         } catch (e: Exception) {
                             Log.e(LOGTAG, "Streaming error", e)
@@ -453,6 +457,7 @@ class OpenAIServerManager(private val appDB: AppDB) {
                         val totalTokens = smolLM.getContextLengthUsed()
                         val promptTokens = (totalTokens - generatedTokens).coerceAtLeast(0)
                         val speed = smolLM.getResponseGenerationSpeed()
+                        val ttft = smolLM.getTimeToFirstToken()
 
                         val completionResponse =
                             ChatCompletionResponse(
@@ -482,7 +487,7 @@ class OpenAIServerManager(private val appDB: AppDB) {
                             "POST",
                             "/v1/chat/completions",
                             200,
-                            "tokens=$generatedTokens, %.1f tok/s".format(speed),
+                            "tokens=$generatedTokens, %.1f tok/s, ttft=%.2fs".format(speed, ttft),
                         )
                         call.respond(HttpStatusCode.OK, completionResponse)
                     } catch (e: Exception) {

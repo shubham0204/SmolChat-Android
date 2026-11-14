@@ -55,6 +55,7 @@ fun LazyItemScope.MessageListItem(
     message: ChatMessage,
     responseGenerationSpeed: Float?,
     responseGenerationTimeSecs: Int?,
+    timeToFirstTokenSecs: Float? = null,
     isUserMessage: Boolean,
     onCopyClicked: () -> Unit,
     onShareClicked: () -> Unit,
@@ -81,7 +82,8 @@ fun LazyItemScope.MessageListItem(
             onShareClicked,
             onCodeSnippetCopyClicked,
             responseGenerationSpeed,
-            responseGenerationTimeSecs
+            responseGenerationTimeSecs,
+            timeToFirstTokenSecs
         )
     }
 }
@@ -190,7 +192,8 @@ private fun LazyItemScope.LLMMessageListItem(
     onShareClicked: () -> Unit,
     onCodeSnippetCopyClicked: (List<String>) -> Unit,
     responseGenerationSpeed: Float?,
-    responseGenerationTimeSecs: Int?
+    responseGenerationTimeSecs: Int?,
+    timeToFirstTokenSecs: Float? = null
 ) {
     val onLongClickOption = {
         val messageProperties = buildMessageProperties(message.message)
@@ -248,16 +251,32 @@ private fun LazyItemScope.LLMMessageListItem(
                 responseGenerationSpeed?.let {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(text = "%.2f tokens/s".format(it), fontSize = 8.sp)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Box(
-                        modifier =
-                            Modifier
-                                .size(2.dp)
-                                .clip(CircleShape)
-                                .background(Color.DarkGray)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "$responseGenerationTimeSecs s", fontSize = 8.sp)
+                    timeToFirstTokenSecs?.let { ttft ->
+                        if (ttft > 0) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .size(2.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.DarkGray)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(text = "TTFT: %.2f s".format(ttft), fontSize = 8.sp)
+                        }
+                    }
+                    responseGenerationTimeSecs?.let { timeSecs ->
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size(2.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.DarkGray)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(text = "$timeSecs s", fontSize = 8.sp)
+                    }
                 }
             }
         }

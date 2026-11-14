@@ -44,6 +44,7 @@ fun ColumnScope.MessagesList(
     chatId: Long,
     responseGenerationsSpeed: Float? = null,
     responseGenerationTimeSecs: Int? = null,
+    timeToFirstTokenSecs: Float? = null,
     onEvent: (ChatScreenUIEvent) -> Unit,
 ) {
     val context = LocalContext.current
@@ -81,6 +82,7 @@ fun ColumnScope.MessagesList(
                         ChatMessage(renderedSegments = renderedPartialResponse),
                         responseGenerationSpeed = null,
                         responseGenerationTimeSecs = null,
+                        timeToFirstTokenSecs = null,
                         false,
                         {},
                         {},
@@ -125,6 +127,8 @@ fun ColumnScope.MessagesList(
                     if (originalIndex == messages.size - 1) responseGenerationsSpeed else null,
                 responseGenerationTimeSecs =
                     if (originalIndex == messages.size - 1) responseGenerationTimeSecs else null,
+                timeToFirstTokenSecs =
+                    if (originalIndex == messages.size - 1) timeToFirstTokenSecs else null,
                 chatMessage.isUserMessage,
                 onCopyClicked = {
                     val clipboard =

@@ -157,6 +157,7 @@ data class ChatScreenUIState(
         ChatScreenViewModel.ModelLoadingState.NOT_LOADED,
     val responseGenerationsSpeed: Float? = null,
     val responseGenerationTimeSecs: Int? = null,
+    val timeToFirstTokenSecs: Float? = null,
     val memoryUsage: Pair<Float, Float>? = null,
     val folders: ImmutableList<Folder> = emptyList<Folder>().toImmutableList(),
     val chats: ImmutableList<Chat> = emptyList<Chat>().toImmutableList(),
@@ -767,6 +768,7 @@ class ChatScreenViewModel(
                         isGeneratingResponse = false,
                         responseGenerationsSpeed = response.generationSpeed,
                         responseGenerationTimeSecs = response.generationTimeSecs,
+                        timeToFirstTokenSecs = response.timeToFirstTokenSecs,
                         memoryUsage =
                             if (it.memoryUsage != null) {
                                 getCurrentMemoryUsage()
@@ -810,7 +812,14 @@ class ChatScreenViewModel(
 
     private fun switchChat(chat: Chat) {
         stopGeneration()
-        _uiState.update { it.copy(chat = chat) }
+        _uiState.update {
+            it.copy(
+                chat = chat,
+                responseGenerationsSpeed = null,
+                responseGenerationTimeSecs = null,
+                timeToFirstTokenSecs = null,
+            )
+        }
         loadModel()
     }
 

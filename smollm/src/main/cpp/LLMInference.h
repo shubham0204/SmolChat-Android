@@ -34,6 +34,7 @@ class LLMInference {
     // response generation metrics
     int64_t _responseGenerationTime = 0;
     long    _responseNumTokens      = 0;
+    int64_t _timeToFirstToken       = 0;
     // true until the prompt tokens have been decoded (prefill step),
     // used to exclude prompt-processing time from the tokens/sec metric
     bool _isPrefill = false;
@@ -55,6 +56,9 @@ class LLMInference {
 
     // returns the response generation speed in tokens/sec (excludes prompt processing)
     float getResponseGenerationSpeed() const;
+
+    // returns the time to first token in seconds
+    float getTimeToFirstToken() const;
 
     int getContextSizeUsed() const;
 

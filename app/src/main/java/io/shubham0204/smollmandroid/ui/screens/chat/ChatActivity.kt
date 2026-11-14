@@ -445,6 +445,7 @@ private fun ColumnScope.ScreenUI(uiState: ChatScreenUIState, onEvent: (ChatScree
         uiState.chat.id,
         uiState.responseGenerationsSpeed,
         uiState.responseGenerationTimeSecs,
+        uiState.timeToFirstTokenSecs,
         onEvent,
     )
     MessageInput(

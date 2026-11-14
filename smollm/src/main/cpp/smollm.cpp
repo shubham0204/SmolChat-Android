@@ -50,6 +50,12 @@ Java_io_shubham0204_smollm_SmolLM_getResponseGenerationSpeed(JNIEnv* env, jobjec
     return llmInference->getResponseGenerationSpeed();
 }
 
+extern "C" JNIEXPORT jfloat JNICALL
+Java_io_shubham0204_smollm_SmolLM_getTimeToFirstToken(JNIEnv* env, jobject thiz, jlong modelPtr) {
+    auto* llmInference = reinterpret_cast<LLMInference*>(modelPtr);
+    return llmInference->getTimeToFirstToken();
+}
+
 extern "C" JNIEXPORT jint JNICALL
 Java_io_shubham0204_smollm_SmolLM_getContextSizeUsed(JNIEnv* env, jobject thiz, jlong modelPtr) {
     auto* llmInference = reinterpret_cast<LLMInference*>(modelPtr);

@@ -234,6 +234,15 @@ class SmolLM {
     }
 
     /**
+     * Returns the time taken (in seconds) to generate the first token (TTFT) for the last response
+     * via `getResponse()`
+     */
+    fun getTimeToFirstToken(): Float {
+        verifyHandle()
+        return getTimeToFirstToken(nativePtr)
+    }
+
+    /**
      * Returns the number of tokens consumed by the LLM's context window The context of the LLM is
      * roughly the output of, tokenize(apply_chat_template(messages_in_conversation))
      */
@@ -339,6 +348,8 @@ class SmolLM {
     private external fun clearMessages(modelPtr: Long)
 
     private external fun getResponseGenerationSpeed(modelPtr: Long): Float
+
+    private external fun getTimeToFirstToken(modelPtr: Long): Float
 
     private external fun getContextSizeUsed(modelPtr: Long): Int
 

@@ -32,5 +32,7 @@ and sync the project. The classes `SmolLM` and `GGUFReader` should now be availa
 2. Initialize the inference pipeline by calling `smollm.create` with chat parameters and path to the GGUF model.
 3. Use `addUserMessage`, `addAssistantMessage` and `addSystemPrompt` methods to add messages with different roles to the conversation. `addSystemPrompt` should only be called once at the beginning of the conversation.
 4. Use `getResponse` to get the response from the LLM as a stream of tokens i.e. `Flow<String>`.
-5. Use `getResponseGenerationSpeed` to get the rate at which the LLM is generating the response and `getContextLengthUsed` to get the number of tokens consumed by the context window.
+5. Use `getResponseGenerationSpeed` to get the rate at which the LLM is generating the response,
+   `getTimeToFirstToken` to get the time taken for the first token (TTFT in seconds), and
+   `getContextLengthUsed` to get the number of tokens consumed by the context window.
 6. Call `smollm.close` to release resources taken by the native code.
