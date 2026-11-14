@@ -47,6 +47,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
@@ -148,8 +149,13 @@ class ChatActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            Box(modifier = Modifier.safeDrawingPadding()) {
-                NavHost(
+            SmolLMAndroidTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Box(modifier = Modifier.safeDrawingPadding()) {
+                        NavHost(
                     navController = navController,
                     startDestination = ChatRoute,
                     enterTransition = { fadeIn() },
@@ -245,6 +251,8 @@ class ChatActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
         }
     }
 

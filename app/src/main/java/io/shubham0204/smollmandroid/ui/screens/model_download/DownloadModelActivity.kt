@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
@@ -83,8 +84,13 @@ class DownloadModelActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
-            Box(modifier = Modifier.safeDrawingPadding()) {
-                NavHost(
+            SmolLMAndroidTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Box(modifier = Modifier.safeDrawingPadding()) {
+                        NavHost(
                     navController = navController,
                     startDestination = DownloadModelRoute,
                     enterTransition = { fadeIn() },
@@ -137,6 +143,8 @@ class DownloadModelActivity : ComponentActivity() {
                             onHFModelSelectClick = { navController.navigate(HfModelSelectRoute) }
                         )
                     }
+                }
+            }
                 }
             }
         }

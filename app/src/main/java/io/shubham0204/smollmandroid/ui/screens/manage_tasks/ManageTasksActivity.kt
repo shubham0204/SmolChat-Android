@@ -34,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -69,22 +70,29 @@ class ManageTasksActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Box(modifier = Modifier.safeDrawingPadding()) {
-                val tasks by viewModel.appDB.getTasks().collectAsState(emptyList())
-                val models by viewModel.appDB.getModels().collectAsState(emptyList())
-                TasksActivityScreenUI(
-                    tasks =
-                        tasks.map {
-                            val modelName =
-                                viewModel.modelsRepository.getModelFromId(it.modelId).name
-                            it.copy(modelName = modelName)
-                        },
-                    availableModelsList = models,
-                    getModelFromId = viewModel.modelsRepository::getModelFromId,
-                    onUpdateTask = viewModel::updateTask,
-                    onAddTask = viewModel::addTask,
-                    onDeleteTask = viewModel::deleteTask,
-                )
+            SmolLMAndroidTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Box(modifier = Modifier.safeDrawingPadding()) {
+                        val tasks by viewModel.appDB.getTasks().collectAsState(emptyList())
+                        val models by viewModel.appDB.getModels().collectAsState(emptyList())
+                        TasksActivityScreenUI(
+                            tasks =
+                                tasks.map {
+                                    val modelName =
+                                        viewModel.modelsRepository.getModelFromId(it.modelId).name
+                                    it.copy(modelName = modelName)
+                                },
+                            availableModelsList = models,
+                            getModelFromId = viewModel.modelsRepository::getModelFromId,
+                            onUpdateTask = viewModel::updateTask,
+                            onAddTask = viewModel::addTask,
+                            onDeleteTask = viewModel::deleteTask,
+                        )
+                    }
+                }
             }
         }
     }
