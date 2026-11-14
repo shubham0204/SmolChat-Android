@@ -16,6 +16,7 @@ const val KEY_GLOBAL_CONTEXT_SIZE = "global_chat_context_size"
 const val KEY_GLOBAL_N_THREADS = "global_chat_n_threads"
 const val KEY_GLOBAL_USE_MMAP = "global_chat_use_mmap"
 const val KEY_GLOBAL_USE_MLOCK = "global_chat_use_mlock"
+const val KEY_HAS_SEEN_ONBOARDING = "has_seen_onboarding"
 
 const val DEFAULT_GLOBAL_SYSTEM_PROMPT = "You are a helpful assistant."
 const val DEFAULT_GLOBAL_MIN_P = 0.1f

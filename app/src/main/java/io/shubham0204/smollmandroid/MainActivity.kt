@@ -20,17 +20,29 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import io.shubham0204.smollmandroid.data.KEY_HAS_SEEN_ONBOARDING
+import io.shubham0204.smollmandroid.data.SharedPrefStore
 import io.shubham0204.smollmandroid.llm.ModelsRepository
 import io.shubham0204.smollmandroid.ui.screens.chat.ChatActivity
 import io.shubham0204.smollmandroid.ui.screens.model_download.DownloadModelActivity
+import io.shubham0204.smollmandroid.ui.screens.onboarding.OnboardingActivity
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
     private val modelsRepository by inject<ModelsRepository>()
+    private val sharedPrefStore by inject<SharedPrefStore>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        if (!sharedPrefStore.get(KEY_HAS_SEEN_ONBOARDING, false)) {
+            Intent(this, OnboardingActivity::class.java).apply {
+                startActivity(this)
+                finish()
+            }
+            return
+        }
 
         // Redirect user to the DownloadModelActivity if no models are available
         // as the app requires at least one model to function

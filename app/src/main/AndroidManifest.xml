@@ -53,6 +53,10 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.screens.onboarding.OnboardingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SmolLMAndroid" />
         <activity android:name=".ui.screens.model_download.DownloadModelActivity" />
         <activity android:name=".ui.screens.manage_tasks.ManageTasksActivity" />
         <activity
