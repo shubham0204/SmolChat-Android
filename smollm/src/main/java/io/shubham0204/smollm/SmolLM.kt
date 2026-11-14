@@ -143,6 +143,8 @@ class SmolLM {
      *   improve loading times and reduce memory usage. (Default: true)
      * @property useMlock Whether to lock the model in memory. This can prevent the model from being
      *   swapped out to disk, potentially improving performance. (Default: false)
+     * @property nGpuLayers Number of model layers to offload to the GPU (e.g. Vulkan). Use `0` for
+     *   CPU-only inference, or a negative value such as `-1` to offload all layers. (Default: 0)
      */
     data class InferenceParams(
         val minP: Float = 0.1f,
@@ -153,6 +155,7 @@ class SmolLM {
         val numThreads: Int = 4,
         val useMmap: Boolean = true,
         val useMlock: Boolean = false,
+        val nGpuLayers: Int = 0,
     )
 
     /**
@@ -186,6 +189,7 @@ class SmolLM {
                     params.numThreads,
                     params.useMmap,
                     params.useMlock,
+                    params.nGpuLayers,
                 )
         }
 
@@ -341,6 +345,7 @@ class SmolLM {
         nThreads: Int,
         useMmap: Boolean,
         useMlock: Boolean,
+        nGpuLayers: Int,
     ): Long
 
     private external fun addChatMessage(modelPtr: Long, message: String, role: String)

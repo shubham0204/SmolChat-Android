@@ -32,6 +32,10 @@
     <string name="chat_settings_desc_temp">Temperature is a parameter that controls the randomness and creativity of LLM outputs, with lower temperatures producing more deterministic and focused responses, and higher temperatures leading to more diverse and creative outputs.</string>
     <string name="chat_settings_desc_ctx_length">The context length of a large language model (LLM) refers to the maximum number of tokens (words or subwords) it can process in a single input or output sequence. Larger context sizes need more memory.</string>
     <string name="chat_settings_desc_n_threads">The number of CPU threads to use for inference.</string>
+    <string name="chat_settings_label_n_gpu_layers">GPU Layers (Vulkan)</string>
+    <string name="chat_settings_desc_n_gpu_layers">Number of model layers to offload to the Vulkan GPU. Use 0 for CPU-only, or -1 to offload all layers.</string>
+    <string name="chat_settings_hint_n_gpu_layers">GPU layers (0 = CPU, -1 = all)</string>
+    <string name="chat_settings_err_n_gpu_layers">Enter an integer ≥ -1</string>
     <string name="chat_settings_label_ctx_size">Context Size</string>
     <string name="chat_settings_label_temp">Temperature</string>
     <string name="chat_settings_label_minp">min-p</string>

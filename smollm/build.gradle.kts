@@ -52,6 +52,21 @@ android {
                 // and attach hardware-assisted address sanitizer
                 // arguments += "-DCMAKE_BUILD_TYPE=Debug"
                 // arguments += listOf("-DANDROID_SANITIZE=hwaddress")
+
+                // Vulkan compilation setup
+                // Set VULKAN_SDK env var to point to the downloaded LunarG Vulkan SDK
+                val vulkanSdk = System.getenv("VULKAN_SDK")
+                if (!vulkanSdk.isNullOrBlank()) {
+                    println("llama.cpp will be compiled with Vulkan SDK.")
+                    cppFlags += "-isystem$vulkanSdk/include"
+                    arguments += "-DANDROID_PLATFORM=android-28"
+                    arguments += "-DGGML_VULKAN=ON"
+                    arguments += "-DCMAKE_PREFIX_PATH=$vulkanSdk"
+                    arguments += "-DSPIRV-Headers_DIR=$vulkanSdk/lib/cmake/SPIRV-Headers"
+                    arguments += "-DVulkan_GLSLC_EXECUTABLE=$vulkanSdk/bin/glslc"
+                } else {
+                    println("Skipping compilation for Vulkan as VULKAN_SDK was not set.")
+                }
             }
         }
     }

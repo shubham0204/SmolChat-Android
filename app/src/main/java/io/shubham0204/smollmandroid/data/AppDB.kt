@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
@@ -13,7 +15,7 @@ import java.util.Date
 
 @Database(
     entities = [Chat::class, ChatMessage::class, LLMModel::class, Task::class, Folder::class],
-    version = 1,
+    version = 2,
 )
 @TypeConverters(Converters::class)
 abstract class AppRoomDatabase : RoomDatabase() {
@@ -28,10 +30,19 @@ abstract class AppRoomDatabase : RoomDatabase() {
     abstract fun folderDao(): FolderDao
 }
 
+private val MIGRATION_1_2 =
+    object : Migration(1, 2) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE Chat ADD COLUMN nGpuLayers INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
 @Single
 class AppDB(context: Context, private val sharedPrefStore: SharedPrefStore) {
     private val db =
-        Room.databaseBuilder(context, AppRoomDatabase::class.java, "app-database").build()
+        Room.databaseBuilder(context, AppRoomDatabase::class.java, "app-database")
+            .addMigrations(MIGRATION_1_2)
+            .build()
 
     /** Get all chats from the database sorted by dateUsed in descending order. */
     fun getChats(): Flow<List<Chat>> = db.chatsDao().getChats()
@@ -84,6 +95,7 @@ class AppDB(context: Context, private val sharedPrefStore: SharedPrefStore) {
                     nThreads = globalSettings.nThreads,
                     useMmap = globalSettings.useMmap,
                     useMlock = globalSettings.useMlock,
+                    nGpuLayers = globalSettings.nGpuLayers,
                     contextSize = globalSettings.contextSize,
                     chatTemplate = chatTemplate,
                     isTask = isTask,
@@ -141,6 +153,12 @@ class AppDB(context: Context, private val sharedPrefStore: SharedPrefStore) {
                                 newSettings.useMlock
                             } else {
                                 chat.useMlock
+                            },
+                        nGpuLayers =
+                            if (chat.nGpuLayers == oldSettings.nGpuLayers) {
+                                newSettings.nGpuLayers
+                            } else {
+                                chat.nGpuLayers
                             },
                     )
                 if (updatedChat != chat) {
