@@ -10,7 +10,7 @@
 
 void
 LLMInference::loadModel(const char *model_path, float minP, float temperature, bool storeChats, long contextSize,
-                        const char *chatTemplate, int nThreads, bool useMmap, bool useMlock) {
+                        const char* chatTemplate, int nThreads, bool useMmap, bool useMlock, int nGpuLayers) {
     LOGi("loading model with"
          "\n\tmodel_path = %s"
          "\n\tminP = %f"
@@ -20,14 +20,16 @@ LLMInference::loadModel(const char *model_path, float minP, float temperature, b
          "\n\tchatTemplate = %s"
          "\n\tnThreads = %d"
          "\n\tuseMmap = %d"
-         "\n\tuseMlock = %d",
-         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap, useMlock);
+         "\n\tuseMlock = %d"
+         "\n\tnGpuLayers = %d",
+         model_path, minP, temperature, storeChats, contextSize, chatTemplate, nThreads, useMmap, useMlock, nGpuLayers);
 
     // load dynamic backends
     ggml_backend_load_all();
 
     // create an instance of llama_model
     llama_model_params model_params = llama_model_default_params();
+    model_params.n_gpu_layers       = nGpuLayers;
     if (useMmap && useMlock) {
         model_params.load_mode = LLAMA_LOAD_MODE_MMAP_MLOCK;
     } else if (useMmap) {

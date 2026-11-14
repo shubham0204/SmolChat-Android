@@ -46,6 +46,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -87,6 +88,7 @@ data class EditableChatSettings(
     val chatTemplate: String,
     val useMmap: Boolean,
     val useMlock: Boolean,
+    val nGpuLayers: Int,
     val isTask: Boolean,
 ) {
     companion object {
@@ -101,6 +103,7 @@ data class EditableChatSettings(
                 chatTemplate = chat.chatTemplate,
                 useMmap = chat.useMmap,
                 useMlock = chat.useMlock,
+                nGpuLayers = chat.nGpuLayers,
                 isTask = chat.isTask,
             )
         }
@@ -116,6 +119,7 @@ data class EditableChatSettings(
         existingChat.chatTemplate = chatTemplate
         existingChat.useMmap = useMmap
         existingChat.useMlock = useMlock
+        existingChat.nGpuLayers = nGpuLayers
         return existingChat
     }
 }
@@ -156,6 +160,7 @@ fun EditChatSettingsScreen(
     var chatTemplate by remember { mutableStateOf(settings.chatTemplate) }
     var useMmap by remember { mutableStateOf(settings.useMmap) }
     var useMlock by remember { mutableStateOf(settings.useMlock) }
+    var nGpuLayers by remember { mutableIntStateOf(settings.nGpuLayers) }
 
     var showSystemPromptsDialog by remember { mutableStateOf(false) }
     var showAddSystemPromptDialog by remember { mutableStateOf(false) }
@@ -187,6 +192,7 @@ fun EditChatSettingsScreen(
                                         nThreads = nThreads,
                                         useMmap = useMmap,
                                         useMlock = useMlock,
+                                        nGpuLayers = nGpuLayers,
                                     )
                                 if (settings != updatedChat) {
                                     onUpdateChat(updatedChat)
@@ -386,6 +392,13 @@ fun EditChatSettingsScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                GpuLayersSetting(
+                    nGpuLayers = nGpuLayers,
+                    onValueChange = { nGpuLayers = it },
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Checkbox(checked = useMmap, onCheckedChange = { useMmap = it })
                     Column {
@@ -421,6 +434,7 @@ fun EditChatSettingsScreen(
                         nThreads = globalSettings.nThreads
                         useMmap = globalSettings.useMmap
                         useMlock = globalSettings.useMlock
+                        nGpuLayers = globalSettings.nGpuLayers
                         takeContextSizeFromModel = false
                         Toast.makeText(
                             context,
@@ -476,6 +490,7 @@ fun GlobalChatSettingsScreen(
     var nThreads by remember { mutableIntStateOf(settings.nThreads) }
     var useMmap by remember { mutableStateOf(settings.useMmap) }
     var useMlock by remember { mutableStateOf(settings.useMlock) }
+    var nGpuLayers by remember { mutableIntStateOf(settings.nGpuLayers) }
 
     var showSystemPromptsDialog by remember { mutableStateOf(false) }
     var showAddSystemPromptDialog by remember { mutableStateOf(false) }
@@ -507,6 +522,7 @@ fun GlobalChatSettingsScreen(
                                         nThreads = nThreads,
                                         useMmap = useMmap,
                                         useMlock = useMlock,
+                                        nGpuLayers = nGpuLayers,
                                     )
                                 if (settings != updatedSettings) {
                                     onUpdateGlobalSettings(updatedSettings)
@@ -656,6 +672,13 @@ fun GlobalChatSettingsScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                GpuLayersSetting(
+                    nGpuLayers = nGpuLayers,
+                    onValueChange = { nGpuLayers = it },
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Checkbox(checked = useMmap, onCheckedChange = { useMmap = it })
                     Column {
@@ -778,5 +801,50 @@ private fun SystemPromptsDialog(
             }
         },
         confirmButton = { TextButton(onClick = onDismissRequest) { Text("Close") } },
+    )
+}
+
+@Composable
+private fun GpuLayersSetting(
+    nGpuLayers: Int,
+    onValueChange: (Int) -> Unit,
+) {
+    var text by remember { mutableStateOf(nGpuLayers.toString()) }
+    LaunchedEffect(nGpuLayers) {
+        if (text.toIntOrNull() != nGpuLayers) {
+            text = nGpuLayers.toString()
+        }
+    }
+    val parsed = text.toIntOrNull()
+    val isError = text.isNotEmpty() && (parsed == null || parsed < -1)
+    Text(
+        text = stringResource(R.string.chat_settings_label_n_gpu_layers),
+        style = MaterialTheme.typography.titleMedium,
+    )
+    Text(
+        text = stringResource(R.string.chat_settings_desc_n_gpu_layers),
+        style = MaterialTheme.typography.labelSmall,
+    )
+    TextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = text,
+        onValueChange = { input ->
+            text = input
+            val value = input.toIntOrNull()
+            if (value != null && value >= -1) {
+                onValueChange(value)
+            } else if (input.isEmpty()) {
+                onValueChange(0)
+            }
+        },
+        isError = isError,
+        label = {
+            if (isError) {
+                Text(stringResource(R.string.chat_settings_err_n_gpu_layers))
+            } else {
+                Text(stringResource(R.string.chat_settings_hint_n_gpu_layers))
+            }
+        },
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
     )
 }
