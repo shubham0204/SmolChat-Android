@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SmolChat — On-Device Inference of SLMs in Android</title>
+    <meta
+            name="description"
+            content="Run Small Language Models (GGUF) locally on Android with SmolChat, powered by llama.cpp."
+    />
+    <link rel="icon" type="image/png" href="assets/icon.png"/>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<header class="site-header">
+    <div class="container header-inner">
+        <a href="#" class="brand">
+            <img src="assets/icon.png" alt="SmolChat app icon"/>
+            <span>SmolChat</span>
+        </a>
+        <div class="header-right">
+            <nav aria-label="Primary navigation">
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#screenshots">Screenshots</a></li>
+                    <li><a href="#install">Install</a></li>
+                    <li><a href="#architecture">Architecture</a></li>
+                    <li>
+                        <a
+                                href="https://github.com/shubham0204/SmolChat-Android"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                        >
+                            GitHub
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <input
+                    type="checkbox"
+                    id="theme-toggle"
+                    class="theme-toggle-input"
+                    aria-label="Toggle dark mode"
+            />
+            <label for="theme-toggle" class="theme-toggle-label">
+                <span class="theme-label-dark">Dark Mode</span>
+                <span class="theme-label-light">Light Mode</span>
+            </label>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="container hero-grid">
+            <div>
+                <span class="badge">Open Source · Apache 2.0 · 100% On-Device</span>
+                <h1>Private, On-Device AI Chat for Android</h1>
+                <p>
+                    SmolChat lets you run Small Language Models (SLMs) in GGUF format
+                    directly on your Android device using <code>llama.cpp</code>—no
+                    cloud APIs, no internet required, and full control over prompts
+                    and inference parameters.
+                </p>
+                <div class="hero-actions">
+                    <a
+                            class="btn btn-primary"
+                            href="https://play.google.com/store/apps/details?id=io.shubham0204.smollmandroid"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                    >
+                        Get it on Google Play
+                    </a>
+                    <a
+                            class="btn btn-secondary"
+                            href="https://github.com/shubham0204/SmolChat-Android/releases/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                    >
+                        Download APK
+                    </a>
+                    <a
+                            class="btn btn-secondary"
+                            href="https://github.com/shubham0204/SmolChat-Android"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                    >
+                        View Source
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <input
+                        type="radio"
+                        name="hero-slide"
+                        id="slide-1"
+                        class="phone-radio"
+                        checked
+                />
+                <input
+                        type="radio"
+                        name="hero-slide"
+                        id="slide-2"
+                        class="phone-radio"
+                />
+                <input
+                        type="radio"
+                        name="hero-slide"
+                        id="slide-3"
+                        class="phone-radio"
+                />
+                <input
+                        type="radio"
+                        name="hero-slide"
+                        id="slide-4"
+                        class="phone-radio"
+                />
+                <input
+                        type="radio"
+                        name="hero-slide"
+                        id="slide-5"
+                        class="phone-radio"
+                />
+                <input
+                        type="radio"
+                        name="hero-slide"
+                        id="slide-6"
+                        class="phone-radio"
+                />
+
+                <div class="hero-phone">
+                    <img
+                            src="assets/screenshots/1.png"
+                            alt="SmolChat screenshot 1"
+                            class="phone-slide slide-1"
+                    />
+                    <img
+                            src="assets/screenshots/2.png"
+                            alt="SmolChat screenshot 2"
+                            class="phone-slide slide-2"
+                    />
+                    <img
+                            src="assets/screenshots/3.png"
+                            alt="SmolChat screenshot 3"
+                            class="phone-slide slide-3"
+                    />
+                    <img
+                            src="assets/screenshots/4.png"
+                            alt="SmolChat screenshot 4"
+                            class="phone-slide slide-4"
+                    />
+                    <img
+                            src="assets/screenshots/5.png"
+                            alt="SmolChat screenshot 5"
+                            class="phone-slide slide-5"
+                    />
+                    <img
+                            src="assets/screenshots/6.png"
+                            alt="SmolChat screenshot 6"
+                            class="phone-slide slide-6"
+                    />
+                </div>
+
+                <div class="phone-dots" aria-label="Switch hero screenshot">
+                    <label for="slide-1" class="phone-dot">1</label>
+                    <label for="slide-2" class="phone-dot">2</label>
+                    <label for="slide-3" class="phone-dot">3</label>
+                    <label for="slide-4" class="phone-dot">4</label>
+                    <label for="slide-5" class="phone-dot">5</label>
+                    <label for="slide-6" class="phone-dot">6</label>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Built for Local SLM Inference</h2>
+                <p>
+                    Designed around a clean Android interface and native C/C++
+                    execution for fast, private conversations on your phone.
+                </p>
+            </div>
+            <div class="grid-3">
+                <article class="card">
+                    <h3>100% On-Device Execution</h3>
+                    <p>
+                        Runs GGUF models natively via <code>llama.cpp</code> compiled
+                        with the Android NDK. Your prompts and responses stay on your
+                        device.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>Flexible GGUF Management</h3>
+                    <p>
+                        Add, remove, and switch between local GGUF models, or download
+                        models directly inside the app.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>Custom Prompts &amp; Sampling</h3>
+                    <p>
+                        Configure system prompts, temperature, and <code>min-p</code>
+                        per chat or set global defaults for all new conversations.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>Downstream Tasks</h3>
+                    <p>
+                        Create reusable single-turn tasks for quick text generation
+                        without persisting chat history.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>Markdown &amp; Syntax Highlighting</h3>
+                    <p>
+                        Renders rich Markdown responses with Markwon and Prism4j,
+                        complete with one-tap copy for code blocks.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>OpenAI-Compatible Server</h3>
+                    <p>
+                        Includes a local HTTP server capable of listing loaded models
+                        and serving OpenAI-compatible LLM inference.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="screenshots" class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2>App Screenshots</h2>
+                <p>
+                    Explore the chat experience, model management, and inference
+                    settings on Android.
+                </p>
+            </div>
+            <div class="screenshots-grid">
+                <div class="screenshot-item">
+                    <img
+                            src="assets/screenshots/1.png"
+                            alt="SmolChat screenshot 1"
+                            loading="lazy"
+                    />
+                </div>
+                <div class="screenshot-item">
+                    <img
+                            src="assets/screenshots/2.png"
+                            alt="SmolChat screenshot 2"
+                            loading="lazy"
+                    />
+                </div>
+                <div class="screenshot-item">
+                    <img
+                            src="assets/screenshots/3.png"
+                            alt="SmolChat screenshot 3"
+                            loading="lazy"
+                    />
+                </div>
+                <div class="screenshot-item">
+                    <img
+                            src="assets/screenshots/4.png"
+                            alt="SmolChat screenshot 4"
+                            loading="lazy"
+                    />
+                </div>
+                <div class="screenshot-item">
+                    <img
+                            src="assets/screenshots/5.png"
+                            alt="SmolChat screenshot 5"
+                            loading="lazy"
+                    />
+                </div>
+                <div class="screenshot-item">
+                    <img
+                            src="assets/screenshots/6.png"
+                            alt="SmolChat screenshot 6"
+                            loading="lazy"
+                    />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="install" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Installation</h2>
+                <p>Choose the distribution channel that works best for you.</p>
+            </div>
+            <div class="grid-3">
+                <article class="card install-card">
+                    <h3>Google Play</h3>
+                    <p>
+                        Install directly from the Google Play Store with automatic
+                        updates.
+                    </p>
+                    <div class="card-action">
+                        <a
+                                class="btn btn-primary"
+                                href="https://play.google.com/store/apps/details?id=io.shubham0204.smollmandroid"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                        >
+                            Open Google Play
+                        </a>
+                    </div>
+                </article>
+
+                <article class="card install-card">
+                    <h3>GitHub Releases</h3>
+                    <ol>
+                        <li>Download the latest APK from GitHub Releases.</li>
+                        <li>Transfer and install the APK on your Android device.</li>
+                    </ol>
+                    <div class="card-action">
+                        <a
+                                class="btn btn-secondary"
+                                href="https://github.com/shubham0204/SmolChat-Android/releases/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                        >
+                            Browse Releases
+                        </a>
+                    </div>
+                </article>
+
+                <article class="card install-card">
+                    <h3>Obtainium</h3>
+                    <ol>
+                        <li>Open Obtainium and tap <strong>Add App</strong>.</li>
+                        <li>
+                            Enter
+                            <code class="inline-code">
+                                https://github.com/shubham0204/SmolChat-Android
+                            </code>
+                        </li>
+                        <li>Receive release updates directly from GitHub.</li>
+                    </ol>
+                    <div class="card-action">
+                        <a
+                                class="btn btn-secondary"
+                                href="https://obtainium.imranr.dev/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                        >
+                            Get Obtainium
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="architecture" class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2>Architecture</h2>
+                <p>
+                    Visualizing how prompts flow from the Android UI down to native
+                    GGUF inference.
+                </p>
+            </div>
+            <div class="arch-diagram-card">
+                <svg
+                        class="arch-diagram"
+                        viewBox="0 0 680 430"
+                        role="img"
+                        aria-label="SmolChat architecture diagram showing the app module, smollm JNI bridge, and llama.cpp executing GGUF models"
+                >
+                    <defs>
+                        <marker
+                                id="arrow"
+                                viewBox="0 0 10 10"
+                                refX="9"
+                                refY="5"
+                                markerWidth="7"
+                                markerHeight="7"
+                                orient="auto-start-reverse"
+                        >
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+                        </marker>
+                    </defs>
+
+                    <!-- Layer 1: app module -->
+                    <rect
+                            x="20"
+                            y="16"
+                            width="640"
+                            height="112"
+                            rx="12"
+                            fill="#f8fafc"
+                            stroke="#cbd5e1"
+                            stroke-width="1.5"
+                    />
+                    <text
+                            x="38"
+                            y="40"
+                            font-size="12"
+                            font-weight="700"
+                            fill="#475569"
+                            letter-spacing="0.06em"
+                    >
+                        APP MODULE (KOTLIN / ANDROID UI)
+                    </text>
+
+                    <rect
+                            x="42"
+                            y="54"
+                            width="270"
+                            height="58"
+                            rx="8"
+                            fill="#ffffff"
+                            stroke="#94a3b8"
+                            stroke-width="1.5"
+                    />
+                    <text
+                            x="177"
+                            y="80"
+                            text-anchor="middle"
+                            font-size="14"
+                            font-weight="700"
+                            fill="#0f172a"
+                    >
+                        Chat &amp; Tasks UI
+                    </text>
+                    <text
+                            x="177"
+                            y="99"
+                            text-anchor="middle"
+                            font-size="12"
+                            fill="#475569"
+                    >
+                        Markwon + Prism4j
+                    </text>
+
+                    <rect
+                            x="368"
+                            y="54"
+                            width="270"
+                            height="58"
+                            rx="8"
+                            fill="#ffffff"
+                            stroke="#94a3b8"
+                            stroke-width="1.5"
+                    />
+                    <text
+                            x="503"
+                            y="80"
+                            text-anchor="middle"
+                            font-size="14"
+                            font-weight="700"
+                            fill="#0f172a"
+                    >
+                        LLMModel &amp; Chat DB
+                    </text>
+                    <text
+                            x="503"
+                            y="99"
+                            text-anchor="middle"
+                            font-size="12"
+                            fill="#475569"
+                    >
+                        Model path &amp; persisted messages
+                    </text>
+
+                    <line
+                            class="flow-line"
+                            x1="312"
+                            y1="83"
+                            x2="365"
+                            y2="83"
+                            stroke="#059669"
+                            stroke-width="2"
+                            marker-end="url(#arrow)"
+                    />
+
+                    <!-- Arrow down to smollm -->
+                    <line
+                            class="flow-line"
+                            x1="340"
+                            y1="128"
+                            x2="340"
+                            y2="160"
+                            stroke="#059669"
+                            stroke-width="2"
+                            marker-end="url(#arrow)"
+                    />
+
+                    <!-- Layer 2: smollm module -->
+                    <rect
+                            x="20"
+                            y="164"
+                            width="640"
+                            height="112"
+                            rx="12"
+                            fill="#ecfdf5"
+                            stroke="#6ee7b7"
+                            stroke-width="1.5"
+                    />
+                    <text
+                            x="38"
+                            y="188"
+                            font-size="12"
+                            font-weight="700"
+                            fill="#065f46"
+                            letter-spacing="0.06em"
+                    >
+                        SMOLLM MODULE (KOTLIN + JNI + C++)
+                    </text>
+
+                    <rect
+                            x="42"
+                            y="202"
+                            width="165"
+                            height="58"
+                            rx="8"
+                            fill="#ffffff"
+                            stroke="#10b981"
+                            stroke-width="1.5"
+                    />
+                    <text
+                            x="124"
+                            y="228"
+                            text-anchor="middle"
+                            font-size="14"
+                            font-weight="700"
+                            fill="#0f172a"
+                    >
+                        SmolLM.kt
+                    </text>
+                    <text
+                            x="124"
+                            y="247"
+                            text-anchor="middle"
+                            font-size="12"
+                            fill="#475569"
+                    >
+                        Kotlin API
+                    </text>
+
+                    <rect
+                            x="257"
+                            y="202"
+                            width="165"
+                            height="58"
+                            rx="8"
+                            fill="#ffffff"
+                            stroke="#10b981"
+                            stroke-width="1.5"
+                    />
+                    <text
+                            x="339"
+                            y="228"
+                            text-anchor="middle"
+                            font-size="14"
+                            font-weight="700"
+                            fill="#0f172a"
+                    >
+                        smollm.cpp
+                    </text>
+                    <text
+                            x="339"
+                            y="247"
+                            text-anchor="middle"
+                            font-size="12"
+                            fill="#475569"
+                    >
+                        JNI Bindings
+                    </text>
+
+                    <rect
+                            x="472"
+                            y="202"
+                            width="166"
+                            height="58"
+                            rx="8"
+                            fill="#ffffff"
+                            stroke="#10b981"
+                            stroke-width="1.5"
+                    />
+                    <text
+                            x="555"
+                            y="228"
+                            text-anchor="middle"
+                            font-size="14"
+                            font-weight="700"
+                            fill="#0f172a"
+                    >
+                        llm_inference.cpp
+                    </text>
+                    <text
+                            x="555"
+                            y="247"
+                            text-anchor="middle"
+                            font-size="12"
+                            fill="#475569"
+                    >
+                        loadModel / addChatMessage
+                    </text>
+
+                    <line
+                            class="flow-line"
+                            x1="207"
+                            y1="231"
+                            x2="254"
+                            y2="231"
+                            stroke="#059669"
+                            stroke-width="2"
+                            marker-end="url(#arrow)"
+                    />
+                    <line
+                            class="flow-line"
+                            x1="422"
+                            y1="231"
+                            x2="469"
+                            y2="231"
+                            stroke="#059669"
+                            stroke-width="2"
+                            marker-end="url(#arrow)"
+                    />
+
+                    <!-- Arrow down to llama.cpp -->
+                    <line
+                            class="flow-line"
+                            x1="340"
+                            y1="276"
+                            x2="340"
+                            y2="308"
+                            stroke="#059669"
+                            stroke-width="2"
+                            marker-end="url(#arrow)"
+                    />
+
+                    <!-- Layer 3: Native Engine & GGUF -->
+                    <rect
+                            x="20"
+                            y="312"
+                            width="640"
+                            height="102"
+                            rx="12"
+                            fill="#0f172a"
+                    />
+                    <text
+                            x="38"
+                            y="336"
+                            font-size="12"
+                            font-weight="700"
+                            fill="#94a3b8"
+                            letter-spacing="0.06em"
+                    >
+                        NATIVE RUNTIME (ANDROID NDK)
+                    </text>
+
+                    <rect
+                            x="42"
+                            y="348"
+                            width="270"
+                            height="50"
+                            rx="8"
+                            fill="#1e293b"
+                            stroke="#334155"
+                            stroke-width="1.5"
+                    />
+                    <text
+                            x="177"
+                            y="378"
+                            text-anchor="middle"
+                            font-size="14"
+                            font-weight="700"
+                            fill="#f8fafc"
+                    >
+                        llama.cpp (C/C++ API)
+                    </text>
+
+                    <rect
+                            x="368"
+                            y="348"
+                            width="270"
+                            height="50"
+                            rx="8"
+                            fill="#1e293b"
+                            stroke="#334155"
+                            stroke-width="1.5"
+                    />
+                    <text
+                            x="503"
+                            y="378"
+                            text-anchor="middle"
+                            font-size="14"
+                            font-weight="700"
+                            fill="#f8fafc"
+                    >
+                        Local GGUF Model
+                    </text>
+
+                    <line
+                            class="flow-line"
+                            x1="312"
+                            y1="373"
+                            x2="365"
+                            y2="373"
+                            stroke="#10b981"
+                            stroke-width="2"
+                            marker-end="url(#arrow)"
+                    />
+                </svg>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-inner">
+        <div>
+            <strong>SmolChat-Android</strong> · Licensed under the Apache License
+            2.0
+        </div>
+        <div class="footer-links">
+            <a
+                    href="https://github.com/shubham0204/SmolChat-Android"
+                    target="_blank"
+                    rel="noopener noreferrer"
+            >
+                GitHub
+            </a>
+            <a
+                    href="https://github.com/shubham0204/SmolChat-Android/blob/main/PRIVACY_POLICY.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+            >
+                Privacy Policy
+            </a>
+            <a
+                    href="https://github.com/shubham0204/SmolChat-Android/blob/main/LICENSE"
+                    target="_blank"
+                    rel="noopener noreferrer"
+            >
+                License
+            </a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
